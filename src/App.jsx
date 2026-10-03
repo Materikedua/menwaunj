@@ -1,4 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import {
+  MotionStyles, Reveal, Stagger, TiltCard, Spotlight, MagneticButton,
+  ScrollProgress, Orbit3D, Logo3D, Marquee, Counter, NavBar3D, TabSwitch
+} from './MenwaUI';
 import { 
   X, 
   Menu, 
@@ -40,108 +45,26 @@ const handleImgError = (e, text, bgColor = '006569', textColor = 'FFDD00') => {
   e.target.src = `https://placehold.co/600x400/${bgColor}/${textColor}?text=${encodeURIComponent(text)}`;
 };
 
-const RevealOnScroll = ({ children, className = '', delay = 0 }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const ref = useRef(null);
+const RevealOnScroll = Reveal;
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
+const NAV_ITEMS = [
+  { id: 'beranda',      label: 'Beranda',                   icon: <Compass size={20} />,   desc: 'Profil singkat, highlight kegiatan, dan berita terbaru Satuan UNJ.' },
+  { id: 'struktur',     label: 'Garis Komando',             icon: <Shield size={20} />,    desc: 'Struktur organisasi, unsur pimpinan, perencana, pelayanan, dan pelaksana.' },
+  { id: 'pendidikan',   label: 'Pendidikan dan Pelatihan',  icon: <BookOpen size={20} />,  desc: 'Jenjang Diksar, Suskalak, kursus kader, serta agenda latihan rutin.' },
+  { id: 'mako',         label: 'Markas Komando',            icon: <MapPin size={20} />,    desc: 'Lokasi Mako, fasilitas, jam operasional, dan kontak piket.' },
+  { id: 'administrasi', label: 'Administrasi Umum',         icon: <FileText size={20} />,  desc: 'Surat-menyurat, arsip, formulir, dan prosedur administrasi satuan.' },
+];
 
-  return (
-    <div
-      ref={ref}
-      style={{ transitionDelay: `${delay}ms` }}
-      className={`transition-all duration-700 transform ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      } ${className}`}
-    >
-      {children}
-    </div>
-  );
-};
-
-const Navigation = ({ activeTab, handleQuickSearch, isMobileMenuOpen, setIsMobileMenuOpen }) => {
-  const navItems = [
-    { id: 'beranda', label: 'Beranda' },
-    { id: 'struktur', label: 'Garis Komando' },
-    { id: 'pendidikan', label: 'Pendidikan dan Pelatihan' },
-    { id: 'mako', label: 'Markas Komando' },
-    { id: 'administrasi', label: 'Administrasi Umum' }
-  ];
-
-  return (
-    <nav className="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-xl shadow-xl border-b border-[#006569]/50 transition-all font-sans">
-      <div className="h-1.5 w-full bg-gradient-to-r from-[#006569] via-[#FFDD00] to-[#006569]"></div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          <div className="flex items-center cursor-pointer group" onClick={() => handleQuickSearch('beranda')}>
-            <img 
-              src="logo-menwa-unj.png" 
-              onError={(e) => handleImgError(e, 'MENWA UNJ', '006569', 'FFDD00')} 
-              alt="Logo Menwa UNJ" 
-              className="w-12 h-12 object-contain mr-3 filter drop-shadow-md group-hover:scale-105 transition-transform" 
-            />
-            <div className="text-left">
-              <h1 className="text-base md:text-lg font-black text-white leading-tight group-hover:text-[#FFDD00] transition-colors">RESIMEN MAHASISWA</h1>
-              <p className="text-[10px] md:text-[11px] font-black text-[#FFDD00] tracking-widest uppercase">SATUAN UNJ</p>
-            </div>
-          </div>
-
-          <div className="hidden lg:flex space-x-1 xl:space-x-2">
-            {navItems.map(item => (
-              <button
-                key={item.id}
-                onClick={() => handleQuickSearch(item.id)}
-                className={`px-4 py-2 rounded-full font-extrabold text-xs tracking-wider uppercase transition-all duration-300 ${
-                  activeTab === item.id
-                    ? 'bg-[#006569] text-[#FFDD00] border border-[#FFDD00]/40 shadow-lg shadow-[#006569]/40 transform scale-105'
-                    : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="lg:hidden flex items-center">
-            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-slate-200 hover:text-[#FFDD00] focus:outline-none">
-              {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className={`lg:hidden bg-slate-950 border-t border-slate-800 absolute w-full shadow-2xl transition-all duration-300 ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
-        <div className="px-4 pt-4 pb-8 space-y-3">
-          {navItems.map(item => (
-            <button
-              key={item.id}
-              onClick={() => { handleQuickSearch(item.id); setIsMobileMenuOpen(false); }}
-              className={`block w-full text-left px-5 py-3.5 rounded-2xl font-black text-sm uppercase tracking-wider transition-all ${
-                activeTab === item.id
-                  ? 'bg-[#006569] text-[#FFDD00] shadow-md'
-                  : 'text-slate-300 hover:bg-white/5'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    </nav>
-  );
-};
+const Navigation = (props) => (
+  <NavBar3D
+    {...props}
+    onNavigate={props.handleQuickSearch}
+    navItems={NAV_ITEMS}
+    MenuIcon={<Menu size={28} />}
+    CloseIcon={<X size={28} />}
+    onLogoError={(e) => handleImgError(e, 'MENWA UNJ', '006569', 'FFDD00')}
+  />
+);
 
 const LiveChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -327,34 +250,22 @@ const LoginModal = ({ onClose }) => {
 };
 
 const StatCard = ({ icon, label, endValue, color, borderGlow }) => {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    let start = 0; 
-    const duration = 2500; 
-    const increment = endValue / (duration / 16);
-    const timer = setInterval(() => { 
-      start += increment; 
-      if (start >= endValue) { 
-        setCount(endValue); 
-        clearInterval(timer); 
-      } else { 
-        setCount(Math.floor(start)); 
-      } 
-    }, 16);
-    return () => clearInterval(timer);
-  }, [endValue]);
-
   return (
+    <TiltCard className="rounded-[2.5rem]" max={8}>
+    <Spotlight className="rounded-[2.5rem]">
     <div className={`group bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 md:p-10 text-center shadow-[0_20px_50px_rgba(0,0,0,0.4)] hover:-translate-y-3 ${borderGlow} transition-all duration-500 relative overflow-hidden`}>
       <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       <div className={`mx-auto w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mb-6 shadow-inner border border-white/10 ${color} group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>{icon}</div>
-      <div className={`text-4xl lg:text-6xl font-black mb-3 ${color} drop-shadow-lg`}>{count}+</div>
+      <Counter to={endValue} suffix="+" className={`block text-4xl lg:text-6xl font-black mb-3 ${color} drop-shadow-lg`} />
       <div className="text-slate-300 font-extrabold text-xs tracking-[0.25em] uppercase group-hover:text-white transition-colors">{label}</div>
     </div>
+    </Spotlight>
+    </TiltCard>
   );
 };
 
 const BerandaTab = () => {
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedNews, setSelectedNews] = useState(null);
   const [isKcModalOpen, setIsKcModalOpen] = useState(false);
@@ -488,22 +399,14 @@ Rapatkan barisan, asah strategi, dan amankan slot kontingen kalian sebelum kuota
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center bg-no-repeat bg-fixed opacity-15 mix-blend-luminosity z-0"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-[#00383b]/80 to-slate-950/95 z-0"></div>
 
-        <div className="absolute top-0 -left-4 w-96 h-96 bg-[#006569] rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob z-10 pointer-events-none"></div>
-        <div className="absolute top-0 -right-4 w-96 h-96 bg-[#FFDD00] rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-blob animation-delay-2000 z-10 pointer-events-none"></div>
-        <div className="absolute -bottom-8 left-20 w-96 h-96 bg-[#004d50] rounded-full mix-blend-screen filter blur-[100px] opacity-25 animate-blob animation-delay-4000 z-10 pointer-events-none"></div>
+        <Orbit3D className="z-10" />
 
         <RevealOnScroll className="relative z-20 flex flex-col items-center px-4 max-w-6xl text-center">
-          <div className="w-44 h-44 md:w-56 md:h-56 p-2 mb-8 flex justify-center items-center hover:scale-105 transition-all duration-500 drop-shadow-[0_10px_35px_rgba(255,221,0,0.3)]">
-            <img 
-              src="logo-menwa-unj.png" 
-              onError={(e) => handleImgError(e, 'MENWA UNJ', '006569', 'FFDD00')} 
-              alt="Logo Menwa UNJ" 
-              className="w-full h-full object-contain filter drop-shadow-xl" 
-            />
-          </div>
+          <Logo3D onError={(e) => handleImgError(e, 'MENWA UNJ', '006569', 'FFDD00')} />
 
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-2 drop-shadow-md">
-            KOMANDO RESIMEN MAHASISWA JAYAKARTA
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-2 drop-shadow-md mt-8">
+            <span className="text-white">KOMANDO RESIMEN MAHASISWA </span>
+            <span className="mu-shimmer">JAYAKARTA</span>
           </h1>
           
           <div className="text-[#FFDD00] font-extrabold text-2xl md:text-4xl tracking-widest uppercase my-2 drop-shadow-lg">
@@ -520,13 +423,20 @@ Rapatkan barisan, asah strategi, dan amankan slot kontingen kalian sebelum kuota
             <Shield size={16} className="text-[#FFDD00] animate-pulse" /> WIDYA CASTRENA DHARMA SIDDHA
           </div>
         </RevealOnScroll>
+
+        <Marquee
+          className="relative z-20 mt-10 py-3 border-y border-white/10 bg-black/30 w-full"
+          items={['Widya Castrena Dharma Siddha', 'Disiplin', 'Loyalitas', 'Kehormatan', 'Satuan UNJ']}
+        />
       </section>
 
       {/* ULTRA HIGHLIGHT: PENDAFTARAN LOMBA NASIONAL KSATRIA CENDEKIA VIII */}
       <section className="relative z-30 -mt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
         <RevealOnScroll>
+          <TiltCard className="rounded-[2.5rem]" max={4} lift={6}>
+          <Spotlight className="rounded-[2.5rem]">
           <div 
-            onClick={() => setIsKcModalOpen(true)}
+            onClick={() => navigate('/kc')}
             className="group relative cursor-pointer overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-slate-950 via-[#00383b] to-slate-950 border-2 border-[#FFDD00] p-8 md:p-12 shadow-[0_0_50px_rgba(255,221,0,0.35)] hover:shadow-[0_0_80px_rgba(255,221,0,0.6)] transition-all duration-500 hover:-translate-y-2"
           >
             {/* Ambient Backlight Glow */}
@@ -551,20 +461,21 @@ Rapatkan barisan, asah strategi, dan amankan slot kontingen kalian sebelum kuota
                 </p>
 
                 <div className="flex flex-wrap items-center gap-4">
-                  <a
+                  <MagneticButton
+                    as="a"
                     href={registrationKcVIIIUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center gap-2.5 bg-[#FFDD00] hover:bg-yellow-400 text-[#00383b] font-black px-8 py-4 rounded-2xl shadow-xl hover:scale-105 transition-all text-sm md:text-base uppercase tracking-wider border border-white/40"
+                    className="inline-flex items-center gap-2.5 bg-[#FFDD00] hover:bg-yellow-400 text-[#00383b] font-black px-8 py-4 rounded-2xl shadow-xl transition-colors text-sm md:text-base uppercase tracking-wider border border-white/40"
                   >
                     <Trophy size={20} className="text-[#00383b]" />
                     <span>Segera Daftarkan Tim Kalian!</span>
                     <ExternalLink size={18} />
-                  </a>
+                  </MagneticButton>
 
                   <button 
-                    onClick={(e) => { e.stopPropagation(); setIsKcModalOpen(true); }}
+                    onClick={(e) => { e.stopPropagation(); navigate('/kc'); }}
                     className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-4 rounded-2xl border border-white/20 backdrop-blur-md transition-all text-sm hover:border-[#FFDD00]"
                   >
                     <BookOpen size={18} className="text-[#FFDD00]" />
@@ -592,6 +503,8 @@ Rapatkan barisan, asah strategi, dan amankan slot kontingen kalian sebelum kuota
               </div>
             </div>
           </div>
+          </Spotlight>
+          </TiltCard>
         </RevealOnScroll>
       </section>
 
@@ -826,14 +739,15 @@ Rapatkan barisan, asah strategi, dan amankan slot kontingen kalian sebelum kuota
             <div className="h-1.5 w-24 bg-gradient-to-r from-[#006569] to-[#FFDD00] mx-auto mt-4 rounded-full shadow-md"></div>
           </RevealOnScroll>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {cardPosts.map((card, idx) => (
-              <RevealOnScroll key={card.id} delay={idx * 100}>
+          <Stagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" step={100} from="up">
+            {cardPosts.map((card) => (
+              <TiltCard key={card.id} className="rounded-3xl h-full" max={6}>
+              <Spotlight className="rounded-3xl h-full">
                 <a
                   href={card.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white rounded-3xl overflow-hidden shadow-lg border border-slate-200 flex flex-col group hover:-translate-y-2 hover:shadow-2xl hover:border-[#006569] transition-all duration-300 h-full"
+                  className="bg-white rounded-3xl overflow-hidden shadow-lg border border-slate-200 flex flex-col group hover:shadow-2xl hover:border-[#006569] transition-all duration-300 h-full"
                 >
                   <div className="relative h-56 overflow-hidden bg-slate-900">
                     <img 
@@ -860,9 +774,10 @@ Rapatkan barisan, asah strategi, dan amankan slot kontingen kalian sebelum kuota
                     </div>
                   </div>
                 </a>
-              </RevealOnScroll>
+              </Spotlight>
+              </TiltCard>
             ))}
-          </div>
+          </Stagger>
         </div>
       </section>
 
@@ -919,20 +834,12 @@ Rapatkan barisan, asah strategi, dan amankan slot kontingen kalian sebelum kuota
             <div className="h-1.5 w-32 bg-[#006569] mx-auto rounded-full shadow-[0_0_15px_rgba(0,101,105,0.8)]"></div>
           </RevealOnScroll>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
-            <RevealOnScroll delay={100}>
-              <StatCard icon={<Users size={36}/>} label="Anggota Aktif" endValue={50} color="text-[#FFDD00]" borderGlow="group-hover:border-[#FFDD00]/50" />
-            </RevealOnScroll>
-            <RevealOnScroll delay={200}>
-              <StatCard icon={<Award size={36}/>} label="Prestasi Terdata" endValue={1000} color="text-emerald-400" borderGlow="group-hover:border-emerald-400/50" />
-            </RevealOnScroll>
-            <RevealOnScroll delay={300}>
-              <StatCard icon={<Compass size={36}/>} label="Giat Pengabdian Masyarakat" endValue={500} color="text-teal-300" borderGlow="group-hover:border-teal-300/50" />
-            </RevealOnScroll>
-            <RevealOnScroll delay={400}>
-              <StatCard icon={<Shield size={36}/>} label="Penyelenggara Lomba Prov & Nas" endValue={100} color="text-yellow-300" borderGlow="group-hover:border-yellow-300/50" />
-            </RevealOnScroll>
-          </div>
+          <Stagger className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8" step={100} from="up">
+            <StatCard icon={<Users size={36}/>} label="Anggota Aktif" endValue={50} color="text-[#FFDD00]" borderGlow="group-hover:border-[#FFDD00]/50" />
+            <StatCard icon={<Award size={36}/>} label="Prestasi Terdata" endValue={1000} color="text-emerald-400" borderGlow="group-hover:border-emerald-400/50" />
+            <StatCard icon={<Compass size={36}/>} label="Giat Pengabdian Masyarakat" endValue={500} color="text-teal-300" borderGlow="group-hover:border-teal-300/50" />
+            <StatCard icon={<Shield size={36}/>} label="Penyelenggara Lomba Prov & Nas" endValue={100} color="text-yellow-300" borderGlow="group-hover:border-yellow-300/50" />
+          </Stagger>
         </div>
       </section>
     </div>
@@ -1086,8 +993,10 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
 
       <div className="max-w-7xl mx-auto px-4 -mt-32 relative z-20 space-y-12">
         {/* Pimpinan Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <RevealOnScroll delay={100} className="flex justify-center">
+        <Stagger className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto" step={100} from="up">
+          <div className="flex justify-center">
+            <TiltCard className="rounded-[2.5rem] w-full" max={6}>
+            <Spotlight className="rounded-[2.5rem]">
             <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 text-center w-full shadow-2xl relative group hover:border-[#006569] transition-all">
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#006569] text-[#FFDD00] text-xs font-black px-5 py-1.5 rounded-full shadow-lg uppercase tracking-widest border border-[#FFDD00]/30">Pimpinan</div>
               <div className="w-28 h-28 mx-auto rounded-full bg-[#00383b] text-[#FFDD00] flex items-center justify-center font-black text-2xl border-4 border-[#006569] shadow-xl mb-4 group-hover:scale-105 transition-transform">
@@ -1096,9 +1005,13 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
               <h3 className="font-black text-xl text-slate-900 leading-tight mb-1">Eben Haezer Sitorus</h3>
               <p className="text-[#006569] font-extrabold text-xs uppercase tracking-widest bg-[#006569]/10 py-2 rounded-xl border border-[#006569]/20">Komandan Satuan (NBP: 21020741491)</p>
             </div>
-          </RevealOnScroll>
+            </Spotlight>
+            </TiltCard>
+          </div>
 
-          <RevealOnScroll delay={200} className="flex justify-center">
+          <div className="flex justify-center">
+            <TiltCard className="rounded-[2.5rem] w-full" max={6}>
+            <Spotlight className="rounded-[2.5rem]">
             <div className="bg-slate-900 text-white rounded-[2.5rem] p-8 border border-slate-700 text-center w-full shadow-xl relative group hover:border-[#FFDD00] transition-all">
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#FFDD00] text-slate-950 text-xs font-black px-5 py-1.5 rounded-full shadow-lg uppercase tracking-widest">Wakil Pimpinan</div>
               <div className="w-28 h-28 mx-auto rounded-full bg-[#FFDD00] text-slate-950 flex items-center justify-center font-black text-2xl border-4 border-white shadow-lg mb-4 group-hover:scale-105 transition-transform">
@@ -1107,8 +1020,10 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
               <h3 className="font-black text-xl text-white leading-tight mb-1">Raffli Syahputra</h3>
               <p className="text-[#FFDD00] font-extrabold text-xs uppercase tracking-widest bg-white/10 py-2 rounded-xl border border-white/10">Wakil Komandan Satuan (FEB / Manajemen)</p>
             </div>
-          </RevealOnScroll>
-        </div>
+            </Spotlight>
+            </TiltCard>
+          </div>
+        </Stagger>
 
         {/* Unsur Perencana */}
         <RevealOnScroll delay={300} className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-slate-200">
@@ -1118,12 +1033,13 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
             </h3>
             <p className="text-slate-500 mt-3 font-medium text-sm">Klik kartu di bawah untuk membuka daftar pejabat staf perencana.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" step={80} from="up">
             {unsurPerencana.map((staf) => {
               const isExpanded = expandedSection === staf.id;
               return (
+                <TiltCard key={staf.id} className="rounded-2xl" max={5} glare={false}>
+                <Spotlight className="rounded-2xl">
                 <div 
-                  key={staf.id} 
                   onClick={() => toggleSection(staf.id)}
                   className={`rounded-2xl p-6 border transition-all duration-300 cursor-pointer ${
                     isExpanded 
@@ -1157,9 +1073,11 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
                     </div>
                   )}
                 </div>
+                </Spotlight>
+                </TiltCard>
               );
             })}
-          </div>
+          </Stagger>
         </RevealOnScroll>
 
         {/* Unsur Pelayanan */}
@@ -1170,12 +1088,13 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
             </h3>
             <p className="text-slate-500 mt-3 font-medium text-sm">Klik kartu untuk membuka pejabat staf kesekretariatan, markas, & provos.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <Stagger className="grid grid-cols-1 sm:grid-cols-3 gap-6" step={80} from="up">
             {unsurPelayanan.map((staf) => {
               const isExpanded = expandedSection === staf.id;
               return (
+                <TiltCard key={staf.id} className="rounded-2xl" max={5} glare={false}>
+                <Spotlight className="rounded-2xl">
                 <div 
-                  key={staf.id}
                   onClick={() => toggleSection(staf.id)}
                   className={`rounded-2xl p-6 border transition-all duration-300 cursor-pointer ${
                     isExpanded 
@@ -1209,9 +1128,11 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
                     </div>
                   )}
                 </div>
+                </Spotlight>
+                </TiltCard>
               );
             })}
-          </div>
+          </Stagger>
         </RevealOnScroll>
 
         {/* Unsur Pelaksana */}
@@ -1222,12 +1143,13 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
             </h3>
             <p className="text-slate-400 mt-3 font-medium text-sm">Klik kartu untuk melihat jajaran Komandan Pokpas dan Anggota Satuan.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Stagger className="grid grid-cols-1 md:grid-cols-2 gap-6" step={80} from="up">
             {unsurPelaksana.map((staf) => {
               const isExpanded = expandedSection === staf.id;
               return (
+                <TiltCard key={staf.id} className="rounded-2xl" max={5} glare={false}>
+                <Spotlight className="rounded-2xl" color="rgba(255,221,0,.18)">
                 <div 
-                  key={staf.id}
                   onClick={() => toggleSection(staf.id)}
                   className={`rounded-2xl p-6 border transition-all duration-300 cursor-pointer ${
                     isExpanded 
@@ -1261,9 +1183,11 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
                     </div>
                   )}
                 </div>
+                </Spotlight>
+                </TiltCard>
               );
             })}
-          </div>
+          </Stagger>
         </RevealOnScroll>
       </div>
     </div>
@@ -1273,13 +1197,13 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
 const PendidikanTab = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
 
-  const pendidikanBerjenjang = [
+  const pendidikanBertingkat = [
     {
       id: 1,
       title: "Pendidikan Dasar Satuan",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "5 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Pendidikan tingkat dasar satuan untuk membentuk mental, disiplin, wawasan kebangsaan, dan dasar olah keprajuritan bagi calon anggota Resimen Mahasiswa Jayakarta Satuan UNJ.",
       curriculum: [
         "Kemenwaan: Dasar Organisasi, Sejarah Menwa Satuan, PDRM",
@@ -1294,9 +1218,9 @@ const PendidikanTab = () => {
     {
       id: 2,
       title: "Latihan Pemantapan Komando",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "5 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Ujian pemantapan fisik, mental, dan tradisi komando di daerah latihan Koramil Sukamakmur - Curug Benjol Bogor sebelum pengukuhan resmi penyematan Baret Ungu Menwa UNJ.",
       curriculum: [
         "Long March 14 KM (Sukamakmur - Curug Benjol)",
@@ -1311,9 +1235,9 @@ const PendidikanTab = () => {
     {
       id: 3,
       title: "Kursus Dinas Staf",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "4 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Menempa kemampuan manajerial, pembuatan naskah dinas staf, perencanaan operasional, serta interoperabilitas antar-seksi staf markas komando.",
       curriculum: [
         "Materi Staf PAM (Pengamanan & Kontra-Intel)",
@@ -1328,9 +1252,9 @@ const PendidikanTab = () => {
     {
       id: 4,
       title: "Pendidikan Provos Satuan",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "3 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Spesialisasi penegakan disiplin, tata tertib, pengawasan etika keprajuritan, serta pengamanan internal Mako Satuan UNJ.",
       curriculum: [
         "Tupoksi & Wewenang Provos Satuan",
@@ -1345,13 +1269,13 @@ const PendidikanTab = () => {
     }
   ];
 
-  const pendidikanBertingkat = [
+  const pendidikanBerjenjang = [
     {
       id: 5,
       title: "Pendidikan Dasar Militer",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "10 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Pendidikan dasar keprajuritan tingkat utama yang diselenggarakan oleh Kodam/Rindam Jaya untuk membentuk karakter prajurit mahasiswa.",
       curriculum: [
         "Doktrin Pertahanan Negara & Militer Dasar",
@@ -1364,9 +1288,9 @@ const PendidikanTab = () => {
     {
       id: 6,
       title: "Kursus Kader Pelaksana",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "20 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Penggemblengan calon pimpinan operasional dan komandan poko pasukan di tingkat Skomen Jayakarta maupun Nasional.",
       curriculum: [
         "Kepemimpinan Taktis Lapangan (Field Leadership)",
@@ -1378,9 +1302,9 @@ const PendidikanTab = () => {
     {
       id: 7,
       title: "Kursus Dinas Staf",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "6 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Pendalaman tata kelola dinas staf markas komando tingkat provinsi/Jayakarta.",
       curriculum: [
         "Manajemen Staf Komando Gabungan",
@@ -1392,9 +1316,9 @@ const PendidikanTab = () => {
     {
       id: 8,
       title: "Kursus Pelatih Nasional",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "10 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Mencetak instruktur dan pelatih bertaraf nasional yang handal dalam mentransfer ilmu olah keprajuritan dan kurikulum Diksar Menwa.",
       curriculum: [
         "Metodologi Pelatihan (Andragogi & CMI)",
@@ -1406,9 +1330,9 @@ const PendidikanTab = () => {
     {
       id: 9,
       title: "Kursus Kader Pimpinan",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "20 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Pendidikan kualifikasi pimpinan tertinggi Resimen Mahasiswa tingkat nasional untuk mencetak Komandan Satuan dan Komandan Kompleks.",
       curriculum: [
         "Strategi Pertahanan Nasional & Kebijakan Publik",
@@ -1489,12 +1413,13 @@ const PendidikanTab = () => {
             <p className="text-slate-500 mt-3 font-medium text-sm">Jenjang pembinaan internal utama anggota Resimen Mahasiswa Satuan UNJ.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Stagger className="grid grid-cols-1 md:grid-cols-2 gap-6" step={80} from="up">
             {pendidikanBerjenjang.map((course) => (
+              <TiltCard key={course.id} className="rounded-2xl" max={5} glare={false}>
+              <Spotlight className="rounded-2xl">
               <div 
-                key={course.id}
                 onClick={() => setSelectedCourse(course)}
-                className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
+                className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between h-full"
               >
                 <div>
                   <div className="flex justify-between items-start mb-3">
@@ -1517,8 +1442,10 @@ const PendidikanTab = () => {
                   <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
+              </Spotlight>
+              </TiltCard>
             ))}
-          </div>
+          </Stagger>
         </RevealOnScroll>
 
         {/* SUBJUDUL 2: Pendidikan Bertingkat */}
@@ -1530,12 +1457,13 @@ const PendidikanTab = () => {
             <p className="text-slate-500 mt-3 font-medium text-sm">Jenjang pendidikan kualifikasi komando tingkat provinsi dan nasional.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Stagger className="grid grid-cols-1 md:grid-cols-3 gap-6" step={80} from="up">
             {pendidikanBertingkat.map((course) => (
+              <TiltCard key={course.id} className="rounded-2xl" max={5} glare={false}>
+              <Spotlight className="rounded-2xl">
               <div 
-                key={course.id}
                 onClick={() => setSelectedCourse(course)}
-                className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
+                className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between h-full"
               >
                 <div>
                   <div className="flex justify-between items-start mb-3">
@@ -1558,8 +1486,10 @@ const PendidikanTab = () => {
                   <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
+              </Spotlight>
+              </TiltCard>
             ))}
-          </div>
+          </Stagger>
         </RevealOnScroll>
 
         {/* SUBJUDUL 3: Pendidikan Lanjutan */}
@@ -1571,12 +1501,13 @@ const PendidikanTab = () => {
             <p className="text-slate-400 mt-3 font-medium text-sm">Pendidikan spesialisasi pembinaan mental, keprotokolan, dan intelijen pengamanan.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Stagger className="grid grid-cols-1 md:grid-cols-3 gap-6" step={80} from="up">
             {pendidikanLanjutan.map((course) => (
+              <TiltCard key={course.id} className="rounded-2xl" max={5} glare={false}>
+              <Spotlight className="rounded-2xl" color="rgba(255,221,0,.18)">
               <div 
-                key={course.id}
                 onClick={() => setSelectedCourse(course)}
-                className="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 hover:border-[#FFDD00] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
+                className="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 hover:border-[#FFDD00] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between h-full"
               >
                 <div>
                   <div className="flex justify-between items-start mb-3">
@@ -1599,8 +1530,10 @@ const PendidikanTab = () => {
                   <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
+              </Spotlight>
+              </TiltCard>
             ))}
-          </div>
+          </Stagger>
         </RevealOnScroll>
       </div>
 
@@ -1871,9 +1804,11 @@ const AdministrasiUmumTab = () => {
                 <p className="text-slate-500 font-medium text-sm mt-2">Pilih tautan pendaftaran di bawah ini untuk menuju ke portal formulir pendaftaran resmi.</p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Stagger className="grid grid-cols-1 md:grid-cols-3 gap-6" step={80} from="up">
                 {pendaftaranItems.map((item) => (
-                  <div key={item.id} className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                  <TiltCard key={item.id} className="rounded-3xl" max={5} glare={false}>
+                  <Spotlight className="rounded-3xl">
+                  <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group h-full">
                     <div>
                       <div className="flex justify-between items-center mb-4">
                         <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] bg-[#006569]/10 px-3 py-1 rounded-full">
@@ -1891,18 +1826,21 @@ const AdministrasiUmumTab = () => {
                       </p>
                     </div>
 
-                    <a
+                    <MagneticButton
+                      as="a"
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
                     >
                       <span>{item.ctaText}</span>
                       <ExternalLink size={14} />
-                    </a>
+                    </MagneticButton>
                   </div>
+                  </Spotlight>
+                  </TiltCard>
                 ))}
-              </div>
+              </Stagger>
             </div>
           )}
 
@@ -1913,9 +1851,11 @@ const AdministrasiUmumTab = () => {
                 <p className="text-slate-500 font-medium text-sm mt-2">Pilih jenis permohonan untuk langsung terhubung dengan layanan konfirmasi Piket Mako Menwa UNJ.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Stagger className="grid grid-cols-1 md:grid-cols-3 gap-6" step={80} from="up">
                 {permohonanItems.map((item) => (
-                  <div key={item.id} className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                  <TiltCard key={item.id} className="rounded-3xl" max={5} glare={false}>
+                  <Spotlight className="rounded-3xl">
+                  <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group h-full">
                     <div>
                       <div className="flex justify-between items-center mb-4">
                         <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] bg-[#006569]/10 px-3 py-1 rounded-full">
@@ -1933,18 +1873,21 @@ const AdministrasiUmumTab = () => {
                       </p>
                     </div>
 
-                    <a
+                    <MagneticButton
+                      as="a"
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
                     >
                       <span>{item.ctaText}</span>
                       <ExternalLink size={14} />
-                    </a>
+                    </MagneticButton>
                   </div>
+                  </Spotlight>
+                  </TiltCard>
                 ))}
-              </div>
+              </Stagger>
             </div>
           )}
 
@@ -1955,9 +1898,11 @@ const AdministrasiUmumTab = () => {
                 <p className="text-slate-500 font-medium text-sm mt-2">Pilih opsi kerjasama di bawah ini untuk mengakses pengajuan proposal & koordinasi resmi.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Stagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" step={80} from="up">
                 {kerjasamaItems.map((item) => (
-                  <div key={item.id} className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                  <TiltCard key={item.id} className="rounded-3xl" max={5} glare={false}>
+                  <Spotlight className="rounded-3xl">
+                  <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group h-full">
                     <div>
                       <div className="flex justify-between items-center mb-4">
                         <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] bg-[#006569]/10 px-3 py-1 rounded-full">
@@ -1975,18 +1920,21 @@ const AdministrasiUmumTab = () => {
                       </p>
                     </div>
 
-                    <a
+                    <MagneticButton
+                      as="a"
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
                     >
                       <span>{item.ctaText}</span>
                       <ExternalLink size={14} />
-                    </a>
+                    </MagneticButton>
                   </div>
+                  </Spotlight>
+                  </TiltCard>
                 ))}
-              </div>
+              </Stagger>
             </div>
           )}
         </div>
@@ -2064,7 +2012,7 @@ const Footer = ({ onOpenLogin }) => {
   );
 };
 
-export default function App() {
+function MainApp() {
   const [activeTab, setActiveTab] = useState('beranda');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -2076,6 +2024,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 selection:bg-[#006569] selection:text-[#FFDD00]">
+      <MotionStyles />
+      <ScrollProgress />
+
       <Navigation 
         activeTab={activeTab} 
         handleQuickSearch={handleQuickSearch} 
@@ -2084,11 +2035,13 @@ export default function App() {
       />
 
       <main className="flex-grow flex flex-col">
-        {activeTab === 'beranda' && <BerandaTab />}
-        {activeTab === 'struktur' && <StrukturOrganisasiTab onNavigate={handleQuickSearch} />}
-        {activeTab === 'pendidikan' && <PendidikanTab />}
-        {activeTab === 'mako' && <MakoTab />}
-        {activeTab === 'administrasi' && <AdministrasiUmumTab />}
+        <TabSwitch tabKey={activeTab}>
+          {activeTab === 'beranda' && <BerandaTab />}
+          {activeTab === 'struktur' && <StrukturOrganisasiTab onNavigate={handleQuickSearch} />}
+          {activeTab === 'pendidikan' && <PendidikanTab />}
+          {activeTab === 'mako' && <MakoTab />}
+          {activeTab === 'administrasi' && <AdministrasiUmumTab />}
+        </TabSwitch>
       </main>
 
       <Footer onOpenLogin={() => setIsLoginModalOpen(true)} />
@@ -2097,5 +2050,43 @@ export default function App() {
 
       {isLoginModalOpen && <LoginModal onClose={() => setIsLoginModalOpen(false)} />}
     </div>
+  );
+}
+
+// Halaman sub-web /kc — placeholder, isi konten menyusul
+const KcPage = () => {
+  return (
+    <div className="min-h-screen flex flex-col bg-slate-950 font-sans text-slate-100">
+      <div className="flex-grow flex flex-col items-center justify-center px-6 py-20 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFDD00] text-slate-950 rounded-full font-black text-xs uppercase tracking-widest mb-8 shadow-lg shadow-[#FFDD00]/20">
+          <Trophy size={16} />
+          <span>Ksatria Cendekia VIII • 2026</span>
+        </div>
+
+        <h1 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">
+          Halaman ini sedang <span className="text-[#FFDD00]">disiapkan</span>
+        </h1>
+        <p className="text-slate-400 max-w-xl mb-10 text-sm md:text-base">
+          Info lengkap Lomba Nasional Ksatria Cendekia VIII akan tampil di sini. Sementara ini masih placeholder — konten menyusul.
+        </p>
+
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 bg-[#FFDD00] hover:bg-yellow-400 text-[#00383b] font-black px-6 py-3.5 rounded-xl shadow-xl hover:-translate-y-0.5 transition-all text-sm uppercase tracking-wider"
+        >
+          <ChevronLeft size={18} />
+          Kembali ke Beranda
+        </Link>
+      </div>
+    </div>
+  );
+};
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<MainApp />} />
+      <Route path="/kc" element={<KcPage />} />
+    </Routes>
   );
 }
