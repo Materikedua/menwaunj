@@ -1,9 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
-import {
-  MotionStyles, Reveal, Stagger, TiltCard, Spotlight, MagneticButton,
-  ScrollProgress, Orbit3D, Logo3D, Marquee, Counter, NavBar3D, TabSwitch
-} from './MenwaUI';
 import { 
   X, 
   Menu, 
@@ -39,6 +34,13 @@ import {
   Sparkles,
   Flame
 } from 'lucide-react';
+import {
+  MotionStyles, Reveal, ScrollProgress, CursorGlow, CursorFollower,
+  HeroStage, HeroLogo, NavBar, TabSwitch
+} from './components/MenwaUI';
+import { HomeSections, SiteFooter, ProgramPage } from './components/Sections';
+import { useRoute, navigate, TAB_PATHS, PATH_TABS } from './lib/router';
+import { PROGRAMS } from './data/siteData';
 
 const handleImgError = (e, text, bgColor = '006569', textColor = 'FFDD00') => {
   e.target.onerror = null;
@@ -48,15 +50,15 @@ const handleImgError = (e, text, bgColor = '006569', textColor = 'FFDD00') => {
 const RevealOnScroll = Reveal;
 
 const NAV_ITEMS = [
-  { id: 'beranda',      label: 'Beranda',                   icon: <Compass size={20} />,   desc: 'Profil singkat, highlight kegiatan, dan berita terbaru Satuan UNJ.' },
-  { id: 'struktur',     label: 'Garis Komando',             icon: <Shield size={20} />,    desc: 'Struktur organisasi, unsur pimpinan, perencana, pelayanan, dan pelaksana.' },
-  { id: 'pendidikan',   label: 'Pendidikan dan Pelatihan',  icon: <BookOpen size={20} />,  desc: 'Jenjang Diksar, Suskalak, kursus kader, serta agenda latihan rutin.' },
-  { id: 'mako',         label: 'Markas Komando',            icon: <MapPin size={20} />,    desc: 'Lokasi Mako, fasilitas, jam operasional, dan kontak piket.' },
-  { id: 'administrasi', label: 'Administrasi Umum',         icon: <FileText size={20} />,  desc: 'Surat-menyurat, arsip, formulir, dan prosedur administrasi satuan.' },
+  { id: 'beranda', label: 'Beranda', icon: <Compass size={20} />, desc: 'Program unggulan, kegiatan terbaru, dan sorotan giat Satuan UNJ.' },
+  { id: 'struktur', label: 'Garis Komando', icon: <Shield size={20} />, desc: 'Struktur organisasi: pimpinan, perencana, pelayanan, dan pelaksana.' },
+  { id: 'pendidikan', label: 'Pendidikan dan Pelatihan', icon: <BookOpen size={20} />, desc: 'Jenjang pendidikan berjenjang, bertingkat, dan lanjutan.' },
+  { id: 'mako', label: 'Markas Komando', icon: <MapPin size={20} />, desc: 'Lokasi Mako, kontak piket, dan layanan permohonan.' },
+  { id: 'administrasi', label: 'Administrasi Umum', icon: <FileText size={20} />, desc: 'Layanan administrasi dan prosedur satuan.' }
 ];
 
 const Navigation = (props) => (
-  <NavBar3D
+  <NavBar
     {...props}
     onNavigate={props.handleQuickSearch}
     navItems={NAV_ITEMS}
@@ -114,7 +116,7 @@ const LiveChatWidget = () => {
             <div className="relative">
               <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center p-1 overflow-hidden shadow-inner">
                 <img 
-                  src="logo-menwa-unj.png" 
+                  src="/logo-menwa-unj.png" 
                   onError={(e) => handleImgError(e, 'MENWA', '006569', 'FFDD00')} 
                   className="w-full h-full object-contain" 
                   alt="Mako Menwa UNJ" 
@@ -250,163 +252,47 @@ const LoginModal = ({ onClose }) => {
 };
 
 const StatCard = ({ icon, label, endValue, color, borderGlow }) => {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let start = 0; 
+    const duration = 2500; 
+    const increment = endValue / (duration / 16);
+    const timer = setInterval(() => { 
+      start += increment; 
+      if (start >= endValue) { 
+        setCount(endValue); 
+        clearInterval(timer); 
+      } else { 
+        setCount(Math.floor(start)); 
+      } 
+    }, 16);
+    return () => clearInterval(timer);
+  }, [endValue]);
+
   return (
-    <TiltCard className="rounded-[2.5rem]" max={8}>
-    <Spotlight className="rounded-[2.5rem]">
     <div className={`group bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 md:p-10 text-center shadow-[0_20px_50px_rgba(0,0,0,0.4)] hover:-translate-y-3 ${borderGlow} transition-all duration-500 relative overflow-hidden`}>
       <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       <div className={`mx-auto w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mb-6 shadow-inner border border-white/10 ${color} group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>{icon}</div>
-      <Counter to={endValue} suffix="+" className={`block text-4xl lg:text-6xl font-black mb-3 ${color} drop-shadow-lg`} />
+      <div className={`text-4xl lg:text-6xl font-black mb-3 ${color} drop-shadow-lg`}>{count}+</div>
       <div className="text-slate-300 font-extrabold text-xs tracking-[0.25em] uppercase group-hover:text-white transition-colors">{label}</div>
     </div>
-    </Spotlight>
-    </TiltCard>
   );
 };
 
 const BerandaTab = () => {
-  const navigate = useNavigate();
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [selectedNews, setSelectedNews] = useState(null);
-  const [isKcModalOpen, setIsKcModalOpen] = useState(false);
-
-  // FILE POSTER & LINK PENDAFTARAN (Dapat Anda edit nama file & link-nya di sini)
-  const posterKcVIIIImage = "3X1 KC VIII.jpg"; // Silakan ubah nama file foto poster Anda di sini
-  const registrationKcVIIIUrl = "https://bit.ly/PendaftaranKCVIII"; // Link Pendaftaran Resmi
-
-  // DESKRIPSI LOMBA KSATRIA CENDEKIA VIII (Silakan isi/edit teks di bawah ini)
-  const kcVIIIDescription = `Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta dengan bangga mempersembahkan kembali ajang unjuk ketangkasan, ketahanan mental, serta kecerdasan taktis tingkat nasional:
-
-✨ LOMBA NASIONAL KSATRIA CENDEKIA VIII TAHUN 2026 ✨
-
-Ajang kompetisi paling bergengsi bagi prajurit mahasiswa dan pemuda ksatria penerus bangsa! Di sinilah disiplin, kehormatan, kepemimpinan taktis, serta soliditas tim akan diuji hingga batas maksimal di gelanggang juara.
-
-Rapatkan barisan, asah strategi, dan amankan slot kontingen kalian sebelum kuota pendaftaran memenuhi batas maksimal!`;
-
-  const newsList = [
-    {
-      id: 1,
-      title: "Penerimaan Calon Anggota Baru Angkatan LIII Tahun 2026",
-      category: "Rekrutmen Menwa",
-      date: "Timeline: 20 Agt - 27 Sep 2026",
-      image: "FLYER OPREC 2026.png",
-      fallbackText: "OPREC MENWA UNJ LIII",
-      registrationUrl: "https://bit.ly/PCABMENWA2026",
-      postUrl: "https://www.instagram.com/p/DckXz2DSoKV/?utm_source=ig_web_copy_link",
-      ctaText: "Segera Daftarkan Dirimu Sekarang!",
-      content: `We Are Looking for The Chosen One!\nMenwa UNJ Angkatan LIII membuka pintu untuk jiwa-jiwa tangguh, disiplin, dan bermental baja. Saatnya buktikan dirimu, bukan hanya jadi mahasiswa biasa, tapi jadi penerus bangsa.\n\nFasilitas & Pendidikan Satuan:\n- Pendidikan Dasar Satuan & Kualifikasi Baret\n- Kursus Dinas Staf & Pendidikan Provos Satuan\n- Kursus Kader Pelaksana, Pelatih Nasional, Intelpam, & Protokoler\n\nPersyaratan: Mahasiswa Aktif UNJ (Angk. 2025-2026), Sehat Jasmani & Rohani, Melengkapi Berkas & Mengikuti Tes Seleksi.`
-    },
-    {
-      id: 2,
-      title: "Coming Soon! Latihan Integrasi Pemuda Nusantara Ksatria Cendekia VIII Tahun 2026",
-      category: "Giat Nasional",
-      date: "Coming Soon 2026",
-      image: "3X1 KC VIII.jpg",
-      fallbackText: "KSATRIA CENDEKIA VIII",
-      postUrl: "https://www.instagram.com/kc_menwaunj/",
-      content: `Medan laga bagi para ksatria intelektual akan segera dibuka! Persiapkan fisik, asah strategi, dan kunci fokusmu menuju gelanggang kompetisi paling bergengsi! 🦅🎯\n\nResimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta bersiap mempersembahkan kembali:\n\n✨ KSATRIA CENDEKIA VIII TAHUN 2026 ✨\n\nAjang unjuk ketangkasan, ketahanan mental, serta kecerdasan taktis tingkat nasional bagi generasi muda penerus bangsa. Di sinilah disiplin, kehormatan, dan soliditas tim akan diuji hingga batas maksimal!\n\nKunci targetmu, rapatkan barisan, dan nantikan pengumuman resmi tanggal pendaftaran serta mata lombanya!\nApakah satuan dan timmu sudah siap merebut tahta juara?\n\nAktifkan lonceng notifikasi dan pantau terus kanal resmi kami agar tidak tertinggal instruksi selanjutnya!`
-    },
-    {
-      id: 3,
-      title: "Coming Soon Gerakan Paskibra Semangat VII Tahun 2026",
-      category: "Kompetisi Paskibra",
-      date: "Coming Soon 2026",
-      image: "CS GERANAT VII.jpg",
-      fallbackText: "GERANAT VII 2026",
-      postUrl: "https://www.instagram.com/geranat_menwaunj/",
-      content: `𝙋𝘼𝙎𝙐𝙆𝘼𝙉🔥\nRapatkan barisan, satukan langkah, kobarkan semangat! 🦅🇮🇩\n\nResimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta dengan bangga mempersembahkan kembali:\n\n✨ 𝐆𝐄𝐑𝐀𝐊𝐀𝐍 𝐏𝐀𝐒𝐊𝐈𝐁𝐑𝐀 𝐒𝐄𝐌𝐀𝐍𝐆𝐀𝐓 𝐕𝐈𝐈 (𝐆𝐄𝐑𝐀𝐍𝐀𝐓) 𝐓𝐀𝐇𝐔𝐍 𝟐𝟎𝟐𝟔 ✨\n\n🏆 𝙇𝙤𝙢𝙗𝙖 𝙁𝙤𝙧𝙢𝙖𝙨𝙞 𝙋𝙚𝙣𝙜𝙞𝙗𝙖𝙧𝙖𝙣 𝘽𝙚𝙣𝙙𝙚𝙧𝙖 🏆\n\n🦅 𝑮𝑨𝑹𝑼𝑫𝑨 𝑵𝑼𝑺𝑨𝑵𝑻𝑨𝑹𝑨\n“𝙼𝚎𝚕𝚊𝚗𝚐𝚔𝚊𝚑 𝚙𝚎𝚗𝚞𝚑 𝚋𝚎𝚛𝚊𝚗𝚒, 𝚋𝚎𝚛𝚜𝚊𝚝𝚞 𝚍𝚊𝚕𝚊𝚖 𝚙𝚛𝚎𝚜𝚝𝚊𝚜𝚒”\n\nSetiap hentakan adalah keberanian.\nSetiap formasi adalah hasil kerja keras.\nKarena saat aba-aba diberikan, tidak ada lagi keraguan ⚔️💥\n\n𝐀𝐑𝐄 𝐘𝐎𝐔 𝐑𝐄𝐀𝐃𝐘 𝐓𝐎 𝐁𝐄 𝐓𝐇𝐄 𝐍𝐄𝐗𝐓 𝐆𝐄𝐑𝐀𝐍𝐀𝐓-𝐈𝐎𝐍?`
-    },
-    {
-      id: 4,
-      title: "Menwa UNJ dan Mahasiswa Mappi Gelar Pengabdian Masyarakat serta Latihan Pemantapan Komando di Cianjur",
-      category: "Bakti Masyarakat & Giat",
-      date: "3 – 7 Juni 2026",
-      image: "Menwa UNJ_Pengabdian Cianjur.jpg",
-      fallbackText: "PENGABDIAN CIANJUR 2026",
-      postUrl: "https://unj.ac.id/menwa-unj-dan-mahasiswa-mappi-gelar-pengabdian-masyarakat-serta-latihan-pemantapan-komando-di-cianjur/",
-      content: `Semangat pengabdian, kebersamaan, dan pembentukan karakter mewarnai kegiatan Pengabdian Masyarakat dan Latihan Pemantapan Komando 2026 yang dilaksanakan Resimen Mahasiswa (Menwa) Jayakarta Satuan UNJ bersama Mahasiswa Program Beasiswa MAPPI di Kabupaten Cianjur, Jawa Barat, pada 3–7 Juni 2026.\n\nSelama lima hari, peserta tidak hanya menjalani pembinaan kepemimpinan dan ketahanan fisik, tetapi juga hadir di tengah masyarakat melalui berbagai kegiatan edukasi dan pengabdian. Penyuluhan kesehatan, pendidikan, lingkungan, serta mitigasi bencana di Desa Balegede menjadi bagian dari kontribusi nyata mahasiswa dalam menjalankan Tri Dharma Perguruan Tinggi.\n\nRangkaian kegiatan juga diisi dengan latihan lapangan, longmarch di wilayah Cianjur Selatan, pembelajaran survival, hingga tradisi pembaretan di Pantai Ciwidig sebagai simbol penyelesaian Latihan Pemantapan Komando.\n\nTerima kasih kepada pimpinan UNJ, Pemerintah Kabupaten Cianjur, pemerintah kecamatan dan desa, tokoh masyarakat, serta seluruh pihak yang telah mendukung kelancaran kegiatan ini.`
-    }
-  ];
-
-  const cardPosts = [
-    {
-      id: 1,
-      title: "ANJANGSANA MENWA UNJ X KSR PMI UNJ",
-      category: "Sinergi Kemanusiaan",
-      desc: "Mempererat tali silaturahmi, membangun sinergi lintas organisasi, dan menyatukan tekad pengabdian kemanusiaan di lingkungan kampus hijau rawamangun!",
-      link: "https://www.instagram.com/p/DcvjdmmEu9x/?utm_source=ig_web_copy_link&stkn=MzRlODBiNWFlZA==",
-      image: "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=800&q=80",
-      fallbackText: "ANJANGSANA MENWA X KSR"
-    },
-    {
-      id: 2,
-      title: "KURSUS DINAS STAF SATUAN GABUNGAN 2026",
-      category: "Dinas Staf & Kepemimpinan",
-      desc: "Menempa kemampuan manajerial, mempertajam analisis staf, dan memperkokoh interoperabilitas antar-satuan demi terwujudnya roda organisasi komando yang solid dan profesional.",
-      link: "https://www.instagram.com/p/DcvaTHGklo-/?utm_source=ig_web_copy_link&stkn=MzRlODBiNWFlZA==",
-      image: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=800&q=80",
-      fallbackText: "KURSUS STAF GABUNGAN"
-    },
-    {
-      id: 3,
-      title: "UPACARA HUT KE-81 RI DI UNJ",
-      category: "Protokoler Upacara",
-      desc: "Semangat kemerdekaan terus berkobar dalam jiwa prajurit intelektual penjaga kedaulatan bangsa!",
-      link: "https://www.instagram.com/reel/DcJT9UmKFrZ/?utm_source=ig_web_copy_link",
-      image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80",
-      fallbackText: "HUT KE-81 RI UNJ"
-    },
-    {
-      id: 4,
-      title: "After Movie KC VII Tahun 2025",
-      category: "Giat Dokumentasi",
-      desc: "🔥 Saksikan keseruan dan momen penuh semangat dalam AFTER MOVIE KSATRIA CENDEKIA VII TAHUN 2025! 🔥 Dari awal pembukaan khidmat hingga perlombaan menegangkan terekam sempurna.",
-      link: "https://www.instagram.com/reel/DPo1NDSAWg9/?utm_source=ig_web_copy_link&stkn=MzRlODBiNWFlZA==",
-      image: "https://images.unsplash.com/photo-1517649763962-0c623266010b?auto=format&fit=crop&w=800&q=80",
-      fallbackText: "AFTER MOVIE KC VII"
-    },
-    {
-      id: 5,
-      title: "STUDI BANDING MENWA IPB X UNJ",
-      category: "Kerjasama Satuan",
-      desc: "Kegiatan studi banding dilaksanakan pada Sabtu, 23 Mei 2026 di Mako Menwa UNJ dalam rangka saling berbagi ilmu, pengalaman, serta mempererat silaturahmi antar satuan.",
-      link: "https://www.instagram.com/reel/DYuKdzKJuFV/?utm_source=ig_web_copy_link",
-      image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80",
-      fallbackText: "MENWA IPB X UNJ"
-    },
-    {
-      id: 6,
-      title: "KEMANUNGGALAN MENWA UNJ DI TANAH CIANJUR",
-      category: "Pengabdian & Baksos",
-      desc: "Resimen Mahasiswa Jayakarta Satuan UNJ sukses menuntaskan Misi Integrasi Besar: Kegiatan Pengabdian Masyarakat dan Latihan Pemantapan Komando 2026 di Kabupaten Cianjur! 🦅🎒",
-      link: "https://www.instagram.com/p/Da18utmEoZO/?utm_source=ig_web_copy_link&stkn=MzRlODBiNWFlZA==",
-      image: "Menwa UNJ_Pengabdian Cianjur.jpg",
-      fallbackText: "MENWA CIANJUR 2026"
-    }
-  ];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev === newsList.length - 1 ? 0 : prev + 1));
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [newsList.length]);
 
   return (
     <div className="bg-slate-50 flex-grow font-sans">
       {/* HERO SECTION */}
-      <section className="relative w-full py-28 md:py-40 flex flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-slate-950 via-[#00383b] to-[#006569]">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center bg-no-repeat bg-fixed opacity-15 mix-blend-luminosity z-0"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-[#00383b]/80 to-slate-950/95 z-0"></div>
-
-        <Orbit3D className="z-10" />
+      <HeroStage className="py-28 md:py-40" photo="/foto-kampus-unj.jpg" blur={3} dim={0.55}>
 
         <RevealOnScroll className="relative z-20 flex flex-col items-center px-4 max-w-6xl text-center">
-          <Logo3D onError={(e) => handleImgError(e, 'MENWA UNJ', '006569', 'FFDD00')} />
+          <div className="mb-8">
+            <HeroLogo onError={(e) => handleImgError(e, 'MENWA UNJ', '006569', 'FFDD00')} />
+          </div>
 
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-2 drop-shadow-md mt-8">
-            <span className="text-white">KOMANDO RESIMEN MAHASISWA </span>
-            <span className="mu-shimmer">JAYAKARTA</span>
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-2 drop-shadow-md">
+            KOMANDO RESIMEN MAHASISWA JAYAKARTA
           </h1>
           
           <div className="text-[#FFDD00] font-extrabold text-2xl md:text-4xl tracking-widest uppercase my-2 drop-shadow-lg">
@@ -423,363 +309,10 @@ Rapatkan barisan, asah strategi, dan amankan slot kontingen kalian sebelum kuota
             <Shield size={16} className="text-[#FFDD00] animate-pulse" /> WIDYA CASTRENA DHARMA SIDDHA
           </div>
         </RevealOnScroll>
+      </HeroStage>
 
-        <Marquee
-          className="relative z-20 mt-10 py-3 border-y border-white/10 bg-black/30 w-full"
-          items={['Widya Castrena Dharma Siddha', 'Disiplin', 'Loyalitas', 'Kehormatan', 'Satuan UNJ']}
-        />
-      </section>
-
-      {/* ULTRA HIGHLIGHT: PENDAFTARAN LOMBA NASIONAL KSATRIA CENDEKIA VIII */}
-      <section className="relative z-30 -mt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <RevealOnScroll>
-          <TiltCard className="rounded-[2.5rem]" max={4} lift={6}>
-          <Spotlight className="rounded-[2.5rem]">
-          <div 
-            onClick={() => navigate('/kc')}
-            className="group relative cursor-pointer overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-slate-950 via-[#00383b] to-slate-950 border-2 border-[#FFDD00] p-8 md:p-12 shadow-[0_0_50px_rgba(255,221,0,0.35)] hover:shadow-[0_0_80px_rgba(255,221,0,0.6)] transition-all duration-500 hover:-translate-y-2"
-          >
-            {/* Ambient Backlight Glow */}
-            <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#FFDD00]/20 rounded-full blur-3xl pointer-events-none group-hover:bg-[#FFDD00]/30 transition-all"></div>
-            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-[#006569]/40 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-12">
-              <div className="flex-1 text-left">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFDD00] text-slate-950 rounded-full font-black text-xs md:text-sm uppercase tracking-widest mb-6 shadow-lg shadow-[#FFDD00]/20 animate-pulse">
-                  <Flame size={18} className="text-red-600 animate-bounce" />
-                  <Sparkles size={16} className="text-amber-700" />
-                  <span>Highlight Utama • Giat Nasional 2026</span>
-                </div>
-
-                <h2 className="text-3xl md:text-5xl font-black text-white leading-tight mb-4 tracking-tight group-hover:text-[#FFDD00] transition-colors drop-shadow-xl">
-                  Pendaftaran Lomba Nasional <br className="hidden md:block"/>
-                  <span className="text-[#FFDD00] underline decoration-[#FFDD00]/40">Ksatria Cendekia VIII</span> Tahun 2026
-                </h2>
-
-                <p className="text-slate-200 text-sm md:text-base font-medium max-w-2xl leading-relaxed mb-8 line-clamp-3">
-                  Ajang unjuk ketangkasan, ketahanan mental, serta kecerdasan taktis paling bergengsi tingkat nasional! Klik kartu ini untuk melihat detail lengkap syarat, info pelaksanaan, dan foto poster resmi.
-                </p>
-
-                <div className="flex flex-wrap items-center gap-4">
-                  <MagneticButton
-                    as="a"
-                    href={registrationKcVIIIUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center gap-2.5 bg-[#FFDD00] hover:bg-yellow-400 text-[#00383b] font-black px-8 py-4 rounded-2xl shadow-xl transition-colors text-sm md:text-base uppercase tracking-wider border border-white/40"
-                  >
-                    <Trophy size={20} className="text-[#00383b]" />
-                    <span>Segera Daftarkan Tim Kalian!</span>
-                    <ExternalLink size={18} />
-                  </MagneticButton>
-
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); navigate('/kc'); }}
-                    className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-4 rounded-2xl border border-white/20 backdrop-blur-md transition-all text-sm hover:border-[#FFDD00]"
-                  >
-                    <BookOpen size={18} className="text-[#FFDD00]" />
-                    <span>Lihat Penjelasan & Poster</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Poster Card Thumbnail Preview */}
-              <div className="w-full lg:w-80 flex-shrink-0 relative group/poster">
-                <div className="relative rounded-2xl overflow-hidden border-4 border-[#FFDD00]/80 shadow-2xl bg-slate-900 aspect-[3/4] transform group-hover/poster:scale-105 transition-transform duration-500">
-                  <img 
-                    src={posterKcVIIIImage} 
-                    onError={(e) => handleImgError(e, 'POSTER KSATRIA CENDEKIA VIII 2026', '00383b', 'FFDD00')} 
-                    alt="Poster Lomba Ksatria Cendekia VIII 2026"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div>
-                  <div className="absolute bottom-4 left-4 right-4 bg-slate-950/80 backdrop-blur-md p-3 rounded-xl border border-white/20 text-center">
-                    <span className="text-[#FFDD00] text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5">
-                      <ExternalLink size={14} /> Klik Untuk Memperbesar
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          </Spotlight>
-          </TiltCard>
-        </RevealOnScroll>
-      </section>
-
-      {/* MODAL HIGHLIGHT DETAIL KSATRIA CENDEKIA VIII */}
-      {isKcModalOpen && (
-        <div 
-          className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md transition-opacity" 
-          onClick={() => setIsKcModalOpen(false)}
-        >
-          <div 
-            className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative border-2 border-[#FFDD00]" 
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button 
-              onClick={() => setIsKcModalOpen(false)} 
-              className="absolute top-4 right-4 bg-slate-950/80 hover:bg-[#006569] text-white p-3 rounded-full transition-all hover:rotate-90 z-20 shadow-xl"
-            >
-              <X size={22} />
-            </button>
-
-            <div className="p-6 md:p-10">
-              <div className="flex flex-wrap items-center gap-3 mb-6">
-                <span className="px-4 py-1.5 bg-[#FFDD00] text-[#00383b] font-black tracking-wider rounded-full text-xs uppercase shadow-md flex items-center gap-1.5">
-                  <Trophy size={14} /> Highlight Lomba Nasional
-                </span>
-                <span className="text-slate-600 text-xs flex items-center font-bold bg-slate-100 px-3 py-1.5 rounded-full">
-                  <Calendar size={14} className="mr-1.5 text-[#006569]" /> Tahun 2026
-                </span>
-              </div>
-
-              <h2 className="text-2xl md:text-4xl font-black text-slate-900 mb-6 leading-tight tracking-tight">
-                Pendaftaran Lomba Nasional Ksatria Cendekia VIII Tahun 2026
-              </h2>
-
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-8">
-                {/* Poster Foto Display */}
-                <div className="lg:col-span-5 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-xl bg-slate-900">
-                  <img 
-                    src={posterKcVIIIImage} 
-                    onError={(e) => handleImgError(e, 'POSTER KSATRIA CENDEKIA VIII 2026', '00383b', 'FFDD00')} 
-                    alt="Poster Resmi Ksatria Cendekia VIII" 
-                    className="w-full h-auto object-cover" 
-                  />
-                </div>
-
-                {/* Penjelasan Lomba */}
-                <div className="lg:col-span-7 space-y-6">
-                  <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                    <h4 className="font-black text-slate-900 text-sm uppercase tracking-wider mb-3 flex items-center text-[#006569]">
-                      <Sparkles size={16} className="mr-2" /> Penjelasan & Detail Lomba:
-                    </h4>
-                    <p className="text-slate-700 text-sm font-medium leading-relaxed whitespace-pre-line">
-                      {kcVIIIDescription}
-                    </p>
-                  </div>
-
-                  {/* Highlight Box Tautan Pendaftaran */}
-                  <div className="p-6 bg-gradient-to-br from-[#00383b] via-[#006569] to-slate-950 rounded-2xl shadow-xl text-white border border-[#FFDD00]/50">
-                    <h4 className="text-[#FFDD00] font-black text-base mb-2 flex items-center">
-                      <Flame size={18} className="mr-2 text-red-400" /> Tautan Pendaftaran Resmi
-                    </h4>
-                    <p className="text-slate-200 text-xs mb-5 font-medium">
-                      Klik tombol di bawah ini untuk mengakses formulir pendaftaran Lomba Nasional Ksatria Cendekia VIII:
-                    </p>
-
-                    <a
-                      href={registrationKcVIIIUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 bg-[#FFDD00] hover:bg-yellow-400 text-[#00383b] font-black px-6 py-3.5 rounded-xl shadow-xl hover:-translate-y-0.5 transition-all text-sm uppercase tracking-wider"
-                    >
-                      Segera Daftarkan Tim Kalian!
-                      <ExternalLink size={16} />
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-4 border-t border-slate-200">
-                <button
-                  onClick={() => setIsKcModalOpen(false)}
-                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-xs tracking-wider uppercase"
-                >
-                  Tutup Modals
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* SLIDER BERITA & GIAT MENWA */}
-      <section className="relative w-full h-[70vh] md:h-[85vh] bg-slate-950 overflow-hidden">
-        {newsList.map((news, index) => (
-          <div 
-            key={news.id} 
-            className={`absolute inset-0 transition-all duration-1000 ease-in-out cursor-pointer ${index === currentSlide ? 'opacity-100 z-10 scale-100' : 'opacity-0 z-0 scale-105'}`} 
-            onClick={() => setSelectedNews(news)}
-          >
-            <div className="absolute inset-0 overflow-hidden">
-              <img 
-                src={news.image} 
-                onError={(e) => handleImgError(e, news.fallbackText, '006569', 'FFDD00')} 
-                alt={news.title}
-                className="w-full h-full object-cover object-center transform scale-105"
-              />
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent" />
-
-            <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 lg:px-24 pb-16 md:pb-24 z-10">
-              <div className={`inline-flex items-center px-4 py-1.5 bg-gradient-to-r from-[#006569] to-[#004d50] text-[#FFDD00] border border-[#FFDD00]/30 text-xs font-black rounded-full mb-4 uppercase tracking-widest shadow-lg transform transition-all duration-700 delay-300 ${index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                <Activity size={14} className="mr-2 animate-pulse" /> {news.category} • {news.date}
-              </div>
-              <h2 className={`text-2xl md:text-4xl lg:text-5xl font-black text-white leading-tight mb-4 max-w-5xl hover:text-[#FFDD00] transition-colors drop-shadow-2xl transform duration-700 delay-500 ${index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                {news.title}
-              </h2>
-              <p className={`text-slate-300 md:text-lg max-w-3xl line-clamp-2 font-medium mb-6 transform transition-all duration-700 delay-700 ${index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                {news.content}
-              </p>
-
-              <div className="flex flex-wrap gap-4 items-center z-20">
-                {news.registrationUrl && (
-                  <a
-                    href={news.registrationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center gap-2 bg-[#FFDD00] hover:bg-yellow-400 text-[#00383b] font-black px-6 py-3 rounded-xl shadow-xl hover:-translate-y-1 transition-all text-sm uppercase tracking-wider"
-                  >
-                    <Send size={16} /> {news.ctaText || "Daftar Sekarang"}
-                  </a>
-                )}
-                {news.postUrl && (
-                  <a
-                    href={news.postUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-5 py-3 rounded-xl border border-white/20 backdrop-blur-md transition-all text-sm hover:-translate-y-1"
-                  >
-                    <ExternalLink size={16} /> Buka Link Postingan
-                  </a>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-        
-        <div className="absolute top-1/2 -translate-y-1/2 left-4 right-4 flex justify-between z-20 pointer-events-none px-2 md:px-8">
-          <button onClick={(e) => { e.stopPropagation(); setCurrentSlide(prev => prev === 0 ? newsList.length - 1 : prev - 1); }} className="pointer-events-auto w-12 h-12 md:w-16 md:h-16 bg-white/10 hover:bg-[#006569] backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 transition-all hover:scale-110 shadow-xl"><ChevronLeft size={32} /></button>
-          <button onClick={(e) => { e.stopPropagation(); setCurrentSlide(prev => prev === newsList.length - 1 ? 0 : prev + 1); }} className="pointer-events-auto w-12 h-12 md:w-16 md:h-16 bg-white/10 hover:bg-[#006569] backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 transition-all hover:scale-110 shadow-xl"><ChevronRight size={32} /></button>
-        </div>
-
-        <div className="absolute bottom-8 left-6 md:left-24 z-20 flex space-x-3">
-          {newsList.map((_, idx) => (
-            <div key={idx} className={`h-1.5 rounded-full transition-all duration-700 ${idx === currentSlide ? 'w-16 bg-[#FFDD00] shadow-[0_0_12px_rgba(255,221,0,0.9)]' : 'w-6 bg-white/30'}`} />
-          ))}
-        </div>
-      </section>
-
-      {/* MODAL DETAIL NEWS */}
-      {selectedNews && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md transition-opacity" onClick={() => setSelectedNews(null)}>
-          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative border border-slate-200" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setSelectedNews(null)} className="absolute top-6 right-6 bg-slate-900/60 hover:bg-[#006569] text-white p-3 rounded-full transition-all hover:rotate-90 z-10 backdrop-blur-md"><X size={24} /></button>
-            <div className="relative w-full h-72 md:h-[400px] bg-slate-900 overflow-hidden">
-              <img 
-                src={selectedNews.image} 
-                onError={(e) => handleImgError(e, selectedNews.fallbackText, '006569', 'FFDD00')} 
-                alt="News cover" 
-                className="w-full h-full object-cover" 
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-white to-transparent"></div>
-            </div>
-            <div className="p-8 md:p-14 relative z-10 -mt-16">
-              <div className="flex flex-wrap items-center gap-3 mb-6">
-                <span className="px-4 py-1.5 bg-[#006569] text-[#FFDD00] font-black tracking-wider rounded-lg text-xs uppercase shadow-md">{selectedNews.category}</span>
-                <span className="text-slate-600 text-xs flex items-center font-bold bg-slate-100 px-3 py-1.5 rounded-lg"><Calendar size={14} className="mr-2 text-[#006569]"/> {selectedNews.date}</span>
-              </div>
-              <h2 className="text-2xl md:text-4xl font-black text-slate-900 mb-6 leading-tight tracking-tight">{selectedNews.title}</h2>
-              <div className="prose prose-lg max-w-none text-slate-800 leading-relaxed font-medium bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-200 shadow-inner">
-                <p className="whitespace-pre-wrap">{selectedNews.content}</p>
-
-                {selectedNews.registrationUrl && (
-                  <div className="mt-6 p-6 bg-[#FFDD00]/15 rounded-2xl border border-[#FFDD00]/40 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div>
-                      <h4 className="font-black text-slate-900 text-base">Pendaftaran Resmi Dibuka!</h4>
-                      <p className="text-slate-600 text-xs font-medium">Klik tombol di samping untuk langsung mengakses formulir Oprec Menwa UNJ 2026.</p>
-                    </div>
-                    <a
-                      href={selectedNews.registrationUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black px-6 py-3 rounded-xl shadow-md text-xs uppercase tracking-wider whitespace-nowrap"
-                    >
-                      Form Pendaftaran Oprec
-                    </a>
-                  </div>
-                )}
-
-                {selectedNews.postUrl && (
-                  <div className="mt-4">
-                    <a
-                      href={selectedNews.postUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-[#006569] hover:text-[#004d50] font-bold text-sm underline"
-                    >
-                      <ExternalLink size={16} /> Buka Postingan / Berita Lengkap
-                    </a>
-                  </div>
-                )}
-
-                <div className="mt-8 p-6 bg-gradient-to-r from-[#006569] to-[#00383b] border border-[#004d50] rounded-2xl shadow-xl text-white">
-                  <p className="font-bold m-0 flex items-center text-sm md:text-base text-[#FFDD00]">
-                    <Star className="mr-3 shrink-0 text-[#FFDD00]" fill="currentColor"/>
-                    Widya Castrena Dharma Siddha — Penyempurnaan Pengabdian dengan Ilmu Pengetahuan dan Ilmu Olah Keprajuritan.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 6 KOTAK KARTU POSTINGAN GIAT */}
-      <section className="py-24 bg-gradient-to-b from-slate-100 to-slate-200 border-t border-slate-200 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <RevealOnScroll className="text-center mb-16">
-            <h3 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">Kabar & Giat Terkini Satuan</h3>
-            <p className="text-slate-600 font-medium text-base mt-2">Dokumentasi & Aktualisasi Kegiatan Resimen Mahasiswa UNJ</p>
-            <div className="h-1.5 w-24 bg-gradient-to-r from-[#006569] to-[#FFDD00] mx-auto mt-4 rounded-full shadow-md"></div>
-          </RevealOnScroll>
-
-          <Stagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" step={100} from="up">
-            {cardPosts.map((card) => (
-              <TiltCard key={card.id} className="rounded-3xl h-full" max={6}>
-              <Spotlight className="rounded-3xl h-full">
-                <a
-                  href={card.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-white rounded-3xl overflow-hidden shadow-lg border border-slate-200 flex flex-col group hover:shadow-2xl hover:border-[#006569] transition-all duration-300 h-full"
-                >
-                  <div className="relative h-56 overflow-hidden bg-slate-900">
-                    <img 
-                      src={card.image} 
-                      onError={(e) => handleImgError(e, card.fallbackText, '006569', 'FFDD00')} 
-                      alt={card.title} 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-80"></div>
-                    <span className="absolute top-4 left-4 bg-[#006569]/90 backdrop-blur-md text-[#FFDD00] text-[10px] font-black uppercase tracking-wider px-3.5 py-1 rounded-full shadow-md">
-                      {card.category}
-                    </span>
-                  </div>
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h4 className="font-black text-slate-900 text-lg leading-tight mb-3 group-hover:text-[#006569] transition-colors line-clamp-2">
-                      {card.title}
-                    </h4>
-                    <p className="text-slate-600 text-xs font-medium leading-relaxed mb-6 line-clamp-3 flex-grow">
-                      {card.desc}
-                    </p>
-                    <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#006569] group-hover:text-amber-600 transition-colors">
-                      <span className="flex items-center gap-1.5"><ExternalLink size={14} /> Lihat Postingan</span>
-                      <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                </a>
-              </Spotlight>
-              </TiltCard>
-            ))}
-          </Stagger>
-        </div>
-      </section>
+      {/* PROGRAM UNGGULAN + KEGIATAN TERBARU + SOROTAN GIAT (data: src/data/siteData.js) */}
+      <HomeSections />
 
       {/* TESTIMONIAL & SUARA SENIOR */}
       <section className="py-24 bg-gradient-to-b from-slate-200 to-slate-100 relative overflow-hidden">
@@ -834,12 +367,20 @@ Rapatkan barisan, asah strategi, dan amankan slot kontingen kalian sebelum kuota
             <div className="h-1.5 w-32 bg-[#006569] mx-auto rounded-full shadow-[0_0_15px_rgba(0,101,105,0.8)]"></div>
           </RevealOnScroll>
 
-          <Stagger className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8" step={100} from="up">
-            <StatCard icon={<Users size={36}/>} label="Anggota Aktif" endValue={50} color="text-[#FFDD00]" borderGlow="group-hover:border-[#FFDD00]/50" />
-            <StatCard icon={<Award size={36}/>} label="Prestasi Terdata" endValue={1000} color="text-emerald-400" borderGlow="group-hover:border-emerald-400/50" />
-            <StatCard icon={<Compass size={36}/>} label="Giat Pengabdian Masyarakat" endValue={500} color="text-teal-300" borderGlow="group-hover:border-teal-300/50" />
-            <StatCard icon={<Shield size={36}/>} label="Penyelenggara Lomba Prov & Nas" endValue={100} color="text-yellow-300" borderGlow="group-hover:border-yellow-300/50" />
-          </Stagger>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
+            <RevealOnScroll delay={100}>
+              <StatCard icon={<Users size={36}/>} label="Anggota Aktif" endValue={50} color="text-[#FFDD00]" borderGlow="group-hover:border-[#FFDD00]/50" />
+            </RevealOnScroll>
+            <RevealOnScroll delay={200}>
+              <StatCard icon={<Award size={36}/>} label="Prestasi Terdata" endValue={1000} color="text-emerald-400" borderGlow="group-hover:border-emerald-400/50" />
+            </RevealOnScroll>
+            <RevealOnScroll delay={300}>
+              <StatCard icon={<Compass size={36}/>} label="Giat Pengabdian Masyarakat" endValue={500} color="text-teal-300" borderGlow="group-hover:border-teal-300/50" />
+            </RevealOnScroll>
+            <RevealOnScroll delay={400}>
+              <StatCard icon={<Shield size={36}/>} label="Penyelenggara Lomba Prov & Nas" endValue={100} color="text-yellow-300" borderGlow="group-hover:border-yellow-300/50" />
+            </RevealOnScroll>
+          </div>
         </div>
       </section>
     </div>
@@ -993,10 +534,8 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
 
       <div className="max-w-7xl mx-auto px-4 -mt-32 relative z-20 space-y-12">
         {/* Pimpinan Section */}
-        <Stagger className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto" step={100} from="up">
-          <div className="flex justify-center">
-            <TiltCard className="rounded-[2.5rem] w-full" max={6}>
-            <Spotlight className="rounded-[2.5rem]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <RevealOnScroll delay={100} className="flex justify-center">
             <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 text-center w-full shadow-2xl relative group hover:border-[#006569] transition-all">
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#006569] text-[#FFDD00] text-xs font-black px-5 py-1.5 rounded-full shadow-lg uppercase tracking-widest border border-[#FFDD00]/30">Pimpinan</div>
               <div className="w-28 h-28 mx-auto rounded-full bg-[#00383b] text-[#FFDD00] flex items-center justify-center font-black text-2xl border-4 border-[#006569] shadow-xl mb-4 group-hover:scale-105 transition-transform">
@@ -1005,13 +544,9 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
               <h3 className="font-black text-xl text-slate-900 leading-tight mb-1">Eben Haezer Sitorus</h3>
               <p className="text-[#006569] font-extrabold text-xs uppercase tracking-widest bg-[#006569]/10 py-2 rounded-xl border border-[#006569]/20">Komandan Satuan (NBP: 21020741491)</p>
             </div>
-            </Spotlight>
-            </TiltCard>
-          </div>
+          </RevealOnScroll>
 
-          <div className="flex justify-center">
-            <TiltCard className="rounded-[2.5rem] w-full" max={6}>
-            <Spotlight className="rounded-[2.5rem]">
+          <RevealOnScroll delay={200} className="flex justify-center">
             <div className="bg-slate-900 text-white rounded-[2.5rem] p-8 border border-slate-700 text-center w-full shadow-xl relative group hover:border-[#FFDD00] transition-all">
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#FFDD00] text-slate-950 text-xs font-black px-5 py-1.5 rounded-full shadow-lg uppercase tracking-widest">Wakil Pimpinan</div>
               <div className="w-28 h-28 mx-auto rounded-full bg-[#FFDD00] text-slate-950 flex items-center justify-center font-black text-2xl border-4 border-white shadow-lg mb-4 group-hover:scale-105 transition-transform">
@@ -1020,10 +555,8 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
               <h3 className="font-black text-xl text-white leading-tight mb-1">Raffli Syahputra</h3>
               <p className="text-[#FFDD00] font-extrabold text-xs uppercase tracking-widest bg-white/10 py-2 rounded-xl border border-white/10">Wakil Komandan Satuan (FEB / Manajemen)</p>
             </div>
-            </Spotlight>
-            </TiltCard>
-          </div>
-        </Stagger>
+          </RevealOnScroll>
+        </div>
 
         {/* Unsur Perencana */}
         <RevealOnScroll delay={300} className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-slate-200">
@@ -1033,13 +566,12 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
             </h3>
             <p className="text-slate-500 mt-3 font-medium text-sm">Klik kartu di bawah untuk membuka daftar pejabat staf perencana.</p>
           </div>
-          <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" step={80} from="up">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {unsurPerencana.map((staf) => {
               const isExpanded = expandedSection === staf.id;
               return (
-                <TiltCard key={staf.id} className="rounded-2xl" max={5} glare={false}>
-                <Spotlight className="rounded-2xl">
                 <div 
+                  key={staf.id} 
                   onClick={() => toggleSection(staf.id)}
                   className={`rounded-2xl p-6 border transition-all duration-300 cursor-pointer ${
                     isExpanded 
@@ -1073,11 +605,9 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
                     </div>
                   )}
                 </div>
-                </Spotlight>
-                </TiltCard>
               );
             })}
-          </Stagger>
+          </div>
         </RevealOnScroll>
 
         {/* Unsur Pelayanan */}
@@ -1088,13 +618,12 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
             </h3>
             <p className="text-slate-500 mt-3 font-medium text-sm">Klik kartu untuk membuka pejabat staf kesekretariatan, markas, & provos.</p>
           </div>
-          <Stagger className="grid grid-cols-1 sm:grid-cols-3 gap-6" step={80} from="up">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {unsurPelayanan.map((staf) => {
               const isExpanded = expandedSection === staf.id;
               return (
-                <TiltCard key={staf.id} className="rounded-2xl" max={5} glare={false}>
-                <Spotlight className="rounded-2xl">
                 <div 
+                  key={staf.id}
                   onClick={() => toggleSection(staf.id)}
                   className={`rounded-2xl p-6 border transition-all duration-300 cursor-pointer ${
                     isExpanded 
@@ -1128,11 +657,9 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
                     </div>
                   )}
                 </div>
-                </Spotlight>
-                </TiltCard>
               );
             })}
-          </Stagger>
+          </div>
         </RevealOnScroll>
 
         {/* Unsur Pelaksana */}
@@ -1143,13 +670,12 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
             </h3>
             <p className="text-slate-400 mt-3 font-medium text-sm">Klik kartu untuk melihat jajaran Komandan Pokpas dan Anggota Satuan.</p>
           </div>
-          <Stagger className="grid grid-cols-1 md:grid-cols-2 gap-6" step={80} from="up">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {unsurPelaksana.map((staf) => {
               const isExpanded = expandedSection === staf.id;
               return (
-                <TiltCard key={staf.id} className="rounded-2xl" max={5} glare={false}>
-                <Spotlight className="rounded-2xl" color="rgba(255,221,0,.18)">
                 <div 
+                  key={staf.id}
                   onClick={() => toggleSection(staf.id)}
                   className={`rounded-2xl p-6 border transition-all duration-300 cursor-pointer ${
                     isExpanded 
@@ -1183,11 +709,9 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
                     </div>
                   )}
                 </div>
-                </Spotlight>
-                </TiltCard>
               );
             })}
-          </Stagger>
+          </div>
         </RevealOnScroll>
       </div>
     </div>
@@ -1197,13 +721,13 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
 const PendidikanTab = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
 
-  const pendidikanBertingkat = [
+  const pendidikanBerjenjang = [
     {
       id: 1,
       title: "Pendidikan Dasar Satuan",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "5 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Pendidikan tingkat dasar satuan untuk membentuk mental, disiplin, wawasan kebangsaan, dan dasar olah keprajuritan bagi calon anggota Resimen Mahasiswa Jayakarta Satuan UNJ.",
       curriculum: [
         "Kemenwaan: Dasar Organisasi, Sejarah Menwa Satuan, PDRM",
@@ -1218,9 +742,9 @@ const PendidikanTab = () => {
     {
       id: 2,
       title: "Latihan Pemantapan Komando",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "5 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Ujian pemantapan fisik, mental, dan tradisi komando di daerah latihan Koramil Sukamakmur - Curug Benjol Bogor sebelum pengukuhan resmi penyematan Baret Ungu Menwa UNJ.",
       curriculum: [
         "Long March 14 KM (Sukamakmur - Curug Benjol)",
@@ -1235,9 +759,9 @@ const PendidikanTab = () => {
     {
       id: 3,
       title: "Kursus Dinas Staf",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "4 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Menempa kemampuan manajerial, pembuatan naskah dinas staf, perencanaan operasional, serta interoperabilitas antar-seksi staf markas komando.",
       curriculum: [
         "Materi Staf PAM (Pengamanan & Kontra-Intel)",
@@ -1252,9 +776,9 @@ const PendidikanTab = () => {
     {
       id: 4,
       title: "Pendidikan Provos Satuan",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "3 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Spesialisasi penegakan disiplin, tata tertib, pengawasan etika keprajuritan, serta pengamanan internal Mako Satuan UNJ.",
       curriculum: [
         "Tupoksi & Wewenang Provos Satuan",
@@ -1269,13 +793,13 @@ const PendidikanTab = () => {
     }
   ];
 
-  const pendidikanBerjenjang = [
+  const pendidikanBertingkat = [
     {
       id: 5,
       title: "Pendidikan Dasar Militer",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "10 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Pendidikan dasar keprajuritan tingkat utama yang diselenggarakan oleh Kodam/Rindam Jaya untuk membentuk karakter prajurit mahasiswa.",
       curriculum: [
         "Doktrin Pertahanan Negara & Militer Dasar",
@@ -1288,9 +812,9 @@ const PendidikanTab = () => {
     {
       id: 6,
       title: "Kursus Kader Pelaksana",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "20 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Penggemblengan calon pimpinan operasional dan komandan poko pasukan di tingkat Skomen Jayakarta maupun Nasional.",
       curriculum: [
         "Kepemimpinan Taktis Lapangan (Field Leadership)",
@@ -1302,9 +826,9 @@ const PendidikanTab = () => {
     {
       id: 7,
       title: "Kursus Dinas Staf",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "6 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Pendalaman tata kelola dinas staf markas komando tingkat provinsi/Jayakarta.",
       curriculum: [
         "Manajemen Staf Komando Gabungan",
@@ -1316,9 +840,9 @@ const PendidikanTab = () => {
     {
       id: 8,
       title: "Kursus Pelatih Nasional",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "10 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Mencetak instruktur dan pelatih bertaraf nasional yang handal dalam mentransfer ilmu olah keprajuritan dan kurikulum Diksar Menwa.",
       curriculum: [
         "Metodologi Pelatihan (Andragogi & CMI)",
@@ -1330,9 +854,9 @@ const PendidikanTab = () => {
     {
       id: 9,
       title: "Kursus Kader Pimpinan",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "20 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Pendidikan kualifikasi pimpinan tertinggi Resimen Mahasiswa tingkat nasional untuk mencetak Komandan Satuan dan Komandan Kompleks.",
       curriculum: [
         "Strategi Pertahanan Nasional & Kebijakan Publik",
@@ -1404,22 +928,21 @@ const PendidikanTab = () => {
       </RevealOnScroll>
 
       <div className="max-w-7xl mx-auto px-4 -mt-32 relative z-20 space-y-12">
-        {/* SUBJUDUL 1: Pendidikan Bertingkat */}
+        {/* SUBJUDUL 1: Pendidikan Berjenjang */}
         <RevealOnScroll delay={100} className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-slate-200">
           <div className="text-center mb-10">
             <h3 className="text-2xl font-black text-slate-900 inline-flex items-center tracking-tight border-b-4 border-[#006569] pb-3">
-              <Shield className="mr-3 text-[#006569]" size={28}/> Pendidikan Bertingkat
+              <Shield className="mr-3 text-[#006569]" size={28}/> Pendidikan Berjenjang
             </h3>
             <p className="text-slate-500 mt-3 font-medium text-sm">Jenjang pembinaan internal utama anggota Resimen Mahasiswa Satuan UNJ.</p>
           </div>
 
-          <Stagger className="grid grid-cols-1 md:grid-cols-2 gap-6" step={80} from="up">
-            {pendidikanBertingkat.map((course) => (
-              <TiltCard key={course.id} className="rounded-2xl" max={5} glare={false}>
-              <Spotlight className="rounded-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {pendidikanBerjenjang.map((course) => (
               <div 
+                key={course.id}
                 onClick={() => setSelectedCourse(course)}
-                className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between h-full"
+                className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
               >
                 <div>
                   <div className="flex justify-between items-start mb-3">
@@ -1442,28 +965,25 @@ const PendidikanTab = () => {
                   <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
-              </Spotlight>
-              </TiltCard>
             ))}
-          </Stagger>
+          </div>
         </RevealOnScroll>
 
-        {/* SUBJUDUL 2: Pendidikan Berjenjang */}
+        {/* SUBJUDUL 2: Pendidikan Bertingkat */}
         <RevealOnScroll delay={200} className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-slate-200">
           <div className="text-center mb-10">
             <h3 className="text-2xl font-black text-slate-900 inline-flex items-center tracking-tight border-b-4 border-[#FFDD00] pb-3">
-              <Award className="mr-3 text-[#006569]" size={28}/> Pendidikan Berjenjang
+              <Award className="mr-3 text-[#006569]" size={28}/> Pendidikan Bertingkat
             </h3>
             <p className="text-slate-500 mt-3 font-medium text-sm">Jenjang pendidikan kualifikasi komando tingkat provinsi dan nasional.</p>
           </div>
 
-          <Stagger className="grid grid-cols-1 md:grid-cols-3 gap-6" step={80} from="up">
-            {pendidikanBerjenjang.map((course) => (
-              <TiltCard key={course.id} className="rounded-2xl" max={5} glare={false}>
-              <Spotlight className="rounded-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {pendidikanBertingkat.map((course) => (
               <div 
+                key={course.id}
                 onClick={() => setSelectedCourse(course)}
-                className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between h-full"
+                className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
               >
                 <div>
                   <div className="flex justify-between items-start mb-3">
@@ -1486,10 +1006,8 @@ const PendidikanTab = () => {
                   <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
-              </Spotlight>
-              </TiltCard>
             ))}
-          </Stagger>
+          </div>
         </RevealOnScroll>
 
         {/* SUBJUDUL 3: Pendidikan Lanjutan */}
@@ -1501,13 +1019,12 @@ const PendidikanTab = () => {
             <p className="text-slate-400 mt-3 font-medium text-sm">Pendidikan spesialisasi pembinaan mental, keprotokolan, dan intelijen pengamanan.</p>
           </div>
 
-          <Stagger className="grid grid-cols-1 md:grid-cols-3 gap-6" step={80} from="up">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {pendidikanLanjutan.map((course) => (
-              <TiltCard key={course.id} className="rounded-2xl" max={5} glare={false}>
-              <Spotlight className="rounded-2xl" color="rgba(255,221,0,.18)">
               <div 
+                key={course.id}
                 onClick={() => setSelectedCourse(course)}
-                className="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 hover:border-[#FFDD00] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between h-full"
+                className="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 hover:border-[#FFDD00] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
               >
                 <div>
                   <div className="flex justify-between items-start mb-3">
@@ -1530,10 +1047,8 @@ const PendidikanTab = () => {
                   <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
-              </Spotlight>
-              </TiltCard>
             ))}
-          </Stagger>
+          </div>
         </RevealOnScroll>
       </div>
 
@@ -1804,11 +1319,9 @@ const AdministrasiUmumTab = () => {
                 <p className="text-slate-500 font-medium text-sm mt-2">Pilih tautan pendaftaran di bawah ini untuk menuju ke portal formulir pendaftaran resmi.</p>
               </div>
               
-              <Stagger className="grid grid-cols-1 md:grid-cols-3 gap-6" step={80} from="up">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {pendaftaranItems.map((item) => (
-                  <TiltCard key={item.id} className="rounded-3xl" max={5} glare={false}>
-                  <Spotlight className="rounded-3xl">
-                  <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group h-full">
+                  <div key={item.id} className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
                     <div>
                       <div className="flex justify-between items-center mb-4">
                         <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] bg-[#006569]/10 px-3 py-1 rounded-full">
@@ -1826,21 +1339,18 @@ const AdministrasiUmumTab = () => {
                       </p>
                     </div>
 
-                    <MagneticButton
-                      as="a"
+                    <a
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
+                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
                     >
                       <span>{item.ctaText}</span>
                       <ExternalLink size={14} />
-                    </MagneticButton>
+                    </a>
                   </div>
-                  </Spotlight>
-                  </TiltCard>
                 ))}
-              </Stagger>
+              </div>
             </div>
           )}
 
@@ -1851,11 +1361,9 @@ const AdministrasiUmumTab = () => {
                 <p className="text-slate-500 font-medium text-sm mt-2">Pilih jenis permohonan untuk langsung terhubung dengan layanan konfirmasi Piket Mako Menwa UNJ.</p>
               </div>
 
-              <Stagger className="grid grid-cols-1 md:grid-cols-3 gap-6" step={80} from="up">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {permohonanItems.map((item) => (
-                  <TiltCard key={item.id} className="rounded-3xl" max={5} glare={false}>
-                  <Spotlight className="rounded-3xl">
-                  <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group h-full">
+                  <div key={item.id} className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
                     <div>
                       <div className="flex justify-between items-center mb-4">
                         <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] bg-[#006569]/10 px-3 py-1 rounded-full">
@@ -1873,21 +1381,18 @@ const AdministrasiUmumTab = () => {
                       </p>
                     </div>
 
-                    <MagneticButton
-                      as="a"
+                    <a
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
+                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
                     >
                       <span>{item.ctaText}</span>
                       <ExternalLink size={14} />
-                    </MagneticButton>
+                    </a>
                   </div>
-                  </Spotlight>
-                  </TiltCard>
                 ))}
-              </Stagger>
+              </div>
             </div>
           )}
 
@@ -1898,11 +1403,9 @@ const AdministrasiUmumTab = () => {
                 <p className="text-slate-500 font-medium text-sm mt-2">Pilih opsi kerjasama di bawah ini untuk mengakses pengajuan proposal & koordinasi resmi.</p>
               </div>
 
-              <Stagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" step={80} from="up">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {kerjasamaItems.map((item) => (
-                  <TiltCard key={item.id} className="rounded-3xl" max={5} glare={false}>
-                  <Spotlight className="rounded-3xl">
-                  <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group h-full">
+                  <div key={item.id} className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
                     <div>
                       <div className="flex justify-between items-center mb-4">
                         <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] bg-[#006569]/10 px-3 py-1 rounded-full">
@@ -1920,21 +1423,18 @@ const AdministrasiUmumTab = () => {
                       </p>
                     </div>
 
-                    <MagneticButton
-                      as="a"
+                    <a
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
+                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
                     >
                       <span>{item.ctaText}</span>
                       <ExternalLink size={14} />
-                    </MagneticButton>
+                    </a>
                   </div>
-                  </Spotlight>
-                  </TiltCard>
                 ))}
-              </Stagger>
+              </div>
             </div>
           )}
         </div>
@@ -1943,104 +1443,54 @@ const AdministrasiUmumTab = () => {
   );
 };
 
-const Footer = ({ onOpenLogin }) => {
-  return (
-    <footer id="footer-kontak" className="bg-slate-950 text-slate-300 pt-20 pb-8 mt-auto relative overflow-hidden font-sans border-t-4 border-[#006569]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
-          <RevealOnScroll delay={100}>
-            <div className="flex items-center mb-6">
-              <img 
-                src="logo-menwa-unj.png" 
-                onError={(e) => handleImgError(e, 'MENWA UNJ', '006569', 'FFDD00')} 
-                alt="Logo Menwa UNJ" 
-                className="w-14 h-14 object-contain mr-4 drop-shadow-lg" 
-              />
-              <div>
-                <h3 className="text-lg font-black text-white leading-tight">KOMANDO RESIMEN MAHASISWA</h3>
-                <p className="text-xs font-black text-[#FFDD00] tracking-widest uppercase">Satuan UNJ</p>
-              </div>
-            </div>
-            <p className="text-sm text-slate-400 mb-6 leading-relaxed max-w-sm">
-              Penyempurnaan Pengabdian dengan Ilmu Pengetahuan dan Ilmu Olah Keprajuritan. Widya Castrena Dharma Siddha.
-            </p>
-            <div className="flex space-x-3">
-              <a href="https://wa.me/6281525823503" target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center hover:bg-emerald-600 transition-all text-white">
-                <Phone size={20} />
-              </a>
-              <a href="https://maps.google.com/?cid=17438056564465491782" target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#006569] transition-all text-white">
-                <MapPin size={20} />
-              </a>
-            </div>
-          </RevealOnScroll>
+const Footer = SiteFooter;
 
-          <RevealOnScroll delay={200}>
-            <h4 className="text-lg font-black text-white mb-6 uppercase tracking-wider text-[#FFDD00]">Markas Komando (Mako)</h4>
-            <ul className="space-y-4 text-sm font-medium text-slate-300">
-              <li className="flex items-start">
-                <MapPin className="text-[#FFDD00] mr-3 shrink-0 mt-1" size={18} />
-                <span>Jl. R.Mangun Muka Kampus A UNJ Gedung G R.107, Rawamangun, Pulo Gadung, Jakarta Timur 13220</span>
-              </li>
-              <li className="flex items-center">
-                <Phone className="text-[#FFDD00] mr-3 shrink-0" size={18} />
-                <span>+62 815-2582-3503 (Wakil Komandan)</span>
-              </li>
-              <li className="flex items-center">
-                <Mail className="text-[#FFDD00] mr-3 shrink-0" size={18} />
-                <span>unjmenwa@gmail.com</span>
-              </li>
-            </ul>
-          </RevealOnScroll>
-
-          <RevealOnScroll delay={300} className="bg-white/5 p-8 rounded-3xl border border-white/10 text-center">
-            <Shield size={36} className="text-[#FFDD00] mx-auto mb-4" />
-            <p className="font-bold text-slate-200 italic mb-4 text-sm leading-relaxed">
-              "Widya Castrena Dharma Siddha"
-            </p>
-            <span className="text-xs font-black text-[#FFDD00] uppercase tracking-widest">Semboyan Resimen Mahasiswa</span>
-          </RevealOnScroll>
-        </div>
-
-        <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/10 text-xs text-slate-400 font-semibold">
-          <p>© 2026 Komando Resimen Mahasiswa Satuan Universitas Negeri Jakarta.</p>
-          <button onClick={onOpenLogin} className="mt-4 md:mt-0 flex items-center gap-2 text-slate-300 hover:text-[#FFDD00] bg-white/10 px-4 py-2 rounded-full transition-colors">
-            <Lock size={14} /> Akses Anggota Mako
-          </button>
-        </div>
-      </div>
-    </footer>
-  );
-};
-
-function MainApp() {
-  const [activeTab, setActiveTab] = useState('beranda');
+export default function App() {
+  const path = useRoute();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const baseTitle = useRef(typeof document !== 'undefined' ? document.title : '');
+
+  // /kc/, /geranat/, ... -> halaman program; selain itu tab biasa
+  const program = PROGRAMS.find((p) => `/${p.slug}` === path);
+  const activeTab = program ? 'program' : (PATH_TABS[path] || 'beranda');
 
   const handleQuickSearch = (tabId) => {
-    setActiveTab(tabId);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setIsMobileMenuOpen(false);
+    navigate(TAB_PATHS[tabId] || '/');
   };
+
+  useEffect(() => {
+    document.title = program ? `${program.title} | Menwa UNJ` : baseTitle.current;
+  }, [program]);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 selection:bg-[#006569] selection:text-[#FFDD00]">
       <MotionStyles />
       <ScrollProgress />
+      <CursorGlow />
+      <CursorFollower />
 
-      <Navigation 
-        activeTab={activeTab} 
-        handleQuickSearch={handleQuickSearch} 
-        isMobileMenuOpen={isMobileMenuOpen} 
-        setIsMobileMenuOpen={setIsMobileMenuOpen} 
+      <Navigation
+        activeTab={activeTab}
+        handleQuickSearch={handleQuickSearch}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
       <main className="flex-grow flex flex-col">
-        <TabSwitch tabKey={activeTab}>
-          {activeTab === 'beranda' && <BerandaTab />}
-          {activeTab === 'struktur' && <StrukturOrganisasiTab onNavigate={handleQuickSearch} />}
-          {activeTab === 'pendidikan' && <PendidikanTab />}
-          {activeTab === 'mako' && <MakoTab />}
-          {activeTab === 'administrasi' && <AdministrasiUmumTab />}
+        <TabSwitch tabKey={path}>
+          {program ? (
+            <ProgramPage slug={program.slug} />
+          ) : (
+            <>
+              {activeTab === 'beranda' && <BerandaTab />}
+              {activeTab === 'struktur' && <StrukturOrganisasiTab onNavigate={handleQuickSearch} />}
+              {activeTab === 'pendidikan' && <PendidikanTab />}
+              {activeTab === 'mako' && <MakoTab />}
+              {activeTab === 'administrasi' && <AdministrasiUmumTab />}
+            </>
+          )}
         </TabSwitch>
       </main>
 
@@ -2050,43 +1500,5 @@ function MainApp() {
 
       {isLoginModalOpen && <LoginModal onClose={() => setIsLoginModalOpen(false)} />}
     </div>
-  );
-}
-
-// Halaman sub-web /kc — placeholder, isi konten menyusul
-const KcPage = () => {
-  return (
-    <div className="min-h-screen flex flex-col bg-slate-950 font-sans text-slate-100">
-      <div className="flex-grow flex flex-col items-center justify-center px-6 py-20 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFDD00] text-slate-950 rounded-full font-black text-xs uppercase tracking-widest mb-8 shadow-lg shadow-[#FFDD00]/20">
-          <Trophy size={16} />
-          <span>Ksatria Cendekia VIII • 2026</span>
-        </div>
-
-        <h1 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">
-          Halaman ini sedang <span className="text-[#FFDD00]">disiapkan</span>
-        </h1>
-        <p className="text-slate-400 max-w-xl mb-10 text-sm md:text-base">
-          Info lengkap Lomba Nasional Ksatria Cendekia VIII akan tampil di sini. Sementara ini masih placeholder — konten menyusul.
-        </p>
-
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 bg-[#FFDD00] hover:bg-yellow-400 text-[#00383b] font-black px-6 py-3.5 rounded-xl shadow-xl hover:-translate-y-0.5 transition-all text-sm uppercase tracking-wider"
-        >
-          <ChevronLeft size={18} />
-          Kembali ke Beranda
-        </Link>
-      </div>
-    </div>
-  );
-};
-
-export default function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<MainApp />} />
-      <Route path="/kc" element={<KcPage />} />
-    </Routes>
   );
 }
