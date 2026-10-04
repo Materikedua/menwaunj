@@ -1,50 +1,56 @@
-# Portal Komando Resimen Mahasiswa UNJ
+# Portal Komando Resimen Mahasiswa UNJ (v3)
 
-Project React + Vite + Tailwind, sudah dicoba di-build lokal dan **berhasil tanpa error**.
+Sudah di-build & ditest lokal, **sukses tanpa error**.
 
-## Jalankan di lokal (opsional, untuk cek dulu)
+## Struktur
+
+```
+src/
+  App.jsx                  <- shell halaman, navbar, semua tab
+  components/MenwaUI.jsx   <- animasi, navbar, hero (jangan diedit kalau tidak perlu)
+  components/Sections.jsx  <- Program Unggulan, Kegiatan Terbaru, Sorotan Giat, Footer, halaman /kc/ dst.
+  data/siteData.js         <- SATU-SATUNYA FILE YANG PERLU DIEDIT untuk ubah konten/kegiatan
+  lib/router.jsx           <- router ringan tanpa dependency (URL /kc/, /garis-komando/, dst.)
+scripts/
+  prepare-images.mjs       <- rename + convert + kompres gambar kegiatan
+public/
+  logo-menwa-unj.png       <- taruh file aslinya di sini (belum ada)
+  foto-kampus-unj.jpg      <- foto hero kampus (belum ada)
+  kegiatan/                <- hasil scripts/prepare-images.mjs
+  mitra/                   <- logo pill "Didukung oleh" (opsional)
+gambar-mentah/             <- taruh foto mentah di sini sebelum menjalankan scripts/prepare-images.mjs
+```
+
+> Catatan: `router.js` dari panduan di-rename jadi **`router.jsx`** di project ini karena isinya memakai JSX (komponen `Link`) — Vite mewajibkan file berisi JSX berekstensi `.jsx`. Semua `import ... from '../lib/router'` tetap jalan tanpa perlu diubah karena Vite otomatis mencari `.jsx`.
+
+## Jalankan lokal
 
 ```bash
 npm install
 npm run dev
 ```
 
-Buka `http://localhost:5173`.
+## Siapkan gambar kegiatan
+
+```bash
+npm i -D sharp
+# taruh foto mentah (apa adanya, nama file bebas) di folder gambar-mentah/
+npm run images
+```
+
+Script akan:
+- rename 4 foto yang sudah dikenali (lihat `MAP` di `scripts/prepare-images.mjs`)
+- konversi ke `.jpg`, perkecil ke lebar maks 1600px, kompres kualitas 82
+- mencetak daftar gambar yang masih kurang
+
+Kalau gambar belum ada sama sekali, website **tidak rusak** — kartu kegiatan otomatis tampil dengan blok gradien hijau + label kategori.
+
+## Edit konten (tanpa sentuh kode)
+
+Semua ada di **`src/data/siteData.js`**: identitas & kontak (`SITE`), 6 program unggulan (`PROGRAMS`), daftar kegiatan (`KEGIATAN`). Lihat `PANDUAN-v3.md` untuk detail lengkap tiap bagian.
 
 ## Deploy ke Vercel
 
-### Cara A — lewat GitHub (paling gampang)
+Push ke GitHub → import di vercel.com/new (otomatis kenali Vite), atau `vercel` CLI. File `vercel.json` sudah disiapkan supaya URL langsung seperti `/kc/` atau `/garis-komando/` tidak 404 saat dibuka langsung atau di-refresh.
 
-1. Buat repo baru di GitHub, lalu push folder ini:
-   ```bash
-   git init
-   git add .
-   git commit -m "Portal Komando Menwa UNJ"
-   git branch -M main
-   git remote add origin https://github.com/USERNAME/NAMA-REPO.git
-   git push -u origin main
-   ```
-2. Buka https://vercel.com/new, pilih **Import Git Repository**, pilih repo tadi.
-3. Vercel otomatis mendeteksi **Framework Preset: Vite** dengan:
-   - Build Command: `npm run build` (atau `vite build`)
-   - Output Directory: `dist`
-   Biarkan default itu, klik **Deploy**.
-
-### Cara B — lewat Vercel CLI (tanpa GitHub)
-
-```bash
-npm install -g vercel
-cd menwa-portal
-vercel
-```
-Ikuti prompt-nya (pilih scope, nama project, dsb). Untuk deploy ke production:
-```bash
-vercel --prod
-```
-
-## Catatan penting supaya tidak error di Vercel
-
-- File komponen sengaja disimpan sebagai `App.jsx` (bukan `.tsx`) karena kode aslinya memakai parameter tanpa tipe (mis. `({ children, className })`) — kalau dipaksa jadi TypeScript dengan mode strict, Vercel akan gagal build karena "implicit any". Sebagai `.jsx` murni, ini tidak jadi masalah.
-- Pastikan Node.js version di Vercel Project Settings ≥ 18 (default Vercel sekarang sudah 20/22, aman).
-- Logo `logo-menwa-unj.png` belum ada file aslinya — kalau tidak ditemukan, otomatis fallback ke placeholder image (sudah ada `onError` handler). Kalau punya file logo asli, taruh di folder `public/` dengan nama persis `logo-menwa-unj.png`.
-- Jangan commit folder `node_modules` atau `dist` (sudah diatur di `.gitignore`).
+Kalau pindah ke hosting statis yang tidak mendukung rewrite (mis. GitHub Pages), buka `src/lib/router.jsx` dan ganti `MODE = 'hash'` — URL berubah jadi `situsmu.com/#/kc/` dan jalan di mana saja tanpa pengaturan tambahan.
