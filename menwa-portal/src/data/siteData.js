@@ -14,6 +14,9 @@ export const IMG = (name) => `/kegiatan/${name}.jpg`;
 // ------------------------------------------------------------
 export const FEED_URL = '';
 
+/** Foto hero beranda (foto bersama di UNJ). Dipakai juga sebagai latar header semua subtab. */
+export const HERO_PHOTO = '/foto-kampus-unj.jpg';
+
 // ------------------------------------------------------------
 //  Identitas, kontak, sosial media
 // ------------------------------------------------------------
@@ -29,18 +32,24 @@ export const SITE = {
   whatsapp: 'https://wa.me/6281525823503',
   maps: 'https://maps.google.com/?cid=17438056564465491782',
   copyright: '© 2026 Komando Resimen Mahasiswa Satuan Universitas Negeri Jakarta.',
-  // Sosial media. Kosongkan string untuk menyembunyikan.
+  // Sosial media. Urutan = urutan tampil di footer. type: instagram | youtube | facebook | tiktok
   social: [
+    { label: 'YouTube Menwa UNJ', url: 'https://www.youtube.com/@MenwaUNJ', type: 'youtube' },
+    { label: 'Instagram Menwa UNJ', url: 'https://www.instagram.com/menwa.unjakarta/', type: 'instagram' },
     { label: 'Instagram Ksatria Cendekia', url: 'https://www.instagram.com/kc_menwaunj/', type: 'instagram' },
     { label: 'Instagram Geranat', url: 'https://www.instagram.com/geranat_menwaunj/', type: 'instagram' },
-    // { label: 'Instagram Menwa UNJ', url: 'https://www.instagram.com/<akun-utama>/', type: 'instagram' },
-    // { label: 'TikTok Menwa UNJ', url: 'https://www.tiktok.com/@<akun>', type: 'tiktok' },
-    // { label: 'YouTube Menwa UNJ', url: 'https://www.youtube.com/@<akun>', type: 'youtube' },
+    { label: 'Facebook Menwa Univ Negeri Jakarta', url: 'https://www.facebook.com/menwauniv.negerijakarta.5?locale=id_ID', type: 'facebook' },
+    { label: 'TikTok Menwa UNJ', url: 'https://www.tiktok.com/@menwa.unjakarta', type: 'tiktok' },
   ],
-  // Pill "Didukung oleh". Logo di public/mitra/. Kalau file tidak ada, tampil teks namanya.
+  // Logo di pill "Didukung oleh" (file di public/mitra/). Urutan = urutan tampil.
   partners: [
     { name: 'Universitas Negeri Jakarta', logo: '/mitra/unj.png' },
-    { name: 'Resimen Mahasiswa Jayakarta', logo: '/mitra/menwa-jayakarta.png' },
+    { name: 'Dispora DKI Jakarta', logo: '/mitra/dispora.png' },
+    { name: 'Kesbangpol Provinsi DKI Jakarta', logo: '/mitra/kesbangpol.png' },
+    { name: 'Konas', logo: '/mitra/konas.png' },
+    // ASUMSI: "Skomen" = logo satuan Menwa UNJ. Kalau logo Skomen berbeda, taruh di public/mitra/skomen.png
+    // lalu ganti baris di bawah menjadi: { name: 'Skomen', logo: '/mitra/skomen.png' }
+    { name: 'Skomen', logo: '/logo-menwa-unj.png' },
   ],
 };
 
@@ -72,17 +81,63 @@ export const PROGRAMS = [
     title: 'Ksatria Cendekia',
     icon: 'trophy',
     image: IMG('kc-menwa-unj'),
-    short: 'Lomba nasional ketangkasan, ketahanan mental, dan kecerdasan taktis bagi prajurit mahasiswa dan pemuda.',
-    badge: 'Lomba Nasional • 2026',
+    logo: '/logo-kc-viii.png',
+    tag: 'Pendaftaran dibuka',
+    status: 'Pendaftaran dibuka sampai 15 Oktober 2026',
+    short: 'Latihan Integrasi Pemuda Nusantara: seminar nasional dan lima cabang lomba bagi anggota Resimen Mahasiswa se-Indonesia.',
+    badge: 'Lomba Nasional • 06–08 November 2026',
     heroLead: 'Ksatria',
     heroAccent: 'Cendekia VIII',
-    heroSub: 'Ajang kompetisi bergengsi tempat disiplin, kepemimpinan taktis, dan soliditas tim diuji di gelanggang juara.',
+    heroSub: 'Latihan Integrasi Pemuda Nusantara 2026. Tunjukkan ketangkasan dan kreativitas kalian sekarang!',
     about: [
-      'Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta mempersembahkan kembali ajang unjuk ketangkasan, ketahanan mental, serta kecerdasan taktis tingkat nasional: Lomba Nasional Ksatria Cendekia VIII Tahun 2026.',
-      'Di sinilah disiplin, kehormatan, kepemimpinan taktis, serta soliditas tim diuji hingga batas maksimal. Rapatkan barisan, asah strategi, dan amankan slot kontingen sebelum kuota pendaftaran penuh.',
+      'Latihan Integrasi Pemuda Nusantara Ksatria Cendekia VIII Tahun 2026 diselenggarakan Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta sebagai wadah integrasi dan pengembangan potensi anggota Resimen Mahasiswa Indonesia.',
+      'Rangkaian kegiatan mencakup Seminar Nasional, lima cabang lomba (Esai, Renang, T.H.O.R., Menembak, dan Video Kreatif), serta Pesiar. Seminar Nasional bertema "Pemuda Berkarya: Mewujudkan Semangat Sumpah Pemuda untuk Indonesia yang Berkelanjutan".',
     ],
-    facts: [{ label: 'Tingkat', value: 'Nasional' }, { label: 'Edisi', value: 'VIII' }, { label: 'Tahun', value: '2026' }],
-    timeline: ['Pendaftaran', 'Pengumpulan Karya', 'Technical Meeting', 'Pelaksanaan', 'Pengumuman'],
+    facts: [
+      { label: 'Pelaksanaan', value: '06–08 Nov 2026' },
+      { label: 'Biaya', value: 'Rp2.000.000 / tim' },
+      { label: 'Tim', value: '2 peserta + 1 official (opsional)' },
+      { label: 'Kuota', value: 'Maks. 3 tim / satuan' },
+    ],
+    // Timeline mengikuti poster; detail tambahan dari proposal. Urutan = urutan waktu.
+    timeline: [
+      { label: 'Pendaftaran', date: '18 Sep – 15 Okt 2026', desc: 'Daring lewat formulir panitia atau langsung di Mako Menwa UNJ, pukul 08.00–22.00 WIB.' },
+      { label: 'Pengumpulan Karya', date: '1 – 23 Okt 2026', desc: 'Esai dan Video Kreatif dikirim paling lambat 23 Oktober 2026 pukul 22.00 WIB.' },
+      { label: 'Technical Meeting', date: '17 Okt 2026', desc: 'Technical meeting secara daring bersama seluruh kontingen.' },
+      { label: 'Pengumuman Finalis Karya', date: '30 Okt 2026', desc: 'Finalis Esai dan tiga video terbaik diumumkan.' },
+      { label: 'Daftar Ulang', date: '5 Nov 2026', desc: 'Penyerahan berkas dalam map plastik kuning dan bukti pembayaran untuk memperoleh nomor peserta.' },
+      { label: 'Pelaksanaan', date: '6 – 8 Nov 2026', desc: 'Seminar Nasional, lomba, Malam Keakraban, dan Pesiar di UNJ, Batalyon Intai Tempur, dan Ragunan.' },
+      { label: 'Pengumuman Pemenang', date: '7 – 8 Nov 2026', desc: 'Pemenang tiap mata lomba dan Juara Umum diumumkan; upacara penutupan 8 November.' },
+    ],
+    details: [
+      { title: 'Mata Lomba', items: ['Renang', 'Menembak', 'T.H.O.R. (Tactical Hardest Obstacle Run)', 'Esai', 'Video Kreatif'] },
+      { title: 'Rangkaian Kegiatan', items: ['Seminar Nasional (Pemuda Berkarya: Mewujudkan Semangat Sumpah Pemuda untuk Indonesia yang Berkelanjutan)', 'Pesiar', 'Malam Keakraban'] },
+      { title: 'Persyaratan Umum', items: ['Mahasiswa aktif di seluruh perguruan tinggi', 'Anggota aktif Komando Resimen Mahasiswa Indonesia di Satuan/Batalyon', 'Telah menempuh Pendidikan Dasar Militer'] },
+      {
+        title: 'Benefit',
+        items: [
+          'Sertifikat Nasional', 'Jersey, Topi, dan Tumbler', 'Lanyard dan E-Money eksklusif', 'Brevet PDH & PDL',
+          'Penginapan AC & kasur INOAC', 'Konsumsi rutin bergizi', 'Foto jajar', 'Relasi Komando Resimen Mahasiswa se-Nasional',
+          'Piala & medali*', 'Uang pembinaan*',
+        ],
+        note: '*Untuk pemenang lomba',
+      },
+    ],
+    docs: [
+      {
+        label: 'Proposal Kegiatan',
+        desc: 'Proposal Latihan Integrasi Pemuda Nusantara Ksatria Cendekia VIII 2026.',
+        file: '/dokumen/proposal-kc-viii-menwa-unj.pdf',
+        drive: 'https://drive.google.com/drive/folders/1XoGoVFvMoNJtWb3Ss-kKDBuvirKjSOND?usp=sharing',
+      },
+      {
+        label: 'Petunjuk Teknis (Juknis)',
+        desc: 'Ketentuan teknis tiap mata lomba.',
+        // Untuk unduhan langsung: taruh PDF di public/dokumen/ lalu isi, mis. '/dokumen/juknis-kc-viii-menwa-unj.pdf'
+        file: '',
+        drive: 'https://drive.google.com/drive/folders/1LBWHxr1mJezqBGhaRrTZ5ol9U0c3d_5I?usp=sharing',
+      },
+    ],
     cta: { label: 'Daftarkan Tim Kalian', url: 'https://bit.ly/PendaftaranKCVIII' },
     ig: 'https://www.instagram.com/kc_menwaunj/',
   },
@@ -202,9 +257,9 @@ export const KEGIATAN = [
     id: 'kc-viii',
     title: 'Latihan Integrasi Pemuda Nusantara Ksatria Cendekia VIII Tahun 2026',
     category: 'Giat Nasional',
-    date: 'Coming Soon 2026',
-    location: '',
-    excerpt: 'Medan laga bagi para ksatria intelektual akan segera dibuka. Persiapkan fisik dan asah strategi.',
+    date: '06 – 08 November 2026',
+    location: 'UNJ, Cikarang & Ragunan',
+    excerpt: 'Pendaftaran dibuka 18 September – 15 Oktober 2026. Seminar nasional dan lima cabang lomba.',
     image: 'kc-menwa-unj',
     program: 'kc',
     highlight: true,

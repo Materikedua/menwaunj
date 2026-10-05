@@ -1,27 +1,37 @@
-# Portal Komando Resimen Mahasiswa UNJ (v3)
+# Portal Komando Resimen Mahasiswa UNJ (v4)
 
 Sudah di-build & ditest lokal, **sukses tanpa error**.
+
+## Perubahan dari panduan v4 yang saya terapkan
+
+Semua sesuai `PANDUAN-v4.md`, **kecuali satu hal atas permintaan Anda**:
+
+- **Sorotan Giat**: tampilan coverflow dari panduan (kartu tengah besar, kartu samping miring) saya pertahankan, tapi interaksinya diganti total — **tidak auto-geser, tidak statis**. Geser sekarang murni manual: klik/tap-tahan lalu seret kursor (di HP cukup swipe biasa). Lepas tahan, kartu otomatis merapat (snap) ke posisi terdekat. Ada kartu "Lihat Semua" di ujung yang menuju Instagram. Komponen `HighlightCoverflow` di `src/components/Sections.jsx`.
+
+Semua bagian lain (Footer dengan 5 logo mitra, sosial media YouTube/Instagram/Facebook/TikTok, statistik baru, Garis Komando "FISH / Geografi", header subtab pakai foto beranda, header & timeline KC lengkap) mengikuti panduan v4 apa adanya.
 
 ## Struktur
 
 ```
 src/
   App.jsx                  <- shell halaman, navbar, semua tab
-  components/MenwaUI.jsx   <- animasi, navbar, hero (jangan diedit kalau tidak perlu)
-  components/Sections.jsx  <- Program Unggulan, Kegiatan Terbaru, Sorotan Giat, Footer, halaman /kc/ dst.
-  data/siteData.js         <- SATU-SATUNYA FILE YANG PERLU DIEDIT untuk ubah konten/kegiatan
-  lib/router.jsx           <- router ringan tanpa dependency (URL /kc/, /garis-komando/, dst.)
+  components/MenwaUI.jsx   <- animasi, navbar, hero (tidak berubah dari v3)
+  components/Sections.jsx  <- Program Unggulan, Kegiatan Terbaru, Sorotan Giat (kartu), Footer, subtab
+  data/siteData.js         <- SATU-SATUNYA FILE YANG PERLU DIEDIT untuk konten
+  lib/router.jsx           <- router ringan tanpa dependency
 scripts/
   prepare-images.mjs       <- rename + convert + kompres gambar kegiatan
 public/
-  logo-menwa-unj.png       <- taruh file aslinya di sini (belum ada)
-  foto-kampus-unj.jpg      <- foto hero kampus (belum ada)
+  logo-menwa-unj.png       <- belum ada, taruh file aslinya
+  logo-kc-viii.png         <- belum ada, logo KC untuk header /kc/
+  foto-kampus-unj.jpg      <- belum ada, foto hero beranda + semua subtab
+  mitra/unj.png, dispora.png, kesbangpol.png, konas.png  <- belum ada, logo "Didukung oleh"
+  dokumen/proposal-kc-viii-menwa-unj.pdf  <- belum ada, untuk tombol "Unduh PDF" di /kc/
   kegiatan/                <- hasil scripts/prepare-images.mjs
-  mitra/                   <- logo pill "Didukung oleh" (opsional)
-gambar-mentah/             <- taruh foto mentah di sini sebelum menjalankan scripts/prepare-images.mjs
+gambar-mentah/              <- taruh foto mentah di sini sebelum menjalankan scripts/prepare-images.mjs
 ```
 
-> Catatan: `router.js` dari panduan di-rename jadi **`router.jsx`** di project ini karena isinya memakai JSX (komponen `Link`) — Vite mewajibkan file berisi JSX berekstensi `.jsx`. Semua `import ... from '../lib/router'` tetap jalan tanpa perlu diubah karena Vite otomatis mencari `.jsx`.
+> Belum ada satu pun file gambar/PDF di atas yang saya terima sebagai lampiran, jadi semuanya masih placeholder (fallback gradien hijau / pill disembunyikan / tombol unduh tidak tampil). Website tetap jalan normal tanpa file-file ini.
 
 ## Jalankan lokal
 
@@ -34,23 +44,14 @@ npm run dev
 
 ```bash
 npm i -D sharp
-# taruh foto mentah (apa adanya, nama file bebas) di folder gambar-mentah/
+# taruh foto mentah di folder gambar-mentah/
 npm run images
 ```
 
-Script akan:
-- rename 4 foto yang sudah dikenali (lihat `MAP` di `scripts/prepare-images.mjs`)
-- konversi ke `.jpg`, perkecil ke lebar maks 1600px, kompres kualitas 82
-- mencetak daftar gambar yang masih kurang
-
-Kalau gambar belum ada sama sekali, website **tidak rusak** — kartu kegiatan otomatis tampil dengan blok gradien hijau + label kategori.
-
 ## Edit konten (tanpa sentuh kode)
 
-Semua ada di **`src/data/siteData.js`**: identitas & kontak (`SITE`), 6 program unggulan (`PROGRAMS`), daftar kegiatan (`KEGIATAN`). Lihat `PANDUAN-v3.md` untuk detail lengkap tiap bagian.
+Semua ada di **`src/data/siteData.js`**. Lihat `PANDUAN-v4.md` untuk detail tiap bagian, termasuk 5 poin "perlu kamu isi/cek" (logo Skomen, juknis PDF, dasar timeline KC, dsb).
 
 ## Deploy ke Vercel
 
-Push ke GitHub → import di vercel.com/new (otomatis kenali Vite), atau `vercel` CLI. File `vercel.json` sudah disiapkan supaya URL langsung seperti `/kc/` atau `/garis-komando/` tidak 404 saat dibuka langsung atau di-refresh.
-
-Kalau pindah ke hosting statis yang tidak mendukung rewrite (mis. GitHub Pages), buka `src/lib/router.jsx` dan ganti `MODE = 'hash'` — URL berubah jadi `situsmu.com/#/kc/` dan jalan di mana saja tanpa pengaturan tambahan.
+Push ke GitHub → import di vercel.com/new, atau `vercel` CLI. `vercel.json` sudah disiapkan supaya `/kc/` dan subtab lain tidak 404 saat dibuka/di-refresh langsung.

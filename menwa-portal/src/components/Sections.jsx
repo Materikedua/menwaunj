@@ -4,10 +4,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Trophy, Flag, HeartHandshake, Mic, ShieldCheck, GraduationCap,
   ArrowRight, Clock, MapPin, Mail, Phone, Zap, Lock,
+  Check, Download, ExternalLink, FileText,
 } from 'lucide-react';
 import { Reveal, Stagger, HoverCard, HeroStage, ParallaxLayer, MagneticButton } from './MenwaUI';
 import { Link } from '../lib/router';
-import { SITE, PROGRAMS, KEGIATAN, FEED_URL, STEP_DESC, IMG } from '../data/siteData';
+import { SITE, PROGRAMS, KEGIATAN, FEED_URL, STEP_DESC, IMG, HERO_PHOTO } from '../data/siteData';
 
 /* ---------- util ---------- */
 export const ICONS = {
@@ -74,6 +75,7 @@ const Svg = ({ size = 20, children }) => (
 const SOCIAL_ICON = {
   instagram: (s) => (<Svg size={s}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" /></Svg>),
   youtube: (s) => (<Svg size={s}><rect x="2" y="5" width="20" height="14" rx="4" /><path d="M10 9l5 3-5 3z" fill="currentColor" /></Svg>),
+  facebook: (s) => (<Svg size={s}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></Svg>),
   tiktok: (s) => (<Svg size={s}><path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5" /><path d="M14 3c.4 2.4 2 4 4.5 4.2" /></Svg>),
 };
 
@@ -95,6 +97,15 @@ export const ProgramUnggulan = () => (
         return (
           <Link key={p.slug} to={`/${p.slug}`} className="block h-full">
             <HoverCard className="h-full rounded-[2rem] border border-slate-100 bg-white shadow-sm" inner="flex h-full flex-col p-8">
+              {p.tag && (
+                <span className="absolute right-6 top-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-700">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  </span>
+                  {p.tag}
+                </span>
+              )}
               <span className="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-[#006569] to-[#00383b] text-[#FFDD00] shadow-lg transition-transform duration-500 group-hover/spot:-rotate-6 group-hover/spot:scale-110">
                 <Icon size={28} />
               </span>
@@ -169,54 +180,147 @@ export const KegiatanTerbaru = ({ limit = 4 }) => {
 };
 
 /* ============================================================
-   3. SOROTAN GIAT — carousel yang bergeser looping (berhenti saat di-hover)
+   3. SOROTAN GIAT — coverflow yang digeser dengan TANGAN (klik/tap-tahan
+      lalu seret kursor). Tidak statis, tidak auto-geser: posisi kartu
+      murni mengikuti seberapa jauh kamu menyeretnya. Browser snap ke
+      kartu terdekat begitu dilepas. Tilt tiap kartu dihitung dari jarak
+      ke tengah memakai scroll listener (rAF), tanpa setState per frame.
    ============================================================ */
-export const HighlightMarquee = () => {
+const HG_CARD_W = 280;
+const HG_CARD_H = 420;
+
+export const HighlightCoverflow = () => {
   const all = useKegiatan();
   const picked = all.filter((k) => k.highlight);
-  const list = picked.length >= 4 ? picked : all;
-  const loop = [...list, ...list];
-  const mask = 'linear-gradient(to right, transparent, #000 7%, #000 93%, transparent)';
+  const list = picked.length >= 3 ? picked : all;
+
+  const trackRef = useRef(null);
+  const cardRefs = useRef([]);
+  const rafId = useRef(null);
+  const drag = useRef({ down: false, startX: 0, startScroll: 0, moved: false });
+
+  const applyTilt = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const mid = rect.left + rect.width / 2;
+    cardRefs.current.forEach((card) => {
+      if (!card) return;
+      const r = card.getBoundingClientRect();
+      const d = (r.left + r.width / 2 - mid) / (HG_CARD_W * 0.92);
+      const c = Math.max(-2, Math.min(2, d));
+      const a = Math.min(Math.abs(c), 1);
+      card.style.transform = `perspective(1300px) translateZ(${-Math.abs(c) * 130}px) rotateY(${c * -32}deg) scale(${1 - a * 0.16})`;
+      card.style.opacity = String(Math.max(1 - Math.min(Math.abs(c), 1.7) * 0.5, 0.2));
+      card.style.zIndex = String(100 - Math.round(Math.abs(c) * 10));
+    });
+  };
+
+  const onScroll = () => {
+    if (rafId.current) return;
+    rafId.current = requestAnimationFrame(() => { applyTilt(); rafId.current = null; });
+  };
+
+  useEffect(() => {
+    applyTilt();
+    const el = trackRef.current;
+    el?.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    // mulai dari kartu tengah
+    if (el) el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
+    return () => { el?.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); if (rafId.current) cancelAnimationFrame(rafId.current); };
+  }, [list.length]);
+
+  // Drag-to-scroll (mouse/pen): tekan-tahan lalu seret. Di HP cukup swipe biasa (native).
+  const onPointerDown = (e) => {
+    if (e.pointerType === 'touch') return;
+    const el = trackRef.current; if (!el) return;
+    drag.current = { down: true, startX: e.clientX, startScroll: el.scrollLeft, moved: false };
+    el.setPointerCapture?.(e.pointerId);
+  };
+  const onPointerMove = (e) => {
+    const el = trackRef.current;
+    if (!el || !drag.current.down) return;
+    const dx = e.clientX - drag.current.startX;
+    if (Math.abs(dx) > 4) drag.current.moved = true;
+    el.scrollLeft = drag.current.startScroll - dx;
+  };
+  const endDrag = () => { drag.current.down = false; };
+  const onClickCapture = (e) => {
+    if (drag.current.moved) { e.preventDefault(); e.stopPropagation(); drag.current.moved = false; }
+  };
+
+  const ig = SITE.social.find((s) => s.type === 'instagram');
 
   return (
     <section id="sorotan-giat" className="relative overflow-hidden bg-slate-950 py-20">
       <style>{`
-        .mu-track{animation:mu-marquee var(--dur,60s) linear infinite;will-change:transform}
-        .mu-pause:hover .mu-track{animation-play-state:paused}
-        @media (prefers-reduced-motion:reduce){.mu-track{animation:none}}
+        .hg-track{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;touch-action:pan-x;}
+        .hg-track::-webkit-scrollbar{display:none}
       `}</style>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal>
-          <Heading dark eyebrow="Sorotan Giat" title="Jejak Kegiatan Kami" desc="Geser otomatis. Arahkan kursor untuk berhenti, klik untuk melihat detail." />
+          <div className="mx-auto mb-4 max-w-2xl text-center">
+            <h2 className="text-3xl font-black tracking-tight text-white md:text-5xl">
+              Sorotan <span className="text-[#FFDD00]">Giat</span>
+            </h2>
+            <p className="mt-4 text-slate-400">Klik dan tahan, lalu seret untuk menjelajahi. Klik kartu untuk melihat detail.</p>
+          </div>
         </Reveal>
       </div>
-      <div className="mu-pause relative" style={{ WebkitMaskImage: mask, maskImage: mask }}>
-        <div className="mu-track flex w-max" style={{ '--dur': `${Math.max(list.length, 4) * 8}s` }}>
-          {loop.map((it, i) => {
-            const dup = i >= list.length;
-            return (
-              <ItemLink
-                key={`${it.id}-${i}`} item={it}
-                aria-hidden={dup || undefined} tabIndex={dup ? -1 : undefined}
-                className="group relative mr-6 block h-[420px] w-[280px] shrink-0 overflow-hidden rounded-[2rem] border border-white/10 md:h-[480px] md:w-[340px]"
-              >
-                <SmartImg
-                  src={imgSrc(it.image)} alt={dup ? '' : it.title} fallback={it.category}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-6">
-                  <span className="inline-block rounded-full bg-[#FFDD00] px-3 py-1 text-[11px] font-black uppercase tracking-wider text-[#00383b]">{it.category}</span>
-                  <h3 className="mt-3 line-clamp-3 text-xl font-black leading-snug text-white md:text-2xl">{it.title}</h3>
-                  <p className="mt-3 flex items-center gap-2 text-sm text-slate-300">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#FFDD00]" />
-                    {it.location || it.date || 'Menwa UNJ'}
-                  </p>
-                </div>
-              </ItemLink>
-            );
-          })}
-        </div>
+
+      <div
+        ref={trackRef}
+        className="hg-track flex cursor-grab select-none gap-6 overflow-x-auto px-[16vw] py-14 active:cursor-grabbing sm:px-[30vw]"
+        style={{ scrollSnapType: 'x proximity', perspective: '1300px' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerLeave={endDrag}
+        onClickCapture={onClickCapture}
+      >
+        {list.map((it, i) => (
+          <div
+            key={it.id}
+            ref={(el) => (cardRefs.current[i] = el)}
+            className="shrink-0 will-change-transform"
+            style={{ width: HG_CARD_W, height: HG_CARD_H, scrollSnapAlign: 'center' }}
+          >
+            <ItemLink item={it} draggable={false} className="group relative block h-full w-full overflow-hidden rounded-[2rem] border border-white/10 bg-white shadow-[0_28px_60px_-22px_rgba(0,0,0,.65)]">
+              <SmartImg
+                src={imgSrc(it.image)} alt={it.title} fallback={it.category}
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+              />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-white via-white/90 to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5 text-left">
+                <span className="inline-flex rounded-full bg-[#006569] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-[#FFDD00]">{it.category}</span>
+                <h3 className="mt-2 line-clamp-2 text-lg font-black leading-snug text-slate-900">{it.title}</h3>
+                <p className="mt-2 flex items-center gap-2 text-xs font-semibold text-slate-600">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#006569]" />
+                  {it.location || it.date || 'Menwa UNJ'}
+                </p>
+                <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#006569]">
+                  {it.program ? 'Selengkapnya' : 'Lihat postingan'} <ArrowRight size={13} />
+                </span>
+              </div>
+            </ItemLink>
+          </div>
+        ))}
+
+        {/* Kartu penutup: Lihat Semua -> Instagram */}
+        {ig && (
+          <div className="shrink-0" style={{ width: HG_CARD_W, height: HG_CARD_H, scrollSnapAlign: 'center' }}>
+            <Link
+              to={ig.url} draggable={false}
+              className="flex h-full w-full flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-white/20 bg-white/5 text-center backdrop-blur transition-colors hover:border-[#FFDD00]/60 hover:bg-white/10"
+            >
+              <span className="grid h-14 w-14 place-items-center rounded-full bg-[#FFDD00] text-[#00383b] transition-transform group-hover:translate-x-1">
+                <ArrowRight size={22} />
+              </span>
+              <span className="text-sm font-black uppercase tracking-wider text-white">Lihat Semua</span>
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -227,7 +331,7 @@ export const HomeSections = () => (
   <>
     <ProgramUnggulan />
     <KegiatanTerbaru />
-    <HighlightMarquee />
+    <HighlightCoverflow />
   </>
 );
 
@@ -236,11 +340,11 @@ export const HomeSections = () => (
    ============================================================ */
 const PartnerLogo = ({ p }) => {
   const [bad, setBad] = useState(false);
-  if (bad) return <span className="text-sm font-black uppercase tracking-wider text-slate-400">{p.name}</span>;
+  if (bad) return <span className="text-sm font-black uppercase tracking-wider text-slate-500">{p.name}</span>;
   return (
     <img
       src={p.logo} alt={p.name} title={p.name} loading="lazy" onError={() => setBad(true)}
-      className="h-12 w-auto object-contain opacity-60 grayscale transition duration-300 hover:opacity-100 hover:grayscale-0"
+      className="h-12 w-auto object-contain transition duration-300 hover:scale-110 md:h-14"
     />
   );
 };
@@ -253,8 +357,8 @@ export const SiteFooter = ({ onOpenLogin }) => (
   <footer id="footer-kontak" className="relative mt-auto overflow-hidden border-t-4 border-[#006569] bg-slate-950 pb-10 pt-16 font-sans text-slate-300">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <Reveal>
-        <div className="mx-auto mb-16 flex max-w-4xl flex-wrap items-center justify-center gap-x-10 gap-y-5 rounded-[3rem] border border-white/10 bg-white/5 px-8 py-6 backdrop-blur">
-          <span className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">Didukung oleh:</span>
+        <div className="mx-auto mb-16 flex max-w-5xl flex-wrap items-center justify-center gap-x-10 gap-y-5 rounded-[3rem] bg-white px-8 py-6 shadow-[0_24px_60px_-28px_rgba(0,0,0,.9)]">
+          <span className="text-xs font-black uppercase tracking-[0.25em] text-slate-500">Didukung oleh:</span>
           {SITE.partners.map((p) => <PartnerLogo key={p.name} p={p} />)}
         </div>
       </Reveal>
@@ -334,37 +438,63 @@ export const SiteFooter = ({ onOpenLogin }) => (
    5. HEADER SUBTAB  (foto hero + pill + judul besar + 2 tombol)
    ============================================================ */
 export const SubHero = ({ program }) => (
-  <HeroStage className="min-h-[540px] py-24 md:py-32" photo={program.hero ? imgSrc(program.hero) : program.image} blur={6} dim={0.7}>
-    <div className="w-full max-w-7xl px-4 text-left sm:px-6 lg:px-8">
-      <ParallaxLayer depth={5}>
-        <Reveal>
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-white/90 backdrop-blur">
-            <Zap size={14} className="text-[#FFDD00]" /> {program.badge}
-          </span>
-          <h1 className="mt-6 max-w-4xl text-5xl font-black uppercase leading-[1.02] tracking-tight text-white drop-shadow-lg md:text-7xl">
-            {program.heroLead} <span className="text-[#FFDD00]">{program.heroAccent}</span>
-          </h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-100/90">{program.heroSub}</p>
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <MagneticButton as="div" className="inline-block">
-              <Link
-                to={program.cta.url}
-                className="inline-flex items-center gap-3 bg-[#FFDD00] py-4 pl-9 pr-14 text-sm font-black uppercase tracking-wider text-[#00383b] shadow-xl transition hover:bg-yellow-300"
-                style={{ clipPath: 'polygon(0 0, 100% 0, 94% 100%, 0 100%)' }}
+  <HeroStage className="min-h-[540px] py-24 md:py-32" photo={HERO_PHOTO} blur={3} dim={0.6}>
+    <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="flex flex-col items-start gap-10 lg:flex-row lg:items-center lg:justify-between">
+        <ParallaxLayer depth={5} className="max-w-3xl">
+          <Reveal>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-white/90 backdrop-blur">
+                <Zap size={14} className="text-[#FFDD00]" /> {program.badge}
+              </span>
+              {program.status && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-400/15 px-4 py-2 text-[11px] font-black uppercase tracking-[0.15em] text-emerald-200 backdrop-blur">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                  </span>
+                  {program.status}
+                </span>
+              )}
+            </div>
+            <h1 className="mt-6 text-5xl font-black uppercase leading-[1.02] tracking-tight text-white drop-shadow-lg md:text-7xl">
+              {program.heroLead} <span className="text-[#FFDD00]">{program.heroAccent}</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-100/90">{program.heroSub}</p>
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <MagneticButton as="div" className="inline-block">
+                <Link
+                  to={program.cta.url}
+                  className="inline-flex items-center gap-3 bg-[#FFDD00] py-4 pl-9 pr-14 text-sm font-black uppercase tracking-wider text-[#00383b] shadow-xl transition hover:bg-yellow-300"
+                  style={{ clipPath: 'polygon(0 0, 100% 0, 94% 100%, 0 100%)' }}
+                >
+                  {program.cta.label} <ArrowRight size={18} />
+                </Link>
+              </MagneticButton>
+              <a
+                href="#alur"
+                onClick={(e) => { e.preventDefault(); document.getElementById('alur')?.scrollIntoView({ behavior: 'smooth' }); }}
+                className="inline-flex items-center rounded-xl border border-white/40 px-8 py-4 text-sm font-black uppercase tracking-wider text-white backdrop-blur transition hover:border-[#FFDD00] hover:text-[#FFDD00]"
               >
-                {program.cta.label} <ArrowRight size={18} />
-              </Link>
-            </MagneticButton>
-            <a
-              href="#alur"
-              onClick={(e) => { e.preventDefault(); document.getElementById('alur')?.scrollIntoView({ behavior: 'smooth' }); }}
-              className="inline-flex items-center rounded-xl border border-white/40 px-8 py-4 text-sm font-black uppercase tracking-wider text-white backdrop-blur transition hover:border-[#FFDD00] hover:text-[#FFDD00]"
-            >
-              Lihat Alur Kegiatan
-            </a>
-          </div>
-        </Reveal>
-      </ParallaxLayer>
+                Lihat Alur Kegiatan
+              </a>
+            </div>
+          </Reveal>
+        </ParallaxLayer>
+
+        {program.logo && (
+          <ParallaxLayer depth={16} className="mx-auto shrink-0 lg:mx-0">
+            <div className="relative w-56 sm:w-64 lg:w-80">
+              <div className="absolute inset-4 rounded-full bg-[#FFDD00]/20 blur-3xl" />
+              <img
+                src={program.logo} alt={`Logo ${program.title}`}
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                className="mu-float relative h-auto w-full object-contain drop-shadow-[0_18px_40px_rgba(255,221,0,.35)]"
+              />
+            </div>
+          </ParallaxLayer>
+        )}
+      </div>
     </div>
   </HeroStage>
 );
@@ -386,19 +516,20 @@ const useInView = (threshold = 0.15) => {
 
 export const Timeline = ({ steps, info = {} }) => {
   const [ref, on] = useInView();
-  const n = steps.length;
+  const items = steps.map((x) => (typeof x === 'string' ? { label: x } : x));
+  const n = items.length;
   return (
-    <ol ref={ref} className="grid gap-8 md:gap-0 md:[grid-template-columns:repeat(var(--n),minmax(0,1fr))]" style={{ '--n': n }}>
-      {steps.map((label, i) => (
+    <ol ref={ref} className="grid gap-8 lg:gap-0 lg:[grid-template-columns:repeat(var(--n),minmax(0,1fr))]" style={{ '--n': n }}>
+      {items.map((st, i) => (
         <li
-          key={label}
-          className="group relative flex gap-5 md:flex-col md:items-center md:px-3 md:text-center"
+          key={st.label}
+          className="group relative flex gap-5 lg:flex-col lg:items-center lg:px-3 lg:text-center"
           style={{ opacity: on ? 1 : 0, transform: on ? 'none' : 'translateY(16px)', transition: 'opacity 600ms ease, transform 600ms ease', transitionDelay: `${i * 120}ms` }}
         >
           {i < n - 1 && (
             <>
-              <span className="absolute -bottom-8 left-6 top-12 w-0.5 -translate-x-1/2 bg-slate-200 md:hidden" />
-              <span className="absolute left-1/2 top-6 hidden h-0.5 w-full -translate-y-1/2 bg-slate-200 md:block">
+              <span className="absolute -bottom-8 left-6 top-12 w-0.5 -translate-x-1/2 bg-slate-200 lg:hidden" />
+              <span className="absolute left-1/2 top-6 hidden h-0.5 w-full -translate-y-1/2 bg-slate-200 lg:block">
                 <span
                   className="block h-full origin-left bg-gradient-to-r from-[#006569] to-[#FFDD00]"
                   style={{ transform: on ? 'scaleX(1)' : 'scaleX(0)', transition: 'transform 700ms ease', transitionDelay: `${i * 120 + 250}ms` }}
@@ -409,9 +540,12 @@ export const Timeline = ({ steps, info = {} }) => {
           <span className="relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 border-[#006569] bg-white font-black text-[#006569] shadow-md transition-all duration-300 group-hover:scale-110 group-hover:bg-[#006569] group-hover:text-[#FFDD00]">
             {i + 1}
           </span>
-          <div className="md:mt-5">
-            <h4 className="font-black text-slate-900">{label}</h4>
-            <p className="mt-1 text-sm leading-relaxed text-slate-500">{info[label] || STEP_DESC[label]}</p>
+          <div className="lg:mt-5">
+            <h4 className="font-black leading-snug text-slate-900">{st.label}</h4>
+            {st.date && (
+              <span className="mt-2 inline-block rounded-full bg-[#006569]/10 px-3 py-1 text-[11px] font-black tracking-wide text-[#006569]">{st.date}</span>
+            )}
+            <p className="mt-2 text-sm leading-relaxed text-slate-500">{st.desc || info[st.label] || STEP_DESC[st.label]}</p>
           </div>
         </li>
       ))}
@@ -422,6 +556,35 @@ export const Timeline = ({ steps, info = {} }) => {
 /* ============================================================
    7. HALAMAN SUBTAB PROGRAM  (/kc/, /geranat/, /pengabdian/, ...)
    ============================================================ */
+const DocList = ({ docs }) => (
+  <div className="mt-10">
+    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Dokumen Resmi</h3>
+    <div className="mt-4 space-y-3">
+      {docs.map((d) => (
+        <div key={d.label} className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#006569]/10 text-[#006569]"><FileText size={22} /></span>
+          <div className="min-w-0 flex-1 basis-48">
+            <div className="font-black text-slate-900">{d.label}</div>
+            <div className="text-sm text-slate-500">{d.desc}</div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {d.file && (
+              <a href={d.file} download className="inline-flex items-center gap-2 rounded-xl bg-[#006569] px-4 py-2.5 text-xs font-black uppercase tracking-wider text-white transition hover:bg-[#00383b]">
+                <Download size={15} /> Unduh PDF
+              </a>
+            )}
+            {d.drive && (
+              <a href={d.drive} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-slate-700 transition hover:border-[#006569] hover:text-[#006569]">
+                <ExternalLink size={15} /> {d.file ? 'Google Drive' : 'Buka di Drive'}
+              </a>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 export const ProgramPage = ({ slug }) => {
   const program = PROGRAMS.find((p) => p.slug === slug);
   const related = useKegiatan().filter((k) => k.program === slug).slice(0, 3);
@@ -450,6 +613,7 @@ export const ProgramPage = ({ slug }) => {
                 ))}
               </div>
             )}
+            {program.docs?.length > 0 && <DocList docs={program.docs} />}
             <div className="mt-10 rounded-3xl bg-gradient-to-br from-[#00383b] via-[#006569] to-slate-950 p-8 text-white shadow-xl">
               <h3 className="text-lg font-black text-[#FFDD00]">Ingin ikut atau bertanya?</h3>
               <p className="mt-2 text-sm text-slate-200">Gunakan tautan resmi di bawah ini agar informasi yang kamu terima akurat.</p>
@@ -480,6 +644,28 @@ export const ProgramPage = ({ slug }) => {
           <Timeline steps={program.timeline} info={program.timelineInfo} />
         </div>
       </section>
+
+      {program.details?.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <Reveal><Heading eyebrow="Informasi Lengkap" title="Yang Perlu Kamu Ketahui" /></Reveal>
+          <Stagger className="grid gap-6 md:grid-cols-2" itemClassName="h-full" step={80}>
+            {program.details.map((d) => (
+              <div key={d.title} className="h-full rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
+                <h3 className="text-lg font-black text-slate-900">{d.title}</h3>
+                <ul className="mt-5 space-y-3">
+                  {d.items.map((t) => (
+                    <li key={t} className="flex items-start gap-3 text-slate-600">
+                      <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#006569]/10 text-[#006569]"><Check size={13} /></span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+                {d.note && <p className="mt-4 text-xs text-slate-400">{d.note}</p>}
+              </div>
+            ))}
+          </Stagger>
+        </section>
+      )}
 
       {related.length > 0 && (
         <section className="bg-[#eef2fb] py-20">

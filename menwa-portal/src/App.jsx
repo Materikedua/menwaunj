@@ -40,7 +40,7 @@ import {
 } from './components/MenwaUI';
 import { HomeSections, SiteFooter, ProgramPage } from './components/Sections';
 import { useRoute, navigate, TAB_PATHS, PATH_TABS } from './lib/router';
-import { PROGRAMS } from './data/siteData';
+import { PROGRAMS, HERO_PHOTO } from './data/siteData';
 
 const handleImgError = (e, text, bgColor = '006569', textColor = 'FFDD00') => {
   e.target.onerror = null;
@@ -284,7 +284,7 @@ const BerandaTab = () => {
   return (
     <div className="bg-slate-50 flex-grow font-sans">
       {/* HERO SECTION */}
-      <HeroStage className="py-28 md:py-40" photo="/foto-kampus-unj.jpg" blur={3} dim={0.55}>
+      <HeroStage className="py-28 md:py-40" photo={HERO_PHOTO} blur={3} dim={0.55}>
 
         <RevealOnScroll className="relative z-20 flex flex-col items-center px-4 max-w-6xl text-center">
           <div className="mb-8">
@@ -372,13 +372,13 @@ const BerandaTab = () => {
               <StatCard icon={<Users size={36}/>} label="Anggota Aktif" endValue={50} color="text-[#FFDD00]" borderGlow="group-hover:border-[#FFDD00]/50" />
             </RevealOnScroll>
             <RevealOnScroll delay={200}>
-              <StatCard icon={<Award size={36}/>} label="Prestasi Terdata" endValue={1000} color="text-emerald-400" borderGlow="group-hover:border-emerald-400/50" />
+              <StatCard icon={<Award size={36}/>} label="Prestasi Terdata" endValue={150} color="text-emerald-400" borderGlow="group-hover:border-emerald-400/50" />
             </RevealOnScroll>
             <RevealOnScroll delay={300}>
-              <StatCard icon={<Compass size={36}/>} label="Giat Pengabdian Masyarakat" endValue={500} color="text-teal-300" borderGlow="group-hover:border-teal-300/50" />
+              <StatCard icon={<Compass size={36}/>} label="Giat Pengabdian Masyarakat" endValue={100} color="text-teal-300" borderGlow="group-hover:border-teal-300/50" />
             </RevealOnScroll>
             <RevealOnScroll delay={400}>
-              <StatCard icon={<Shield size={36}/>} label="Penyelenggara Lomba Prov & Nas" endValue={100} color="text-yellow-300" borderGlow="group-hover:border-yellow-300/50" />
+              <StatCard icon={<Shield size={36}/>} label="Penyelenggara Lomba Prov & Nas" endValue={30} color="text-yellow-300" borderGlow="group-hover:border-yellow-300/50" />
             </RevealOnScroll>
           </div>
         </div>
@@ -542,7 +542,7 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
                 EHS
               </div>
               <h3 className="font-black text-xl text-slate-900 leading-tight mb-1">Eben Haezer Sitorus</h3>
-              <p className="text-[#006569] font-extrabold text-xs uppercase tracking-widest bg-[#006569]/10 py-2 rounded-xl border border-[#006569]/20">Komandan Satuan (NBP: 21020741491)</p>
+              <p className="text-[#006569] font-extrabold text-xs uppercase tracking-widest bg-[#006569]/10 py-2 rounded-xl border border-[#006569]/20">Komandan Satuan (FISH / Geografi)</p>
             </div>
           </RevealOnScroll>
 
