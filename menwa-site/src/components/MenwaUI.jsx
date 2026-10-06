@@ -417,7 +417,7 @@ export const Counter = ({ to = 100, duration = 1600, suffix = '', className = ''
 /* ============================================================
    11. NavBar — pill indikator mengikuti kursor + panel preview (gaya Notion)
    ============================================================ */
-export const NavBar = ({ activeTab, onNavigate, isMobileMenuOpen, setIsMobileMenuOpen, navItems, MenuIcon, CloseIcon, logoSrc = '/logo-menwa-unj.png', onLogoError }) => {
+export const NavBar = ({ activeTab, onNavigate, isMobileMenuOpen, setIsMobileMenuOpen, navItems, MenuIcon, CloseIcon, rightSlot, logoSrc = '/logo-menwa-unj.png', onLogoError }) => {
   const listRef = useRef(null);
   const [pill, setPill] = useState({ left: 0, width: 0, opacity: 0 });
   const [hovered, setHovered] = useState(null);
@@ -493,10 +493,13 @@ export const NavBar = ({ activeTab, onNavigate, isMobileMenuOpen, setIsMobileMen
             ))}
           </div>
 
-          <div className="lg:hidden">
-            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-slate-200 hover:text-[#FFDD00]">
-              {isMobileMenuOpen ? CloseIcon : MenuIcon}
-            </button>
+          <div className="flex items-center gap-3">
+            {rightSlot}
+            <div className="lg:hidden">
+              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-slate-200 hover:text-[#FFDD00]">
+                {isMobileMenuOpen ? CloseIcon : MenuIcon}
+              </button>
+            </div>
           </div>
         </div>
       </div>

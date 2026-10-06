@@ -46,10 +46,8 @@ export const SITE = {
     { name: 'Universitas Negeri Jakarta', logo: '/mitra/unj.png' },
     { name: 'Dispora DKI Jakarta', logo: '/mitra/dispora.png' },
     { name: 'Kesbangpol Provinsi DKI Jakarta', logo: '/mitra/kesbangpol.png' },
-    { name: 'Konas', logo: '/mitra/konas.png' },
-    // ASUMSI: "Skomen" = logo satuan Menwa UNJ. Kalau logo Skomen berbeda, taruh di public/mitra/skomen.png
-    // lalu ganti baris di bawah menjadi: { name: 'Skomen', logo: '/mitra/skomen.png' }
-    { name: 'Skomen', logo: '/logo-menwa-unj.png' },
+    { name: 'Komando Nasional Resimen Mahasiswa Indonesia', logo: '/mitra/konas.png' },
+    { name: 'Staf Komando Resimen Mahasiswa Jayakarta', logo: '/mitra/skomen.png' },
   ],
 };
 

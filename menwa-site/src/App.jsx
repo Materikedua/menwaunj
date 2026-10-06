@@ -39,7 +39,8 @@ import {
   HeroStage, HeroLogo, NavBar, TabSwitch
 } from './components/MenwaUI';
 import { HomeSections, SiteFooter, ProgramPage } from './components/Sections';
-import { useRoute, navigate, TAB_PATHS, PATH_TABS } from './lib/router';
+import { useRoute, navigate, Link, TAB_PATHS, PATH_TABS } from './lib/router';
+import { MusicPlayer } from './components/MusicPlayer';
 import { PROGRAMS, HERO_PHOTO } from './data/siteData';
 
 const handleImgError = (e, text, bgColor = '006569', textColor = 'FFDD00') => {
@@ -52,7 +53,7 @@ const RevealOnScroll = Reveal;
 const NAV_ITEMS = [
   { id: 'beranda', label: 'Beranda', icon: <Compass size={20} />, desc: 'Program unggulan, kegiatan terbaru, dan sorotan giat Satuan UNJ.' },
   { id: 'struktur', label: 'Garis Komando', icon: <Shield size={20} />, desc: 'Struktur organisasi: pimpinan, perencana, pelayanan, dan pelaksana.' },
-  { id: 'pendidikan', label: 'Pendidikan dan Pelatihan', icon: <BookOpen size={20} />, desc: 'Jenjang pendidikan berjenjang, bertingkat, dan lanjutan.' },
+  { id: 'pendidikan', label: 'Pendidikan dan Pelatihan', icon: <BookOpen size={20} />, desc: 'Pendidikan bertingkat, berjenjang, dan berlanjut.' },
   { id: 'mako', label: 'Markas Komando', icon: <MapPin size={20} />, desc: 'Lokasi Mako, kontak piket, dan layanan permohonan.' },
   { id: 'administrasi', label: 'Administrasi Umum', icon: <FileText size={20} />, desc: 'Layanan administrasi dan prosedur satuan.' }
 ];
@@ -64,6 +65,7 @@ const Navigation = (props) => (
     navItems={NAV_ITEMS}
     MenuIcon={<Menu size={28} />}
     CloseIcon={<X size={28} />}
+    rightSlot={<MusicPlayer />}
     onLogoError={(e) => handleImgError(e, 'MENWA UNJ', '006569', 'FFDD00')}
   />
 );
@@ -718,16 +720,42 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
   );
 };
 
+const CourseDetail = ({ course, open, dark }) => (
+  <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 450ms cubic-bezier(.16,1,.3,1)' }} aria-hidden={!open}>
+    <div className="overflow-hidden">
+      <div
+        className={`mt-4 rounded-xl border p-4 ${dark ? 'border-slate-700 bg-slate-900/60' : 'border-slate-200 bg-white'}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h5 className={`mb-3 flex items-center text-[11px] font-black uppercase tracking-wider ${dark ? 'text-[#FFDD00]' : 'text-slate-900'}`}>
+          <Target size={14} className={`mr-2 ${dark ? 'text-[#FFDD00]' : 'text-[#006569]'}`} /> Acara Pendidikan & Materi Utama (Renlat)
+        </h5>
+        <ul className="space-y-2">
+          {course.curriculum.map((item, idx) => (
+            <li
+              key={idx}
+              className={`flex items-start rounded-lg border p-3 text-xs font-bold ${dark ? 'border-white/10 bg-white/5 text-slate-200' : 'border-[#006569]/20 bg-[#006569]/5 text-slate-700'}`}
+            >
+              <CheckCircle size={16} className={`mr-2 mt-px shrink-0 ${dark ? 'text-[#FFDD00]' : 'text-[#006569]'}`} /> {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+);
+
 const PendidikanTab = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const toggleCourse = (c) => setSelectedCourse((cur) => (cur && cur.id === c.id ? null : c));
 
-  const pendidikanBerjenjang = [
+  const pendidikanBertingkat = [
     {
       id: 1,
       title: "Pendidikan Dasar Satuan",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "5 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Pendidikan tingkat dasar satuan untuk membentuk mental, disiplin, wawasan kebangsaan, dan dasar olah keprajuritan bagi calon anggota Resimen Mahasiswa Jayakarta Satuan UNJ.",
       curriculum: [
         "Kemenwaan: Dasar Organisasi, Sejarah Menwa Satuan, PDRM",
@@ -742,9 +770,9 @@ const PendidikanTab = () => {
     {
       id: 2,
       title: "Latihan Pemantapan Komando",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "5 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Ujian pemantapan fisik, mental, dan tradisi komando di daerah latihan Koramil Sukamakmur - Curug Benjol Bogor sebelum pengukuhan resmi penyematan Baret Ungu Menwa UNJ.",
       curriculum: [
         "Long March 14 KM (Sukamakmur - Curug Benjol)",
@@ -759,9 +787,9 @@ const PendidikanTab = () => {
     {
       id: 3,
       title: "Kursus Dinas Staf",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "4 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Menempa kemampuan manajerial, pembuatan naskah dinas staf, perencanaan operasional, serta interoperabilitas antar-seksi staf markas komando.",
       curriculum: [
         "Materi Staf PAM (Pengamanan & Kontra-Intel)",
@@ -776,9 +804,9 @@ const PendidikanTab = () => {
     {
       id: 4,
       title: "Pendidikan Provos Satuan",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "3 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Spesialisasi penegakan disiplin, tata tertib, pengawasan etika keprajuritan, serta pengamanan internal Mako Satuan UNJ.",
       curriculum: [
         "Tupoksi & Wewenang Provos Satuan",
@@ -793,13 +821,13 @@ const PendidikanTab = () => {
     }
   ];
 
-  const pendidikanBertingkat = [
+  const pendidikanBerjenjang = [
     {
       id: 5,
       title: "Pendidikan Dasar Militer",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "10 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Pendidikan dasar keprajuritan tingkat utama yang diselenggarakan oleh Kodam/Rindam Jaya untuk membentuk karakter prajurit mahasiswa.",
       curriculum: [
         "Doktrin Pertahanan Negara & Militer Dasar",
@@ -812,9 +840,9 @@ const PendidikanTab = () => {
     {
       id: 6,
       title: "Kursus Kader Pelaksana",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "20 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Penggemblengan calon pimpinan operasional dan komandan poko pasukan di tingkat Skomen Jayakarta maupun Nasional.",
       curriculum: [
         "Kepemimpinan Taktis Lapangan (Field Leadership)",
@@ -826,9 +854,9 @@ const PendidikanTab = () => {
     {
       id: 7,
       title: "Kursus Dinas Staf",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "6 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Pendalaman tata kelola dinas staf markas komando tingkat provinsi/Jayakarta.",
       curriculum: [
         "Manajemen Staf Komando Gabungan",
@@ -840,9 +868,9 @@ const PendidikanTab = () => {
     {
       id: 8,
       title: "Kursus Pelatih Nasional",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "10 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Mencetak instruktur dan pelatih bertaraf nasional yang handal dalam mentransfer ilmu olah keprajuritan dan kurikulum Diksar Menwa.",
       curriculum: [
         "Metodologi Pelatihan (Andragogi & CMI)",
@@ -854,9 +882,9 @@ const PendidikanTab = () => {
     {
       id: 9,
       title: "Kursus Kader Pimpinan",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "20 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Pendidikan kualifikasi pimpinan tertinggi Resimen Mahasiswa tingkat nasional untuk mencetak Komandan Satuan dan Komandan Kompleks.",
       curriculum: [
         "Strategi Pertahanan Nasional & Kebijakan Publik",
@@ -871,9 +899,9 @@ const PendidikanTab = () => {
     {
       id: 10,
       title: "Kursus Kader Pembinaan Mental Nasional",
-      level: "Pendidikan Lanjutan",
+      level: "Pendidikan Berlanjut",
       duration: "8 Hari",
-      category: "Lanjutan",
+      category: "Berlanjut",
       desc: "Kursus pembinaan mental, spiritual, dan ideologi kebangsaan untuk menguatkan ketahanan rohani prajurit Menwa.",
       curriculum: [
         "Pembinaan Ideologi Pancasila & Keetikaan",
@@ -885,9 +913,9 @@ const PendidikanTab = () => {
     {
       id: 11,
       title: "Kursus Protokoler",
-      level: "Pendidikan Lanjutan",
+      level: "Pendidikan Berlanjut",
       duration: "3 Hari",
-      category: "Lanjutan",
+      category: "Berlanjut",
       desc: "Spesialisasi tata krama keprotokolan negara/universitas, pengawalan jajaran rektorat, dan event management.",
       curriculum: [
         "Keprotokolan Resmi Negara & Perguruan Tinggi",
@@ -899,9 +927,9 @@ const PendidikanTab = () => {
     {
       id: 12,
       title: "Kursus Intelijen dan Pengamanan",
-      level: "Pendidikan Lanjutan",
+      level: "Pendidikan Berlanjut",
       duration: "3 Hari",
-      category: "Lanjutan",
+      category: "Berlanjut",
       desc: "Pelatihan analisis informasi, kontraintelijen, pengamanan aset vital kampus, dan deteksi dini ancaman kebangsaan.",
       curriculum: [
         "Teknik Penyelidikan, Pengamatan, & Penggalangan",
@@ -928,20 +956,24 @@ const PendidikanTab = () => {
       </RevealOnScroll>
 
       <div className="max-w-7xl mx-auto px-4 -mt-32 relative z-20 space-y-12">
-        {/* SUBJUDUL 1: Pendidikan Berjenjang */}
+        {/* SUBJUDUL 1: Pendidikan Bertingkat */}
         <RevealOnScroll delay={100} className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-slate-200">
           <div className="text-center mb-10">
             <h3 className="text-2xl font-black text-slate-900 inline-flex items-center tracking-tight border-b-4 border-[#006569] pb-3">
-              <Shield className="mr-3 text-[#006569]" size={28}/> Pendidikan Berjenjang
+              <Shield className="mr-3 text-[#006569]" size={28}/> Pendidikan Bertingkat
             </h3>
             <p className="text-slate-500 mt-3 font-medium text-sm">Jenjang pembinaan internal utama anggota Resimen Mahasiswa Satuan UNJ.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {pendidikanBerjenjang.map((course) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            {pendidikanBertingkat.map((course) => (
               <div 
                 key={course.id}
-                onClick={() => setSelectedCourse(course)}
+                onClick={() => toggleCourse(course)}
+                role="button"
+                tabIndex={0}
+                aria-expanded={!!selectedCourse && selectedCourse.id === course.id}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCourse(course); } }}
                 className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
               >
                 <div>
@@ -956,33 +988,38 @@ const PendidikanTab = () => {
                   <h4 className="font-black text-slate-900 text-lg mb-2 group-hover:text-[#006569] transition-colors">
                     {course.title} - {course.duration}
                   </h4>
-                  <p className="text-slate-600 text-xs font-medium leading-relaxed line-clamp-3">
+                  <p className={`text-slate-600 text-xs font-medium leading-relaxed ${selectedCourse && selectedCourse.id === course.id ? '' : 'line-clamp-3'}`}>
                     {course.desc}
                   </p>
                 </div>
                 <div className="pt-4 mt-4 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-[#006569]">
-                  <span>Lihat Renlat & Detail Modul</span>
-                  <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
+                  <span>{selectedCourse && selectedCourse.id === course.id ? 'Tutup Detail' : 'Lihat Renlat & Detail Modul'}</span>
+                  <ChevronRight size={16} className={`transition-transform duration-300 ${selectedCourse && selectedCourse.id === course.id ? 'rotate-90' : 'group-hover:translate-x-1'}`} />
                 </div>
+                <CourseDetail course={course} open={!!selectedCourse && selectedCourse.id === course.id} />
               </div>
             ))}
           </div>
         </RevealOnScroll>
 
-        {/* SUBJUDUL 2: Pendidikan Bertingkat */}
+        {/* SUBJUDUL 2: Pendidikan Berjenjang */}
         <RevealOnScroll delay={200} className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-slate-200">
           <div className="text-center mb-10">
             <h3 className="text-2xl font-black text-slate-900 inline-flex items-center tracking-tight border-b-4 border-[#FFDD00] pb-3">
-              <Award className="mr-3 text-[#006569]" size={28}/> Pendidikan Bertingkat
+              <Award className="mr-3 text-[#006569]" size={28}/> Pendidikan Berjenjang
             </h3>
             <p className="text-slate-500 mt-3 font-medium text-sm">Jenjang pendidikan kualifikasi komando tingkat provinsi dan nasional.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {pendidikanBertingkat.map((course) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+            {pendidikanBerjenjang.map((course) => (
               <div 
                 key={course.id}
-                onClick={() => setSelectedCourse(course)}
+                onClick={() => toggleCourse(course)}
+                role="button"
+                tabIndex={0}
+                aria-expanded={!!selectedCourse && selectedCourse.id === course.id}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCourse(course); } }}
                 className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
               >
                 <div>
@@ -997,33 +1034,38 @@ const PendidikanTab = () => {
                   <h4 className="font-black text-slate-900 text-base mb-2 group-hover:text-[#006569] transition-colors">
                     {course.title} - {course.duration}
                   </h4>
-                  <p className="text-slate-600 text-xs font-medium leading-relaxed line-clamp-3">
+                  <p className={`text-slate-600 text-xs font-medium leading-relaxed ${selectedCourse && selectedCourse.id === course.id ? '' : 'line-clamp-3'}`}>
                     {course.desc}
                   </p>
                 </div>
                 <div className="pt-4 mt-4 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-[#006569]">
-                  <span>Lihat Detail Modul</span>
-                  <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
+                  <span>{selectedCourse && selectedCourse.id === course.id ? 'Tutup Detail' : 'Lihat Detail Modul'}</span>
+                  <ChevronRight size={16} className={`transition-transform duration-300 ${selectedCourse && selectedCourse.id === course.id ? 'rotate-90' : 'group-hover:translate-x-1'}`} />
                 </div>
+                <CourseDetail course={course} open={!!selectedCourse && selectedCourse.id === course.id} />
               </div>
             ))}
           </div>
         </RevealOnScroll>
 
-        {/* SUBJUDUL 3: Pendidikan Lanjutan */}
+        {/* SUBJUDUL 3: Pendidikan Berlanjut */}
         <RevealOnScroll delay={300} className="bg-slate-900 text-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-slate-800">
           <div className="text-center mb-10">
             <h3 className="text-2xl font-black text-white inline-flex items-center tracking-tight border-b-4 border-[#006569] pb-3">
-              <Target className="mr-3 text-[#FFDD00]" size={28}/> Pendidikan Lanjutan
+              <Target className="mr-3 text-[#FFDD00]" size={28}/> Pendidikan Berlanjut
             </h3>
             <p className="text-slate-400 mt-3 font-medium text-sm">Pendidikan spesialisasi pembinaan mental, keprotokolan, dan intelijen pengamanan.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
             {pendidikanLanjutan.map((course) => (
               <div 
                 key={course.id}
-                onClick={() => setSelectedCourse(course)}
+                onClick={() => toggleCourse(course)}
+                role="button"
+                tabIndex={0}
+                aria-expanded={!!selectedCourse && selectedCourse.id === course.id}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCourse(course); } }}
                 className="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 hover:border-[#FFDD00] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
               >
                 <div>
@@ -1038,67 +1080,21 @@ const PendidikanTab = () => {
                   <h4 className="font-black text-white text-base mb-2 group-hover:text-[#FFDD00] transition-colors">
                     {course.title} - {course.duration}
                   </h4>
-                  <p className="text-slate-300 text-xs font-medium leading-relaxed line-clamp-3">
+                  <p className={`text-slate-300 text-xs font-medium leading-relaxed ${selectedCourse && selectedCourse.id === course.id ? '' : 'line-clamp-3'}`}>
                     {course.desc}
                   </p>
                 </div>
                 <div className="pt-4 mt-4 border-t border-slate-700 flex items-center justify-between text-xs font-bold text-[#FFDD00]">
-                  <span>Lihat Spesialisasi</span>
-                  <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
+                  <span>{selectedCourse && selectedCourse.id === course.id ? 'Tutup Detail' : 'Lihat Spesialisasi'}</span>
+                  <ChevronRight size={16} className={`transition-transform duration-300 ${selectedCourse && selectedCourse.id === course.id ? 'rotate-90' : 'group-hover:translate-x-1'}`} />
                 </div>
+                <CourseDetail course={course} open={!!selectedCourse && selectedCourse.id === course.id} dark />
               </div>
             ))}
           </div>
         </RevealOnScroll>
       </div>
 
-      {/* Course Detail Modal */}
-      {selectedCourse && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md transition-opacity" onClick={() => setSelectedCourse(null)}>
-          <div className="bg-white rounded-3xl w-full max-w-2xl p-8 shadow-2xl relative border border-slate-200" onClick={(e) => e.stopPropagation()}>
-            <button 
-              onClick={() => setSelectedCourse(null)} 
-              className="absolute top-4 right-4 bg-slate-100 hover:bg-[#006569] hover:text-white p-2 rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
-
-            <div className="flex items-center gap-3 mb-3">
-              <span className="px-3 py-1 bg-[#006569] text-[#FFDD00] text-[10px] font-black uppercase tracking-wider rounded-lg">
-                {selectedCourse.level}
-              </span>
-              <span className="text-xs font-bold text-slate-500 flex items-center">
-                <Clock size={14} className="mr-1 text-[#006569]" /> Durasi: {selectedCourse.duration}
-              </span>
-            </div>
-
-            <h3 className="text-2xl font-black text-slate-900 mb-3">{selectedCourse.title}</h3>
-            <p className="text-slate-600 text-sm font-medium leading-relaxed mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
-              {selectedCourse.desc}
-            </p>
-
-            <h4 className="font-black text-slate-900 text-sm uppercase tracking-wider mb-3 flex items-center">
-              <Target size={16} className="mr-2 text-[#006569]" /> Acara Pendidikan & Materi Utama (Renlat):
-            </h4>
-            <ul className="space-y-2 mb-8 max-h-60 overflow-y-auto pr-2">
-              {selectedCourse.curriculum.map((item, idx) => (
-                <li key={idx} className="flex items-center text-xs font-bold text-slate-700 bg-[#006569]/5 p-3 rounded-lg border border-[#006569]/20">
-                  <CheckCircle size={16} className="text-[#006569] mr-2 shrink-0" /> {item}
-                </li>
-              ))}
-            </ul>
-
-            <div className="flex justify-end">
-              <button 
-                onClick={() => setSelectedCourse(null)}
-                className="bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] text-xs font-bold px-6 py-3 rounded-xl transition-colors"
-              >
-                Tutup Detail Pendidikan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -1176,20 +1172,20 @@ const AdministrasiUmumTab = () => {
       title: "Pendaftaran Lomba Nasional Ksatria Cendekia VIII",
       category: "Giat Perlombaan",
       desc: "Formulir pendaftaran Latihan Integrasi & Kompetisi Pemuda Nusantara Ksatria Cendekia VIII Tahun 2026.",
-      url: "https://www.instagram.com/kc_menwaunj/",
+      url: "/kc",
       status: "Link Resmi",
       statusClass: "bg-[#FFDD00] text-slate-950",
-      ctaText: "Buka Portal Ksatria Cendekia"
+      ctaText: "Lihat Info & Daftar KC VIII"
     },
     {
       id: 3,
       title: "Pendaftaran Lomba Paskibra GERANAT VI",
       category: "Giat Paskibra",
       desc: "Formulir pendaftaran Lomba Formasi Pengibaran Bendera Gerakan Paskibra Semangat VI Tahun 2026.",
-      url: "https://www.instagram.com/geranat_menwaunj/",
+      url: "/geranat",
       status: "Link Resmi",
       statusClass: "bg-[#FFDD00] text-slate-950",
-      ctaText: "Buka Portal GERANAT"
+      ctaText: "Lihat Info GERANAT"
     }
   ];
 
@@ -1339,15 +1335,13 @@ const AdministrasiUmumTab = () => {
                       </p>
                     </div>
 
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Link
+                      to={item.url}
                       className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
                     >
                       <span>{item.ctaText}</span>
-                      <ExternalLink size={14} />
-                    </a>
+                      {/^https?:/.test(item.url) ? <ExternalLink size={14} /> : <ChevronRight size={14} />}
+                    </Link>
                   </div>
                 ))}
               </div>

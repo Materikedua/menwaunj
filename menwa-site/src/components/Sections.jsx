@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Trophy, Flag, HeartHandshake, Mic, ShieldCheck, GraduationCap,
-  ArrowRight, Clock, MapPin, Mail, Phone, Zap, Lock,
-  Check, Download, ExternalLink, FileText,
+  ArrowRight, ArrowLeft, Clock, MapPin, Mail, Phone, Zap, Lock,
+  CalendarDays, Check, Download, ExternalLink, FileText,
 } from 'lucide-react';
 import { Reveal, Stagger, HoverCard, HeroStage, ParallaxLayer, MagneticButton } from './MenwaUI';
-import { Link } from '../lib/router';
+import { Link, navigate } from '../lib/router';
 import { SITE, PROGRAMS, KEGIATAN, FEED_URL, STEP_DESC, IMG, HERO_PHOTO } from '../data/siteData';
 
 /* ---------- util ---------- */
@@ -32,18 +32,25 @@ export function useKegiatan() {
   return items;
 }
 
-/** <img> ringan + fallback gradien (tanpa memanggil situs luar) bila file belum ada */
+/** <img> ringan + fallback gradien berlogo (tanpa memanggil situs luar) bila file belum ada */
 const SmartImg = ({ src, alt, className = '', fallback }) => {
   const [bad, setBad] = useState(false);
   useEffect(() => setBad(false), [src]);
   if (bad) {
     return (
-      <div className={`grid place-items-center bg-gradient-to-br from-[#00383b] via-[#006569] to-slate-900 p-4 text-center text-sm font-black uppercase tracking-wider text-[#FFDD00] ${className}`}>
-        {fallback || alt}
+      <div className={`grid place-items-center overflow-hidden bg-gradient-to-br from-[#00383b] via-[#006569] to-slate-900 ${className}`}>
+        <div className="flex flex-col items-center gap-3 px-4 text-center">
+          <img
+            src="/logo-menwa-unj.png" alt="" aria-hidden draggable={false}
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            className="h-16 w-auto opacity-30"
+          />
+          {fallback && <span className="text-sm font-black uppercase tracking-wider text-[#FFDD00]">{fallback}</span>}
+        </div>
       </div>
     );
   }
-  return <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setBad(true)} className={className} />;
+  return <img src={src} alt={alt} loading="lazy" decoding="async" draggable={false} onError={() => setBad(true)} className={className} />;
 };
 
 const itemTarget = (item, preferExternal) =>
@@ -126,14 +133,14 @@ export const ProgramUnggulan = () => (
 );
 
 /* ============================================================
-   2. KEGIATAN TERBARU  (format 4 kartu: gambar, label, judul, tanggal)
+   2. KARTU KEGIATAN  (dipakai di halaman subtab program)
    ============================================================ */
 export const KegiatanCard = ({ item, preferExternal = false }) => (
   <ItemLink item={item} preferExternal={preferExternal} className="block h-full">
     <HoverCard className="h-full rounded-[1.75rem] border border-slate-100 bg-white shadow-sm" inner="flex h-full flex-col">
       <div className="h-52 overflow-hidden bg-slate-200">
         <SmartImg
-          src={imgSrc(item.image)} alt={item.title} fallback={item.category}
+          src={imgSrc(item.image)} alt={item.title}
           className="h-full w-full object-cover transition-transform duration-700 group-hover/spot:scale-105"
         />
       </div>
@@ -154,173 +161,227 @@ export const KegiatanCard = ({ item, preferExternal = false }) => (
   </ItemLink>
 );
 
-export const KegiatanTerbaru = ({ limit = 4 }) => {
-  const items = useKegiatan().slice(0, limit);
-  const ig = SITE.social.find((s) => s.type === 'instagram');
-  return (
-    <section id="kegiatan-terbaru" className="bg-[#eef2fb] py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <Reveal>
-          <Heading
-            eyebrow="Kegiatan Terbaru"
-            title="Giat Terbaru Menwa UNJ"
-            action={ig && (
-              <Link to={ig.url} className="inline-flex items-center gap-2 rounded-full border border-[#006569]/30 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-[#006569] transition hover:bg-[#006569] hover:text-[#FFDD00]">
-                {SOCIAL_ICON.instagram(16)} Ikuti Instagram
-              </Link>
-            )}
-          />
-        </Reveal>
-        <Stagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4" itemClassName="h-full" step={90}>
-          {items.map((it) => <KegiatanCard key={it.id} item={it} />)}
-        </Stagger>
-      </div>
-    </section>
-  );
+/* ============================================================
+   3. SOROTAN GIAT — coverflow: kartu tengah besar, kartu samping miring.
+      • Drag (mouse atau sentuh) untuk menggeser; kartu mengikuti jari/kursor lalu "snap".
+      • Klik kartu samping untuk memajukannya, klik kartu tengah untuk membuka detail.
+      • Otomatis berganti tiap 4,5 detik; berhenti saat kursor di atasnya atau saat di-drag.
+   ============================================================ */
+const useMedia = (query) => {
+  const [m, setM] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const on = () => setM(mq.matches);
+    on();
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, [query]);
+  return m;
 };
 
-/* ============================================================
-   3. SOROTAN GIAT — coverflow yang digeser dengan TANGAN (klik/tap-tahan
-      lalu seret kursor). Tidak statis, tidak auto-geser: posisi kartu
-      murni mengikuti seberapa jauh kamu menyeretnya. Browser snap ke
-      kartu terdekat begitu dilepas. Tilt tiap kartu dihitung dari jarak
-      ke tengah memakai scroll listener (rAF), tanpa setState per frame.
-   ============================================================ */
-const HG_CARD_W = 280;
-const HG_CARD_H = 420;
+const mod = (a, n) => ((a % n) + n) % n;
+
+const CoverBody = ({ it, center }) => (
+  <>
+    <SmartImg src={imgSrc(it.image)} alt={it.title} className="absolute inset-0 h-full w-full object-cover" />
+    <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-white via-white/90 to-transparent" />
+    <div className="absolute inset-x-0 bottom-0 p-5 text-left">
+      <span className="inline-flex rounded-full bg-[#006569] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-[#FFDD00]">{it.category}</span>
+      <h3 className="mt-2 line-clamp-2 text-lg font-black leading-snug text-slate-900">{it.title}</h3>
+      {it.date && (
+        <p className="mt-2 flex items-center gap-2 text-xs font-semibold text-slate-600">
+          <CalendarDays size={14} className="shrink-0 text-[#006569]" /> {it.date}
+        </p>
+      )}
+      {it.location && (
+        <p className="mt-1 flex items-center gap-2 text-xs font-semibold text-slate-600">
+          <MapPin size={14} className="shrink-0 text-[#006569]" /> <span className="truncate">{it.location}</span>
+        </p>
+      )}
+      <span
+        className="mt-3 inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#006569] transition-opacity duration-300"
+        style={{ opacity: center ? 1 : 0 }}
+      >
+        {it.program ? 'Selengkapnya' : 'Lihat postingan'} <ArrowRight size={13} />
+      </span>
+    </div>
+  </>
+);
 
 export const HighlightCoverflow = () => {
   const all = useKegiatan();
   const picked = all.filter((k) => k.highlight);
   const list = picked.length >= 3 ? picked : all;
+  const n = list.length;
+  const small = useMedia('(max-width: 767px)');
 
-  const trackRef = useRef(null);
-  const cardRefs = useRef([]);
-  const rafId = useRef(null);
-  const drag = useRef({ down: false, startX: 0, startScroll: 0, moved: false });
+  const [active, setActive] = useState(0);
+  const [drag, setDrag] = useState(0);          // geseran saat di-drag, dalam satuan "kartu"
+  const [dragging, setDragging] = useState(false);
+  const [hover, setHover] = useState(false);
+  const stageRef = useRef(null);
+  const down = useRef(null);
+  const justDragged = useRef(false);
 
-  const applyTilt = () => {
-    const el = trackRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const mid = rect.left + rect.width / 2;
-    cardRefs.current.forEach((card) => {
-      if (!card) return;
-      const r = card.getBoundingClientRect();
-      const d = (r.left + r.width / 2 - mid) / (HG_CARD_W * 0.92);
-      const c = Math.max(-2, Math.min(2, d));
-      const a = Math.min(Math.abs(c), 1);
-      card.style.transform = `perspective(1300px) translateZ(${-Math.abs(c) * 130}px) rotateY(${c * -32}deg) scale(${1 - a * 0.16})`;
-      card.style.opacity = String(Math.max(1 - Math.min(Math.abs(c), 1.7) * 0.5, 0.2));
-      card.style.zIndex = String(100 - Math.round(Math.abs(c) * 10));
-    });
-  };
+  const W = small ? 230 : 320;
+  const H = small ? 370 : 470;
+  const STEP = W * 0.64;                        // jarak piksel = 1 kartu
+  const reach = small ? 1 : 2;
+  const pos = active - drag;                    // posisi (pecahan) kartu yang sedang di tengah
 
-  const onScroll = () => {
-    if (rafId.current) return;
-    rafId.current = requestAnimationFrame(() => { applyTilt(); rafId.current = null; });
-  };
+  useEffect(() => { if (n && active >= n) setActive(0); }, [n, active]);
 
+  // Auto-geser (mati bila reduce-motion, tab tersembunyi, kursor di atasnya, atau sedang di-drag)
   useEffect(() => {
-    applyTilt();
-    const el = trackRef.current;
-    el?.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    // mulai dari kartu tengah
-    if (el) el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
-    return () => { el?.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); if (rafId.current) cancelAnimationFrame(rafId.current); };
-  }, [list.length]);
+    if (hover || dragging || n < 2) return undefined;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    const t = setInterval(() => { if (!document.hidden) setActive((a) => mod(a + 1, n)); }, 4500);
+    return () => clearInterval(t);
+  }, [hover, dragging, n]);
 
-  // Drag-to-scroll (mouse/pen): tekan-tahan lalu seret. Di HP cukup swipe biasa (native).
+  const go = (dir) => setActive((a) => mod(a + dir, n));
+  const offset = (i) => {
+    const d = i - pos;
+    return d - n * Math.round(d / n);           // jarak melingkar terpendek
+  };
+
+  const openItem = (it) => {
+    const to = itemTarget(it, false);
+    if (!to) return;
+    if (/^https?:\/\//.test(to)) window.open(to, '_blank', 'noopener,noreferrer');
+    else navigate(to);
+  };
+
+  // ----- drag -----
   const onPointerDown = (e) => {
-    if (e.pointerType === 'touch') return;
-    const el = trackRef.current; if (!el) return;
-    drag.current = { down: true, startX: e.clientX, startScroll: el.scrollLeft, moved: false };
-    el.setPointerCapture?.(e.pointerId);
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    down.current = { x: e.clientX, id: e.pointerId, moved: false, lastX: e.clientX, lastT: performance.now(), v: 0 };
   };
   const onPointerMove = (e) => {
-    const el = trackRef.current;
-    if (!el || !drag.current.down) return;
-    const dx = e.clientX - drag.current.startX;
-    if (Math.abs(dx) > 4) drag.current.moved = true;
-    el.scrollLeft = drag.current.startScroll - dx;
+    const d = down.current;
+    if (!d || d.id !== e.pointerId) return;
+    const dx = e.clientX - d.x;
+    if (!d.moved) {
+      if (Math.abs(dx) < 6) return;
+      d.moved = true;
+      try { stageRef.current.setPointerCapture(e.pointerId); } catch { /* tidak didukung */ }
+      setDragging(true);
+    }
+    const now = performance.now();
+    d.v = (e.clientX - d.lastX) / Math.max(now - d.lastT, 1);   // px per ms
+    d.lastX = e.clientX; d.lastT = now;
+    setDrag(dx / STEP);
   };
-  const endDrag = () => { drag.current.down = false; };
-  const onClickCapture = (e) => {
-    if (drag.current.moved) { e.preventDefault(); e.stopPropagation(); drag.current.moved = false; }
+  const endDrag = (e) => {
+    const d = down.current;
+    if (!d || d.id !== e.pointerId) return;
+    down.current = null;
+    if (!d.moved) return;
+    justDragged.current = true;
+    setTimeout(() => { justDragged.current = false; }, 0);
+    let target = Math.round(active - drag);
+    if (target === active && Math.abs(d.v) > 0.5) target = active - Math.sign(d.v);   // swipe cepat = minimal 1 kartu
+    try { stageRef.current.releasePointerCapture(e.pointerId); } catch { /* abaikan */ }
+    setDragging(false);
+    setDrag(0);
+    setActive(mod(target, n));
   };
 
-  const ig = SITE.social.find((s) => s.type === 'instagram');
+  const cardStyle = (d) => {
+    const a = Math.abs(d);
+    const sg = Math.sign(d);
+    const x = sg * (a <= 1 ? W * 0.64 * a : W * (0.64 + (a - 1) * 0.36));
+    const rot = -sg * Math.min(a, 1) * 38;
+    const fade = Math.min(1, Math.max(0, (reach + 0.6 - a) / 0.6));
+    const op = Math.max(0, 1 - Math.min(a, 1) * 0.05 - Math.max(0, a - 1) * 0.4) * fade;
+    return {
+      width: W, height: H, marginLeft: -W / 2,
+      transform: `translateX(${x}px) translateZ(${-a * 110}px) rotateY(${rot}deg) scale(${1 - Math.min(a, 1) * 0.06})`,
+      opacity: op,
+      zIndex: Math.round(100 - a * 10),
+      pointerEvents: a > reach + 0.3 ? 'none' : 'auto',
+      transition: dragging ? 'none' : 'transform 600ms cubic-bezier(.22,1,.36,1), opacity 400ms ease',
+    };
+  };
+  const shell = 'relative block h-full w-full overflow-hidden rounded-[2rem] border border-white bg-white shadow-[0_28px_60px_-22px_rgba(0,56,59,.6)]';
 
   return (
-    <section id="sorotan-giat" className="relative overflow-hidden bg-slate-950 py-20">
-      <style>{`
-        .hg-track{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;touch-action:pan-x;}
-        .hg-track::-webkit-scrollbar{display:none}
-      `}</style>
+    <section id="sorotan-giat" data-ui="coverflow-v5" className="relative overflow-hidden bg-gradient-to-b from-white to-[#f3f6ff] py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal>
-          <div className="mx-auto mb-4 max-w-2xl text-center">
-            <h2 className="text-3xl font-black tracking-tight text-white md:text-5xl">
-              Sorotan <span className="text-[#FFDD00]">Giat</span>
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <h2 className="text-3xl font-black tracking-tight text-slate-900 md:text-5xl">
+              Sorotan <span className="text-[#006569]">Giat</span>
             </h2>
-            <p className="mt-4 text-slate-400">Klik dan tahan, lalu seret untuk menjelajahi. Klik kartu untuk melihat detail.</p>
+            <p className="mt-4 text-slate-500">
+              Geser kartu dengan drag atau swipe. Klik kartu tengah untuk melihat detail kegiatan.
+            </p>
           </div>
         </Reveal>
       </div>
 
       <div
-        ref={trackRef}
-        className="hg-track flex cursor-grab select-none gap-6 overflow-x-auto px-[16vw] py-14 active:cursor-grabbing sm:px-[30vw]"
-        style={{ scrollSnapType: 'x proximity', perspective: '1300px' }}
+        ref={stageRef}
+        className="relative mx-auto max-w-6xl outline-none"
+        tabIndex={0}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label="Sorotan giat Menwa UNJ"
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        onKeyDown={(e) => { if (e.key === 'ArrowLeft') go(-1); if (e.key === 'ArrowRight') go(1); }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
-        onPointerLeave={endDrag}
-        onClickCapture={onClickCapture}
+        onPointerCancel={endDrag}
+        onDragStart={(e) => e.preventDefault()}
+        onClickCapture={(e) => { if (justDragged.current) { e.preventDefault(); e.stopPropagation(); } }}
+        style={{ perspective: '1400px', height: H + 10, touchAction: 'pan-y', userSelect: 'none', WebkitUserSelect: 'none', cursor: dragging ? 'grabbing' : 'grab' }}
       >
-        {list.map((it, i) => (
-          <div
-            key={it.id}
-            ref={(el) => (cardRefs.current[i] = el)}
-            className="shrink-0 will-change-transform"
-            style={{ width: HG_CARD_W, height: HG_CARD_H, scrollSnapAlign: 'center' }}
-          >
-            <ItemLink item={it} draggable={false} className="group relative block h-full w-full overflow-hidden rounded-[2rem] border border-white/10 bg-white shadow-[0_28px_60px_-22px_rgba(0,0,0,.65)]">
-              <SmartImg
-                src={imgSrc(it.image)} alt={it.title} fallback={it.category}
-                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-              />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-white via-white/90 to-transparent" />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5 text-left">
-                <span className="inline-flex rounded-full bg-[#006569] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-[#FFDD00]">{it.category}</span>
-                <h3 className="mt-2 line-clamp-2 text-lg font-black leading-snug text-slate-900">{it.title}</h3>
-                <p className="mt-2 flex items-center gap-2 text-xs font-semibold text-slate-600">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#006569]" />
-                  {it.location || it.date || 'Menwa UNJ'}
-                </p>
-                <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#006569]">
-                  {it.program ? 'Selengkapnya' : 'Lihat postingan'} <ArrowRight size={13} />
-                </span>
+        {/* pointer-events:none -> kontainer 3D (bidang z=0) tidak menutupi kartu samping yang berada di belakangnya */}
+        <div className="relative h-full w-full" style={{ transformStyle: 'preserve-3d', pointerEvents: 'none' }}>
+          {list.map((it, i) => {
+            const d = offset(i);
+            const isCenter = Math.abs(d) < 0.5;
+            return (
+              <div key={it.id} className="absolute left-1/2 top-0 will-change-transform" style={cardStyle(d)}>
+                <div
+                  role={isCenter ? 'link' : 'button'}
+                  tabIndex={Math.abs(d) <= reach ? 0 : -1}
+                  aria-label={isCenter ? `Buka: ${it.title}` : `Tampilkan: ${it.title}`}
+                  onClick={() => (isCenter ? openItem(it) : setActive(i))}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (isCenter) openItem(it); else setActive(i); } }}
+                  className={`${shell} cursor-inherit`}
+                >
+                  <CoverBody it={it} center={isCenter} />
+                </div>
               </div>
-            </ItemLink>
-          </div>
-        ))}
+            );
+          })}
+        </div>
 
-        {/* Kartu penutup: Lihat Semua -> Instagram */}
-        {ig && (
-          <div className="shrink-0" style={{ width: HG_CARD_W, height: HG_CARD_H, scrollSnapAlign: 'center' }}>
-            <Link
-              to={ig.url} draggable={false}
-              className="flex h-full w-full flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-white/20 bg-white/5 text-center backdrop-blur transition-colors hover:border-[#FFDD00]/60 hover:bg-white/10"
-            >
-              <span className="grid h-14 w-14 place-items-center rounded-full bg-[#FFDD00] text-[#00383b] transition-transform group-hover:translate-x-1">
-                <ArrowRight size={22} />
-              </span>
-              <span className="text-sm font-black uppercase tracking-wider text-white">Lihat Semua</span>
-            </Link>
-          </div>
-        )}
+        <button
+          type="button" onClick={() => go(-1)} aria-label="Sebelumnya"
+          className="absolute left-2 top-1/2 z-[120] hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-slate-200 bg-white/90 text-[#006569] shadow-lg backdrop-blur transition hover:bg-[#006569] hover:text-[#FFDD00] md:grid"
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <button
+          type="button" onClick={() => go(1)} aria-label="Berikutnya"
+          className="absolute right-2 top-1/2 z-[120] hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-slate-200 bg-white/90 text-[#006569] shadow-lg backdrop-blur transition hover:bg-[#006569] hover:text-[#FFDD00] md:grid"
+        >
+          <ArrowRight size={20} />
+        </button>
+      </div>
+
+      <div className="mt-8 flex justify-center gap-2" role="tablist" aria-label="Pilih kegiatan">
+        {list.map((it, i) => (
+          <button
+            key={it.id} type="button" role="tab" aria-selected={i === active} aria-label={`Kegiatan ${i + 1}`}
+            onClick={() => setActive(i)}
+            className={`h-2 rounded-full transition-all duration-300 ${i === active ? 'w-8 bg-[#006569]' : 'w-2 bg-slate-300 hover:bg-slate-400'}`}
+          />
+        ))}
       </div>
     </section>
   );
@@ -330,7 +391,6 @@ export const HighlightCoverflow = () => {
 export const HomeSections = () => (
   <>
     <ProgramUnggulan />
-    <KegiatanTerbaru />
     <HighlightCoverflow />
   </>
 );

@@ -220,11 +220,11 @@ export const PROGRAMS = [
     title: 'Pendidikan dan Pelatihan Karakter',
     icon: 'graduation',
     image: IMG('diklat-menwa-unj'),
-    short: 'Pendidikan dan pelatihan berjenjang untuk membentuk karakter, disiplin, dan kepemimpinan.',
+    short: 'Pendidikan dan pelatihan bertingkat, berjenjang, dan berlanjut untuk membentuk karakter, disiplin, dan kepemimpinan.',
     badge: 'Pendidikan & Pelatihan',
     heroLead: 'Pendidikan dan',
     heroAccent: 'Pelatihan Karakter',
-    heroSub: 'Menempa disiplin, kepemimpinan, dan karakter melalui pendidikan yang berjenjang.',
+    heroSub: 'Menempa disiplin, kepemimpinan, dan karakter melalui pendidikan bertingkat, berjenjang, dan berlanjut.',
     about: [
       'Pendidikan dan Pelatihan Karakter membentuk disiplin, kepemimpinan, dan kemampuan anggota melalui tahapan yang terencana.',
       'Rincian jenjang pendidikan tersedia di tab Pendidikan dan Pelatihan.',
@@ -351,3 +351,21 @@ export const expectedImages = [
     ...KEGIATAN.map((k) => k.image),
   ]),
 ];
+
+
+// ------------------------------------------------------------
+//  PEMUTAR MUSIK (tombol kanan atas). Taruh file di public/musik/ :
+//     public/musik/jazz.mp3   public/musik/pop.mp3   public/musik/rock.mp3
+//  Sampul opsional: public/musik/jazz.jpg, pop.jpg, rock.jpg (kalau tidak ada, dipakai sampul gradien).
+//  Ubah title / artist sesuai judul lagu sebenarnya.
+//  PENTING: pakai lagu bebas royalti atau berlisensi, karena website ini publik.
+// ------------------------------------------------------------
+export const MUSIC = {
+  autoplay: true,   // coba putar otomatis saat web dibuka
+  volume: 0.5,      // 0 - 1
+  tracks: [
+    { id: 'jazz', title: 'Jazz', artist: 'Playlist Menwa UNJ', file: '/musik/jazz.mp3', cover: '/musik/jazz.jpg', from: '#1e3a8a', to: '#f59e0b' },
+    { id: 'pop',  title: 'Pop',  artist: 'Playlist Menwa UNJ', file: '/musik/pop.mp3',  cover: '/musik/pop.jpg',  from: '#9d174d', to: '#fb923c' },
+    { id: 'rock', title: 'Rock', artist: 'Playlist Menwa UNJ', file: '/musik/rock.mp3', cover: '/musik/rock.jpg', from: '#7f1d1d', to: '#52525b' },
+  ],
+};

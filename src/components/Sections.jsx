@@ -180,51 +180,147 @@ export const KegiatanTerbaru = ({ limit = 4 }) => {
 };
 
 /* ============================================================
-   3. SOROTAN GIAT — grid kartu statis (bukan geser/carousel).
-      Reveal halus satu kali saat discroll, tanpa auto-geser.
+   3. SOROTAN GIAT — coverflow yang digeser dengan TANGAN (klik/tap-tahan
+      lalu seret kursor). Tidak statis, tidak auto-geser: posisi kartu
+      murni mengikuti seberapa jauh kamu menyeretnya. Browser snap ke
+      kartu terdekat begitu dilepas. Tilt tiap kartu dihitung dari jarak
+      ke tengah memakai scroll listener (rAF), tanpa setState per frame.
    ============================================================ */
-export const HighlightGrid = () => {
+const HG_CARD_W = 280;
+const HG_CARD_H = 420;
+
+export const HighlightCoverflow = () => {
   const all = useKegiatan();
   const picked = all.filter((k) => k.highlight);
-  const list = (picked.length >= 3 ? picked : all).slice(0, 8);
+  const list = picked.length >= 3 ? picked : all;
+
+  const trackRef = useRef(null);
+  const cardRefs = useRef([]);
+  const rafId = useRef(null);
+  const drag = useRef({ down: false, startX: 0, startScroll: 0, moved: false });
+
+  const applyTilt = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const mid = rect.left + rect.width / 2;
+    cardRefs.current.forEach((card) => {
+      if (!card) return;
+      const r = card.getBoundingClientRect();
+      const d = (r.left + r.width / 2 - mid) / (HG_CARD_W * 0.92);
+      const c = Math.max(-2, Math.min(2, d));
+      const a = Math.min(Math.abs(c), 1);
+      card.style.transform = `perspective(1300px) translateZ(${-Math.abs(c) * 130}px) rotateY(${c * -32}deg) scale(${1 - a * 0.16})`;
+      card.style.opacity = String(Math.max(1 - Math.min(Math.abs(c), 1.7) * 0.5, 0.2));
+      card.style.zIndex = String(100 - Math.round(Math.abs(c) * 10));
+    });
+  };
+
+  const onScroll = () => {
+    if (rafId.current) return;
+    rafId.current = requestAnimationFrame(() => { applyTilt(); rafId.current = null; });
+  };
+
+  useEffect(() => {
+    applyTilt();
+    const el = trackRef.current;
+    el?.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    // mulai dari kartu tengah
+    if (el) el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
+    return () => { el?.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); if (rafId.current) cancelAnimationFrame(rafId.current); };
+  }, [list.length]);
+
+  // Drag-to-scroll (mouse/pen): tekan-tahan lalu seret. Di HP cukup swipe biasa (native).
+  const onPointerDown = (e) => {
+    if (e.pointerType === 'touch') return;
+    const el = trackRef.current; if (!el) return;
+    drag.current = { down: true, startX: e.clientX, startScroll: el.scrollLeft, moved: false };
+    el.setPointerCapture?.(e.pointerId);
+  };
+  const onPointerMove = (e) => {
+    const el = trackRef.current;
+    if (!el || !drag.current.down) return;
+    const dx = e.clientX - drag.current.startX;
+    if (Math.abs(dx) > 4) drag.current.moved = true;
+    el.scrollLeft = drag.current.startScroll - dx;
+  };
+  const endDrag = () => { drag.current.down = false; };
+  const onClickCapture = (e) => {
+    if (drag.current.moved) { e.preventDefault(); e.stopPropagation(); drag.current.moved = false; }
+  };
+
+  const ig = SITE.social.find((s) => s.type === 'instagram');
 
   return (
     <section id="sorotan-giat" className="relative overflow-hidden bg-slate-950 py-20">
+      <style>{`
+        .hg-track{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;touch-action:pan-x;}
+        .hg-track::-webkit-scrollbar{display:none}
+      `}</style>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal>
-          <div className="mx-auto mb-12 max-w-2xl text-center">
+          <div className="mx-auto mb-4 max-w-2xl text-center">
             <h2 className="text-3xl font-black tracking-tight text-white md:text-5xl">
               Sorotan <span className="text-[#FFDD00]">Giat</span>
             </h2>
-            <p className="mt-4 text-slate-400">Jejak kegiatan terbaik Menwa UNJ. Klik kartu untuk melihat detail.</p>
+            <p className="mt-4 text-slate-400">Klik dan tahan, lalu seret untuk menjelajahi. Klik kartu untuk melihat detail.</p>
           </div>
         </Reveal>
+      </div>
 
-        <Stagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4" itemClassName="h-full" step={90}>
-          {list.map((it) => (
-            <ItemLink
-              key={it.id} item={it}
-              className="group relative block h-[380px] overflow-hidden rounded-[2rem] border border-white/10 shadow-xl transition-transform duration-500 hover:-translate-y-2"
-            >
+      <div
+        ref={trackRef}
+        className="hg-track flex cursor-grab select-none gap-6 overflow-x-auto px-[16vw] py-14 active:cursor-grabbing sm:px-[30vw]"
+        style={{ scrollSnapType: 'x proximity', perspective: '1300px' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerLeave={endDrag}
+        onClickCapture={onClickCapture}
+      >
+        {list.map((it, i) => (
+          <div
+            key={it.id}
+            ref={(el) => (cardRefs.current[i] = el)}
+            className="shrink-0 will-change-transform"
+            style={{ width: HG_CARD_W, height: HG_CARD_H, scrollSnapAlign: 'center' }}
+          >
+            <ItemLink item={it} draggable={false} className="group relative block h-full w-full overflow-hidden rounded-[2rem] border border-white/10 bg-white shadow-[0_28px_60px_-22px_rgba(0,0,0,.65)]">
               <SmartImg
                 src={imgSrc(it.image)} alt={it.title} fallback={it.category}
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/55 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-6">
-                <span className="inline-block rounded-full bg-[#FFDD00] px-3 py-1 text-[11px] font-black uppercase tracking-wider text-[#00383b]">{it.category}</span>
-                <h3 className="mt-3 line-clamp-3 text-lg font-black leading-snug text-white">{it.title}</h3>
-                <p className="mt-3 flex items-center gap-2 text-sm text-slate-300">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#FFDD00]" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-white via-white/90 to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5 text-left">
+                <span className="inline-flex rounded-full bg-[#006569] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-[#FFDD00]">{it.category}</span>
+                <h3 className="mt-2 line-clamp-2 text-lg font-black leading-snug text-slate-900">{it.title}</h3>
+                <p className="mt-2 flex items-center gap-2 text-xs font-semibold text-slate-600">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#006569]" />
                   {it.location || it.date || 'Menwa UNJ'}
                 </p>
-                <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#FFDD00] opacity-0 transition-opacity group-hover:opacity-100">
+                <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#006569]">
                   {it.program ? 'Selengkapnya' : 'Lihat postingan'} <ArrowRight size={13} />
                 </span>
               </div>
             </ItemLink>
-          ))}
-        </Stagger>
+          </div>
+        ))}
+
+        {/* Kartu penutup: Lihat Semua -> Instagram */}
+        {ig && (
+          <div className="shrink-0" style={{ width: HG_CARD_W, height: HG_CARD_H, scrollSnapAlign: 'center' }}>
+            <Link
+              to={ig.url} draggable={false}
+              className="flex h-full w-full flex-col items-center justify-center gap-4 rounded-[2rem] border border-dashed border-white/20 bg-white/5 text-center backdrop-blur transition-colors hover:border-[#FFDD00]/60 hover:bg-white/10"
+            >
+              <span className="grid h-14 w-14 place-items-center rounded-full bg-[#FFDD00] text-[#00383b] transition-transform group-hover:translate-x-1">
+                <ArrowRight size={22} />
+              </span>
+              <span className="text-sm font-black uppercase tracking-wider text-white">Lihat Semua</span>
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -234,8 +330,7 @@ export const HighlightGrid = () => {
 export const HomeSections = () => (
   <>
     <ProgramUnggulan />
-    <KegiatanTerbaru />
-    <HighlightGrid />
+    <HighlightCoverflow />
   </>
 );
 
@@ -496,7 +591,7 @@ export const ProgramPage = ({ slug }) => {
   const others = PROGRAMS.filter((p) => p.slug !== slug);
 
   return (
-    <div className="flex-grow bg-slate-50 font-sans">
+    <div className="flex-grow bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-300">
       <SubHero program={program} />
 
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">

@@ -36,9 +36,10 @@ import {
 } from 'lucide-react';
 import {
   MotionStyles, Reveal, ScrollProgress, CursorGlow, CursorFollower,
-  HeroStage, HeroLogo, NavBar, TabSwitch
+  HeroStage, HeroLogo, NavBar, TabSwitch, ThemeToggle, TypeCycle
 } from './components/MenwaUI';
 import { HomeSections, SiteFooter, ProgramPage } from './components/Sections';
+import { MusicPlayer } from './components/MusicPlayer';
 import { useRoute, navigate, TAB_PATHS, PATH_TABS } from './lib/router';
 import { PROGRAMS, HERO_PHOTO } from './data/siteData';
 
@@ -363,7 +364,9 @@ const BerandaTab = () => {
       <section className="py-28 bg-slate-950 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <RevealOnScroll className="text-center mb-20">
-            <h3 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 drop-shadow-2xl">Kebanggaan Menwa UNJ</h3>
+            <h3 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4 drop-shadow-2xl min-h-[1.3em]">
+              <TypeCycle prefix="Menwa UNJ dalam " words={['Pengabdian', 'Anggota', 'Prestasi', 'Perlombaan']} />
+            </h3>
             <div className="h-1.5 w-32 bg-[#006569] mx-auto rounded-full shadow-[0_0_15px_rgba(0,101,105,0.8)]"></div>
           </RevealOnScroll>
 
@@ -523,7 +526,7 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
   ];
 
   return (
-    <div className="bg-slate-100 min-h-screen pb-32 font-sans flex-grow">
+    <div className="bg-slate-100 dark:bg-slate-950 min-h-screen pb-32 font-sans flex-grow transition-colors duration-300">
       <RevealOnScroll className="bg-gradient-to-r from-slate-950 via-[#00383b] to-[#006569] pt-32 pb-48 px-4 text-center relative shadow-2xl overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4">Garis Komando Satuan</h2>
@@ -719,15 +722,16 @@ const StrukturOrganisasiTab = ({ onNavigate }) => {
 };
 
 const PendidikanTab = () => {
-  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [expandedCourseId, setExpandedCourseId] = useState(null);
+  const toggleCourse = (id) => setExpandedCourseId((cur) => (cur === id ? null : id));
 
   const pendidikanBerjenjang = [
     {
       id: 1,
       title: "Pendidikan Dasar Satuan",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "5 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Pendidikan tingkat dasar satuan untuk membentuk mental, disiplin, wawasan kebangsaan, dan dasar olah keprajuritan bagi calon anggota Resimen Mahasiswa Jayakarta Satuan UNJ.",
       curriculum: [
         "Kemenwaan: Dasar Organisasi, Sejarah Menwa Satuan, PDRM",
@@ -742,9 +746,9 @@ const PendidikanTab = () => {
     {
       id: 2,
       title: "Latihan Pemantapan Komando",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "5 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Ujian pemantapan fisik, mental, dan tradisi komando di daerah latihan Koramil Sukamakmur - Curug Benjol Bogor sebelum pengukuhan resmi penyematan Baret Ungu Menwa UNJ.",
       curriculum: [
         "Long March 14 KM (Sukamakmur - Curug Benjol)",
@@ -759,9 +763,9 @@ const PendidikanTab = () => {
     {
       id: 3,
       title: "Kursus Dinas Staf",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "4 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Menempa kemampuan manajerial, pembuatan naskah dinas staf, perencanaan operasional, serta interoperabilitas antar-seksi staf markas komando.",
       curriculum: [
         "Materi Staf PAM (Pengamanan & Kontra-Intel)",
@@ -776,9 +780,9 @@ const PendidikanTab = () => {
     {
       id: 4,
       title: "Pendidikan Provos Satuan",
-      level: "Pendidikan Berjenjang",
+      level: "Pendidikan Bertingkat",
       duration: "3 Hari",
-      category: "Berjenjang",
+      category: "Bertingkat",
       desc: "Spesialisasi penegakan disiplin, tata tertib, pengawasan etika keprajuritan, serta pengamanan internal Mako Satuan UNJ.",
       curriculum: [
         "Tupoksi & Wewenang Provos Satuan",
@@ -797,9 +801,9 @@ const PendidikanTab = () => {
     {
       id: 5,
       title: "Pendidikan Dasar Militer",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "10 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Pendidikan dasar keprajuritan tingkat utama yang diselenggarakan oleh Kodam/Rindam Jaya untuk membentuk karakter prajurit mahasiswa.",
       curriculum: [
         "Doktrin Pertahanan Negara & Militer Dasar",
@@ -812,9 +816,9 @@ const PendidikanTab = () => {
     {
       id: 6,
       title: "Kursus Kader Pelaksana",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "20 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Penggemblengan calon pimpinan operasional dan komandan poko pasukan di tingkat Skomen Jayakarta maupun Nasional.",
       curriculum: [
         "Kepemimpinan Taktis Lapangan (Field Leadership)",
@@ -826,9 +830,9 @@ const PendidikanTab = () => {
     {
       id: 7,
       title: "Kursus Dinas Staf",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "6 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Pendalaman tata kelola dinas staf markas komando tingkat provinsi/Jayakarta.",
       curriculum: [
         "Manajemen Staf Komando Gabungan",
@@ -840,9 +844,9 @@ const PendidikanTab = () => {
     {
       id: 8,
       title: "Kursus Pelatih Nasional",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "10 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Mencetak instruktur dan pelatih bertaraf nasional yang handal dalam mentransfer ilmu olah keprajuritan dan kurikulum Diksar Menwa.",
       curriculum: [
         "Metodologi Pelatihan (Andragogi & CMI)",
@@ -854,9 +858,9 @@ const PendidikanTab = () => {
     {
       id: 9,
       title: "Kursus Kader Pimpinan",
-      level: "Pendidikan Bertingkat",
+      level: "Pendidikan Berjenjang",
       duration: "20 Hari",
-      category: "Bertingkat",
+      category: "Berjenjang",
       desc: "Pendidikan kualifikasi pimpinan tertinggi Resimen Mahasiswa tingkat nasional untuk mencetak Komandan Satuan dan Komandan Kompleks.",
       curriculum: [
         "Strategi Pertahanan Nasional & Kebijakan Publik",
@@ -913,7 +917,7 @@ const PendidikanTab = () => {
   ];
 
   return (
-    <div className="bg-slate-100 min-h-screen pb-32 font-sans flex-grow">
+    <div className="bg-slate-100 dark:bg-slate-950 min-h-screen pb-32 font-sans flex-grow transition-colors duration-300">
       {/* Header Banner */}
       <RevealOnScroll className="bg-gradient-to-r from-slate-950 via-[#00383b] to-[#006569] pt-32 pb-48 px-4 text-center relative shadow-2xl overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
@@ -928,184 +932,172 @@ const PendidikanTab = () => {
       </RevealOnScroll>
 
       <div className="max-w-7xl mx-auto px-4 -mt-32 relative z-20 space-y-12">
-        {/* SUBJUDUL 1: Pendidikan Berjenjang */}
+        {/* SUBJUDUL 1: Pendidikan Bertingkat (dulu salah tertulis "Berjenjang") */}
         <RevealOnScroll delay={100} className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-slate-200">
           <div className="text-center mb-10">
             <h3 className="text-2xl font-black text-slate-900 inline-flex items-center tracking-tight border-b-4 border-[#006569] pb-3">
-              <Shield className="mr-3 text-[#006569]" size={28}/> Pendidikan Berjenjang
+              <Shield className="mr-3 text-[#006569]" size={28}/> Pendidikan Bertingkat
             </h3>
-            <p className="text-slate-500 mt-3 font-medium text-sm">Jenjang pembinaan internal utama anggota Resimen Mahasiswa Satuan UNJ.</p>
+            <p className="text-slate-500 mt-3 font-medium text-sm">Jenjang pembinaan internal utama anggota Resimen Mahasiswa Satuan UNJ. Klik kartu untuk melihat Renlat & detail modul.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {pendidikanBerjenjang.map((course) => (
-              <div 
-                key={course.id}
-                onClick={() => setSelectedCourse(course)}
-                className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex justify-between items-start mb-3">
-                    <span className="bg-[#006569]/10 text-[#006569] font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">
-                      {course.level}
-                    </span>
-                    <span className="text-xs font-bold text-slate-500 flex items-center">
-                      <Clock size={12} className="mr-1 text-[#006569]" /> {course.duration}
-                    </span>
+            {pendidikanBerjenjang.map((course) => {
+              const open = expandedCourseId === course.id;
+              return (
+                <div
+                  key={course.id}
+                  onClick={() => toggleCourse(course.id)}
+                  className={`rounded-2xl p-6 border transition-all cursor-pointer flex flex-col justify-between ${open ? 'bg-[#006569]/5 border-[#006569] shadow-xl ring-2 ring-[#006569]/20' : 'bg-slate-50 border-slate-200 hover:border-[#006569] hover:shadow-xl'}`}
+                >
+                  <div>
+                    <div className="flex justify-between items-start mb-3">
+                      <span className="bg-[#006569]/10 text-[#006569] font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">
+                        {course.level}
+                      </span>
+                      <span className="text-xs font-bold text-slate-500 flex items-center">
+                        <Clock size={12} className="mr-1 text-[#006569]" /> {course.duration}
+                      </span>
+                    </div>
+                    <h4 className="font-black text-slate-900 text-lg mb-2">{course.title}</h4>
+                    <p className="text-slate-600 text-xs font-medium leading-relaxed">{course.desc}</p>
+
+                    {open && (
+                      <div className="mt-5 pt-4 border-t border-[#006569]/20 space-y-2">
+                        <h5 className="text-[11px] font-black uppercase text-[#006569] tracking-wider flex items-center gap-1 mb-2">
+                          <Target size={12} /> Acara Pendidikan & Materi Utama (Renlat):
+                        </h5>
+                        {course.curriculum.map((item, idx) => (
+                          <div key={idx} className="flex items-center text-xs font-bold text-slate-700 bg-white p-3 rounded-lg border border-[#006569]/20">
+                            <CheckCircle size={14} className="text-[#006569] mr-2 shrink-0" /> {item}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <h4 className="font-black text-slate-900 text-lg mb-2 group-hover:text-[#006569] transition-colors">
-                    {course.title} - {course.duration}
-                  </h4>
-                  <p className="text-slate-600 text-xs font-medium leading-relaxed line-clamp-3">
-                    {course.desc}
-                  </p>
+                  <div className="pt-4 mt-4 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-[#006569]">
+                    <span>{open ? 'Tutup Detail' : 'Lihat Renlat & Detail Modul'}</span>
+                    <ChevronRight size={16} className={`transition-transform ${open ? 'rotate-90' : ''}`} />
+                  </div>
                 </div>
-                <div className="pt-4 mt-4 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-[#006569]">
-                  <span>Lihat Renlat & Detail Modul</span>
-                  <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </RevealOnScroll>
 
-        {/* SUBJUDUL 2: Pendidikan Bertingkat */}
+        {/* SUBJUDUL 2: Pendidikan Berjenjang (dulu salah tertulis "Bertingkat") */}
         <RevealOnScroll delay={200} className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-slate-200">
           <div className="text-center mb-10">
             <h3 className="text-2xl font-black text-slate-900 inline-flex items-center tracking-tight border-b-4 border-[#FFDD00] pb-3">
-              <Award className="mr-3 text-[#006569]" size={28}/> Pendidikan Bertingkat
+              <Award className="mr-3 text-[#006569]" size={28}/> Pendidikan Berjenjang
             </h3>
-            <p className="text-slate-500 mt-3 font-medium text-sm">Jenjang pendidikan kualifikasi komando tingkat provinsi dan nasional.</p>
+            <p className="text-slate-500 mt-3 font-medium text-sm">Jenjang pendidikan kualifikasi komando tingkat provinsi dan nasional. Klik kartu untuk melihat detail modul.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {pendidikanBertingkat.map((course) => (
-              <div 
-                key={course.id}
-                onClick={() => setSelectedCourse(course)}
-                className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex justify-between items-start mb-3">
-                    <span className="bg-[#FFDD00] text-slate-950 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
-                      {course.level}
-                    </span>
-                    <span className="text-xs font-bold text-slate-500 flex items-center">
-                      <Clock size={12} className="mr-1 text-[#006569]" /> {course.duration}
-                    </span>
+            {pendidikanBertingkat.map((course) => {
+              const open = expandedCourseId === course.id;
+              return (
+                <div
+                  key={course.id}
+                  onClick={() => toggleCourse(course.id)}
+                  className={`rounded-2xl p-6 border transition-all cursor-pointer flex flex-col justify-between ${open ? 'bg-[#FFDD00]/10 border-[#006569] shadow-xl ring-2 ring-[#006569]/20' : 'bg-slate-50 border-slate-200 hover:border-[#006569] hover:shadow-xl'}`}
+                >
+                  <div>
+                    <div className="flex justify-between items-start mb-3">
+                      <span className="bg-[#FFDD00] text-slate-950 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
+                        {course.level}
+                      </span>
+                      <span className="text-xs font-bold text-slate-500 flex items-center">
+                        <Clock size={12} className="mr-1 text-[#006569]" /> {course.duration}
+                      </span>
+                    </div>
+                    <h4 className="font-black text-slate-900 text-base mb-2">{course.title}</h4>
+                    <p className="text-slate-600 text-xs font-medium leading-relaxed">{course.desc}</p>
+
+                    {open && (
+                      <div className="mt-5 pt-4 border-t border-[#006569]/20 space-y-2">
+                        <h5 className="text-[11px] font-black uppercase text-[#006569] tracking-wider flex items-center gap-1 mb-2">
+                          <Target size={12} /> Materi Utama:
+                        </h5>
+                        {course.curriculum.map((item, idx) => (
+                          <div key={idx} className="flex items-center text-xs font-bold text-slate-700 bg-white p-3 rounded-lg border border-[#006569]/20">
+                            <CheckCircle size={14} className="text-[#006569] mr-2 shrink-0" /> {item}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <h4 className="font-black text-slate-900 text-base mb-2 group-hover:text-[#006569] transition-colors">
-                    {course.title} - {course.duration}
-                  </h4>
-                  <p className="text-slate-600 text-xs font-medium leading-relaxed line-clamp-3">
-                    {course.desc}
-                  </p>
+                  <div className="pt-4 mt-4 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-[#006569]">
+                    <span>{open ? 'Tutup Detail' : 'Lihat Detail Modul'}</span>
+                    <ChevronRight size={16} className={`transition-transform ${open ? 'rotate-90' : ''}`} />
+                  </div>
                 </div>
-                <div className="pt-4 mt-4 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-[#006569]">
-                  <span>Lihat Detail Modul</span>
-                  <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </RevealOnScroll>
 
-        {/* SUBJUDUL 3: Pendidikan Lanjutan */}
+        {/* SUBJUDUL 3: Pendidikan Lanjutan (tidak berubah) */}
         <RevealOnScroll delay={300} className="bg-slate-900 text-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-slate-800">
           <div className="text-center mb-10">
             <h3 className="text-2xl font-black text-white inline-flex items-center tracking-tight border-b-4 border-[#006569] pb-3">
               <Target className="mr-3 text-[#FFDD00]" size={28}/> Pendidikan Lanjutan
             </h3>
-            <p className="text-slate-400 mt-3 font-medium text-sm">Pendidikan spesialisasi pembinaan mental, keprotokolan, dan intelijen pengamanan.</p>
+            <p className="text-slate-400 mt-3 font-medium text-sm">Pendidikan spesialisasi pembinaan mental, keprotokolan, dan intelijen pengamanan. Klik kartu untuk melihat spesialisasi.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {pendidikanLanjutan.map((course) => (
-              <div 
-                key={course.id}
-                onClick={() => setSelectedCourse(course)}
-                className="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 hover:border-[#FFDD00] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex justify-between items-start mb-3">
-                    <span className="bg-[#006569] text-[#FFDD00] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider border border-[#FFDD00]/30">
-                      {course.level}
-                    </span>
-                    <span className="text-xs font-bold text-slate-400 flex items-center">
-                      <Clock size={12} className="mr-1 text-[#FFDD00]" /> {course.duration}
-                    </span>
+            {pendidikanLanjutan.map((course) => {
+              const open = expandedCourseId === course.id;
+              return (
+                <div
+                  key={course.id}
+                  onClick={() => toggleCourse(course.id)}
+                  className={`rounded-2xl p-6 border transition-all cursor-pointer flex flex-col justify-between ${open ? 'bg-[#006569]/40 border-[#FFDD00] shadow-xl ring-2 ring-[#FFDD00]/30' : 'bg-slate-800/80 border-slate-700 hover:border-[#FFDD00] hover:shadow-xl'}`}
+                >
+                  <div>
+                    <div className="flex justify-between items-start mb-3">
+                      <span className="bg-[#006569] text-[#FFDD00] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider border border-[#FFDD00]/30">
+                        {course.level}
+                      </span>
+                      <span className="text-xs font-bold text-slate-400 flex items-center">
+                        <Clock size={12} className="mr-1 text-[#FFDD00]" /> {course.duration}
+                      </span>
+                    </div>
+                    <h4 className="font-black text-white text-base mb-2">{course.title}</h4>
+                    <p className="text-slate-300 text-xs font-medium leading-relaxed">{course.desc}</p>
+
+                    {open && (
+                      <div className="mt-5 pt-4 border-t border-slate-700 space-y-2">
+                        <h5 className="text-[11px] font-black uppercase text-[#FFDD00] tracking-wider flex items-center gap-1 mb-2">
+                          <Target size={12} /> Spesialisasi:
+                        </h5>
+                        {course.curriculum.map((item, idx) => (
+                          <div key={idx} className="flex items-center text-xs font-bold text-slate-200 bg-slate-800 p-3 rounded-lg border border-slate-700">
+                            <CheckCircle size={14} className="text-[#FFDD00] mr-2 shrink-0" /> {item}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <h4 className="font-black text-white text-base mb-2 group-hover:text-[#FFDD00] transition-colors">
-                    {course.title} - {course.duration}
-                  </h4>
-                  <p className="text-slate-300 text-xs font-medium leading-relaxed line-clamp-3">
-                    {course.desc}
-                  </p>
+                  <div className="pt-4 mt-4 border-t border-slate-700 flex items-center justify-between text-xs font-bold text-[#FFDD00]">
+                    <span>{open ? 'Tutup Detail' : 'Lihat Spesialisasi'}</span>
+                    <ChevronRight size={16} className={`transition-transform ${open ? 'rotate-90' : ''}`} />
+                  </div>
                 </div>
-                <div className="pt-4 mt-4 border-t border-slate-700 flex items-center justify-between text-xs font-bold text-[#FFDD00]">
-                  <span>Lihat Spesialisasi</span>
-                  <ChevronRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </RevealOnScroll>
       </div>
-
-      {/* Course Detail Modal */}
-      {selectedCourse && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md transition-opacity" onClick={() => setSelectedCourse(null)}>
-          <div className="bg-white rounded-3xl w-full max-w-2xl p-8 shadow-2xl relative border border-slate-200" onClick={(e) => e.stopPropagation()}>
-            <button 
-              onClick={() => setSelectedCourse(null)} 
-              className="absolute top-4 right-4 bg-slate-100 hover:bg-[#006569] hover:text-white p-2 rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
-
-            <div className="flex items-center gap-3 mb-3">
-              <span className="px-3 py-1 bg-[#006569] text-[#FFDD00] text-[10px] font-black uppercase tracking-wider rounded-lg">
-                {selectedCourse.level}
-              </span>
-              <span className="text-xs font-bold text-slate-500 flex items-center">
-                <Clock size={14} className="mr-1 text-[#006569]" /> Durasi: {selectedCourse.duration}
-              </span>
-            </div>
-
-            <h3 className="text-2xl font-black text-slate-900 mb-3">{selectedCourse.title}</h3>
-            <p className="text-slate-600 text-sm font-medium leading-relaxed mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
-              {selectedCourse.desc}
-            </p>
-
-            <h4 className="font-black text-slate-900 text-sm uppercase tracking-wider mb-3 flex items-center">
-              <Target size={16} className="mr-2 text-[#006569]" /> Acara Pendidikan & Materi Utama (Renlat):
-            </h4>
-            <ul className="space-y-2 mb-8 max-h-60 overflow-y-auto pr-2">
-              {selectedCourse.curriculum.map((item, idx) => (
-                <li key={idx} className="flex items-center text-xs font-bold text-slate-700 bg-[#006569]/5 p-3 rounded-lg border border-[#006569]/20">
-                  <CheckCircle size={16} className="text-[#006569] mr-2 shrink-0" /> {item}
-                </li>
-              ))}
-            </ul>
-
-            <div className="flex justify-end">
-              <button 
-                onClick={() => setSelectedCourse(null)}
-                className="bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] text-xs font-bold px-6 py-3 rounded-xl transition-colors"
-              >
-                Tutup Detail Pendidikan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
 const MakoTab = () => {
   return (
-    <div className="bg-slate-100 min-h-screen pb-32 font-sans flex-grow">
+    <div className="bg-slate-100 dark:bg-slate-950 min-h-screen pb-32 font-sans flex-grow transition-colors duration-300">
       <RevealOnScroll className="bg-gradient-to-r from-slate-950 via-[#00383b] to-[#006569] pt-32 pb-48 px-4 text-center relative shadow-2xl">
         <div className="max-w-7xl mx-auto relative z-10">
           <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4">Markas Komando (MAKO)</h2>
@@ -1176,10 +1168,10 @@ const AdministrasiUmumTab = () => {
       title: "Pendaftaran Lomba Nasional Ksatria Cendekia VIII",
       category: "Giat Perlombaan",
       desc: "Formulir pendaftaran Latihan Integrasi & Kompetisi Pemuda Nusantara Ksatria Cendekia VIII Tahun 2026.",
-      url: "https://www.instagram.com/kc_menwaunj/",
+      url: "/kc/",
       status: "Link Resmi",
       statusClass: "bg-[#FFDD00] text-slate-950",
-      ctaText: "Buka Portal Ksatria Cendekia"
+      ctaText: "Buka Halaman Ksatria Cendekia"
     },
     {
       id: 3,
@@ -1339,15 +1331,25 @@ const AdministrasiUmumTab = () => {
                       </p>
                     </div>
 
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                    >
-                      <span>{item.ctaText}</span>
-                      <ExternalLink size={14} />
-                    </a>
+                    {item.url.startsWith('/') ? (
+                      <button
+                        onClick={() => navigate(item.url)}
+                        className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                      >
+                        <span>{item.ctaText}</span>
+                        <ChevronRight size={14} />
+                      </button>
+                    ) : (
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                      >
+                        <span>{item.ctaText}</span>
+                        <ExternalLink size={14} />
+                      </a>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1465,11 +1467,16 @@ export default function App() {
   }, [program]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 selection:bg-[#006569] selection:text-[#FFDD00]">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 selection:bg-[#006569] selection:text-[#FFDD00] transition-colors duration-300">
       <MotionStyles />
       <ScrollProgress />
       <CursorGlow />
       <CursorFollower />
+
+      <div className="fixed top-4 right-4 z-[200] flex items-center gap-2">
+        <ThemeToggle />
+        <MusicPlayer />
+      </div>
 
       <Navigation
         activeTab={activeTab}

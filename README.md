@@ -1,57 +1,29 @@
-# Portal Komando Resimen Mahasiswa UNJ (v4)
+# Portal Komando Resimen Mahasiswa UNJ (v5)
 
 Sudah di-build & ditest lokal, **sukses tanpa error**.
 
-## Perubahan dari panduan v4 yang saya terapkan
+## Perubahan di pembaruan ini
 
-Semua sesuai `PANDUAN-v4.md`, **kecuali satu hal atas permintaan Anda**:
+1. **Logo & foto asli terpasang** — UNJ, Dispora DKI Jakarta, Kesbangpol DKI Jakarta, Konas, Skomen (logo Menwa Jayakarta), logo KC VIII, poster KC VIII, foto kampus, logo Geranat. Semua sudah saya kompres supaya ringan.
+2. **Konas** → "Komando Nasional Resimen Mahasiswa Indonesia", **Skomen** → "Staf Komando Resimen Mahasiswa Jayakarta" (keduanya sekarang pakai logo asli, bukan placeholder).
+3. **"Kegiatan Terbaru" dihapus** dari beranda — Sorotan Giat sudah mewakili.
+4. **Admin → Pendaftaran KC** sekarang membuka subtab `/kc/` langsung (bukan ke Instagram lagi).
+5. **Pendidikan**: popup/modal dihapus total → detail Renlat/modul sekarang muncul **inline** di dalam kartu saat diklik (seperti accordion Garis Komando). Urutan & label section ditukar jadi **Bertingkat → Berjenjang → Lanjutan**; isi tiap jenis pendidikan (Pendidikan Dasar Satuan, Latihan Pemantapan, Kursus Dinas Staf, Pendidikan Provos Satuan, dst.) **tidak berubah**, cuma label kelompoknya yang dikoreksi.
+6. **Drag coverflow Sorotan Giat**: saya cek ulang kodenya, strukturnya sudah benar (flex + overflow-x drag). Kalau di situs Anda masih tampil grid statis seperti sebelumnya, itu tandanya build lama belum ter-replace — lihat bagian "Cara Deploy" di bawah, pastikan **folder project ditimpa total**, bukan cuma beberapa file.
+7. **Pemutar musik** (`src/components/MusicPlayer.jsx`): tombol bulat di pojok kanan atas, panel ringkas ala Spotify (judul track, play/pause, next/prev, visual album, pemilih track cepat — sengaja dibuat ringkas, tidak memanjang). Autoplay dicoba begitu web dibuka; kalau browser memblokir (kebijakan umum semua browser modern), musik otomatis mulai begitu ada klik/ketukan pertama di halaman. **Anda perlu menaruh 3 file audio** di `public/audio/`: `jazz.mp3`, `pop.mp3`, `rock.mp3` — belum ada filenya, jadi tombol akan termuat tapi tidak bersuara sampai file ini ditaruh.
+8. **Mode terang/gelap**: tombol di sebelah tombol musik (ikon matahari/bulan), tersimpan di localStorage. Ini **pass pertama**: latar utama (beranda, tab Garis Komando/Pendidikan/Mako/Administrasi, halaman subtab program) sudah merespons dark mode. Kartu-kartu putih di dalamnya sengaja saya biarkan putih (pola umum dark-mode: halaman gelap + kartu terang), supaya tidak perlu menyentuh ratusan className satu per satu dengan risiko salah. Kalau ada bagian spesifik yang menurut Anda masih janggal di mode gelap, kabari bagian mana — saya perbaiki lebih presisi.
+9. **Animasi teks ketik** di bagian Statistik: "Menwa UNJ dalam **Pengabdian/Anggota/Prestasi/Perlombaan**" bergantian, meniru referensi video yang Anda kirim.
+10. **Hero & header subtab** sedikit diperkaya (partikel kecil melayang mengikuti kursor di hero, konsisten dengan arahan "dinamis tapi tidak terlalu statis" dari referensi UNJ) — struktur dasarnya (foto blur + parallax + ken-burns) sudah dinamis sejak v4, ini tambahan polesan.
 
-- **Sorotan Giat** tidak memakai `HighlightCoverflow` (kartu tengah besar + kartu samping miring, geser otomatis) dari panduan. Saya ganti jadi **`HighlightGrid`** — grid kartu statis (2 kolom di HP, 4 kolom di desktop), muncul dengan animasi reveal satu kali saat discroll, **tidak bergeser sendiri**. Klik kartu tetap membuka subtab program atau postingan Instagram seperti biasa. Komponen ini ada di `src/components/Sections.jsx`.
+## Yang masih perlu Anda lengkapi
 
-Semua bagian lain (Footer dengan 5 logo mitra, sosial media YouTube/Instagram/Facebook/TikTok, statistik baru, Garis Komando "FISH / Geografi", header subtab pakai foto beranda, header & timeline KC lengkap) mengikuti panduan v4 apa adanya.
+- `public/audio/jazz.mp3`, `pop.mp3`, `rock.mp3` — pemutar musik belum bersuara tanpa ini.
+- Cek tampilan dark mode di tiap tab; beri tahu saya bagian yang masih kurang pas kalau ada.
 
-## Struktur
+## Cara deploy (PENTING untuk masalah coverflow)
 
-```
-src/
-  App.jsx                  <- shell halaman, navbar, semua tab
-  components/MenwaUI.jsx   <- animasi, navbar, hero (tidak berubah dari v3)
-  components/Sections.jsx  <- Program Unggulan, Kegiatan Terbaru, Sorotan Giat (kartu), Footer, subtab
-  data/siteData.js         <- SATU-SATUNYA FILE YANG PERLU DIEDIT untuk konten
-  lib/router.jsx           <- router ringan tanpa dependency
-scripts/
-  prepare-images.mjs       <- rename + convert + kompres gambar kegiatan
-public/
-  logo-menwa-unj.png       <- belum ada, taruh file aslinya
-  logo-kc-viii.png         <- belum ada, logo KC untuk header /kc/
-  foto-kampus-unj.jpg      <- belum ada, foto hero beranda + semua subtab
-  mitra/unj.png, dispora.png, kesbangpol.png, konas.png  <- belum ada, logo "Didukung oleh"
-  dokumen/proposal-kc-viii-menwa-unj.pdf  <- belum ada, untuk tombol "Unduh PDF" di /kc/
-  kegiatan/                <- hasil scripts/prepare-images.mjs
-gambar-mentah/              <- taruh foto mentah di sini sebelum menjalankan scripts/prepare-images.mjs
-```
-
-> Belum ada satu pun file gambar/PDF di atas yang saya terima sebagai lampiran, jadi semuanya masih placeholder (fallback gradien hijau / pill disembunyikan / tombol unduh tidak tampil). Website tetap jalan normal tanpa file-file ini.
-
-## Jalankan lokal
-
-```bash
-npm install
-npm run dev
-```
-
-## Siapkan gambar kegiatan
-
-```bash
-npm i -D sharp
-# taruh foto mentah di folder gambar-mentah/
-npm run images
-```
-
-## Edit konten (tanpa sentuh kode)
-
-Semua ada di **`src/data/siteData.js`**. Lihat `PANDUAN-v4.md` untuk detail tiap bagian, termasuk 5 poin "perlu kamu isi/cek" (logo Skomen, juknis PDF, dasar timeline KC, dsb).
-
-## Deploy ke Vercel
-
-Push ke GitHub → import di vercel.com/new, atau `vercel` CLI. `vercel.json` sudah disiapkan supaya `/kc/` dan subtab lain tidak 404 saat dibuka/di-refresh langsung.
+1. Extract zip ini.
+2. **Hapus folder `menwa-portal` lama di laptop Anda sepenuhnya**, lalu ganti dengan folder baru dari zip ini (jangan cuma timpa sebagian file — banyak file baru & diubah di update ini).
+3. `npm install` → `npm run dev`, buka di browser, **coba scroll ke Sorotan Giat dan tahan-geser kartunya** untuk pastikan coverflow-nya jalan sebelum deploy.
+4. `git add .` → `git commit -m "v5: logo asli, musik, dark mode, dll"` → `git push`.
+5. Setelah Vercel selesai build, **hard refresh** (Ctrl+Shift+R / Cmd+Shift+R) di browser supaya tidak kena cache lama.
