@@ -1,25 +1,24 @@
 {
-  "name": "portal-komando-menwa-unj",
+  "name": "menwa-unj-portal",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "images": "node scripts/prepare-images.mjs"
+    "test:source": "node scripts/validate-source.mjs",
+    "test": "npm run test:source && npm run test:api && npm run build",
+    "test:api": "node --check api/chat.js"
   },
   "dependencies": {
-    "lucide-react": "^0.400.0",
+    "lucide-react": "^0.468.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^7.18.4"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.1",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.13",
-    "vite": "^5.4.8"
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.10",
+    "tailwindcss": "^4.3.0",
+    "@tailwindcss/vite": "^4.3.0"
   }
 }

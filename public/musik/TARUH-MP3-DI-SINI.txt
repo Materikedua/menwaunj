@@ -1,0 +1,6 @@
+Taruh file lagu di folder ini:
+  jazz.mp3
+  pop.mp3
+  rock.mp3
+Sampul opsional: jazz.jpg, pop.jpg, rock.jpg
+Gunakan lagu bebas royalti atau berlisensi.

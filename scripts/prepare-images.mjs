@@ -22,6 +22,7 @@ const OUT_DIR = 'public/kegiatan';
 const MAP = {
   'FLYER OPREC 2026.png': 'oprec-menwa-unj',
   '3X1 KC VIII.jpg': 'kc-menwa-unj',
+  'posterkc-menwa-unj.jpg': 'kc-menwa-unj',
   'CS GERANAT VII.jpg': 'geranat-menwa-unj',
   'Menwa UNJ_Pengabdian Cianjur.jpg': 'pengabdian-menwa-unj',
   // Tambahkan foto lain di sini, contoh:

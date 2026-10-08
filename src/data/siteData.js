@@ -14,6 +14,13 @@ export const IMG = (name) => `/kegiatan/${name}.jpg`;
 // ------------------------------------------------------------
 export const FEED_URL = '';
 
+/** Folder foto anggota Garis Komando dan ekstensinya (nama file = nama lengkap huruf kecil dengan strip). */
+export const FOTO_DIR = '/struktur/';
+export const FOTO_EXT = 'svg';
+
+/** Folder gambar header tiap halaman: public/header/header-<nama>.svg (lihat public/header/TARUH-SVG-DI-SINI.txt). */
+export const HEADER_DIR = '/header/';
+
 /** Foto hero beranda (foto bersama di UNJ). Dipakai juga sebagai latar header semua subtab. */
 export const HERO_PHOTO = '/foto-kampus-unj.jpg';
 
@@ -37,17 +44,17 @@ export const SITE = {
     { label: 'YouTube Menwa UNJ', url: 'https://www.youtube.com/@MenwaUNJ', type: 'youtube' },
     { label: 'Instagram Menwa UNJ', url: 'https://www.instagram.com/menwa.unjakarta/', type: 'instagram' },
     { label: 'Instagram Ksatria Cendekia', url: 'https://www.instagram.com/kc_menwaunj/', type: 'instagram' },
-    { label: 'Instagram Geranat', url: 'https://www.instagram.com/geranat_menwaunj/', type: 'instagram' },
+    { label: 'Instagram Gerakan Paskibra Semangat', url: 'https://www.instagram.com/geranat_menwaunj/', type: 'instagram' },
     { label: 'Facebook Menwa Univ Negeri Jakarta', url: 'https://www.facebook.com/menwauniv.negerijakarta.5?locale=id_ID', type: 'facebook' },
     { label: 'TikTok Menwa UNJ', url: 'https://www.tiktok.com/@menwa.unjakarta', type: 'tiktok' },
   ],
   // Logo di pill "Didukung oleh" (file di public/mitra/). Urutan = urutan tampil.
   partners: [
-    { name: 'Universitas Negeri Jakarta', logo: '/mitra/unj.png' },
     { name: 'Dispora DKI Jakarta', logo: '/mitra/dispora.png' },
-    { name: 'Kesbangpol Provinsi DKI Jakarta', logo: '/mitra/kesbangpol.png' },
-    { name: 'Komando Nasional Resimen Mahasiswa Indonesia', logo: '/mitra/konas.png' },
-    { name: 'Staf Komando Resimen Mahasiswa Jayakarta', logo: '/mitra/skomen.png' },
+    { name: 'Kesbangpol DKI Jakarta', logo: '/mitra/kesbangpol.png' },
+    { name: 'Universitas Negeri Jakarta', logo: '/mitra/unj.png' },
+    { name: 'Komando Nasional Resimen Mahasiswa', logo: '/mitra/konas.png' },
+    { name: 'Skomenwa Jayakarta', logo: '/mitra/skomenwa-jayakarta.png' },
   ],
 };
 
@@ -131,26 +138,55 @@ export const PROGRAMS = [
       {
         label: 'Petunjuk Teknis (Juknis)',
         desc: 'Ketentuan teknis tiap mata lomba.',
-        // Untuk unduhan langsung: taruh PDF di public/dokumen/ lalu isi, mis. '/dokumen/juknis-kc-viii-menwa-unj.pdf'
-        file: '',
+        // Taruh PDF juknis di public/dokumen/juknis-kc-viii-menwa-unj.pdf (nama persis). Bila file belum ada, tombol Unduh otomatis disembunyikan.
+        file: '/dokumen/juknis-kc-viii-menwa-unj.pdf',
         drive: 'https://drive.google.com/drive/folders/1LBWHxr1mJezqBGhaRrTZ5ol9U0c3d_5I?usp=sharing',
       },
     ],
+    docsButton: 'Lihat Proposal dan Juknis',
     cta: { label: 'Daftarkan Tim Kalian', url: 'https://bit.ly/PendaftaranKCVIII' },
     ig: 'https://www.instagram.com/kc_menwaunj/',
+  },
+  {
+    slug: 'youth-spark',
+    title: 'Youth Spark National',
+    icon: 'mic',
+    image: '/kegiatan/poster-youthspark.png',
+    logo: ['/mitra/unj.png', '/mitra/dispora.png'],
+    tag: 'Pendaftaran dibuka',
+    status: 'Pendaftaran dibuka',
+    short: 'Program pengembangan pemuda yang mewadahi pengetahuan dan minat bakat melalui seminar, kompetisi, dan pelatihan pelatih.',
+    badge: 'Program Kepemudaan • 2026',
+    heroLead: 'Youth Spark',
+    heroAccent: 'National',
+    heroSub: 'Wadah pengetahuan dan minat bakat para pemuda melalui berbagai kegiatan yang mendorong ruang belajar, jejaring, dan aksi.',
+    about: [
+      'Youth Spark National merupakan program yang mewadahi pengetahuan dan minat bakat para pemuda melalui berbagai kegiatan.',
+      'Program ini dikembangkan melalui tiga pilihan kegiatan: Seminar & Webinar, Kompetisi, dan Pelatihan Pelatih. Kolaborasi dengan Dinas Pemuda dan Olahraga DKI Jakarta ditampilkan khusus pada program Youth Spark.'
+    ],
+    facts: [
+      { label: 'Sasaran', value: 'Pemuda Indonesia' },
+      { label: 'Pilihan', value: '3 kegiatan' },
+      { label: 'Kolaborasi', value: 'DISPORA DKI Jakarta' },
+    ],
+    timeline: [],
+    details: [],
+    cta: { label: 'Pilih Kegiatan', url: '/youth-spark/seminar-webinar' },
   },
   {
     slug: 'geranat',
     title: 'Gerakan Paskibra Semangat',
     icon: 'flag',
     image: IMG('geranat-menwa-unj'),
-    short: 'Kompetisi baris-berbaris dan paskibra yang menyatukan langkah, semangat, dan kekompakan tim.',
-    badge: 'Kompetisi Paskibra • 2026',
+    // Logo Geranat: dicari berurutan di salah satu lokasi ini (pakai yang pertama ditemukan)
+    logo: ['/geranat-menwa-unj.png', '/kegiatan/geranat-menwa-unj.png', '/logo/geranat-menwa-unj.png'],
+    short: 'Gerakan Paskibra Semangat: kompetisi baris-berbaris dan paskibra yang menyatukan langkah, semangat, dan kekompakan tim.',
+    badge: 'Gerakan Paskibra Semangat • 2026',
     heroLead: 'Gerakan Paskibra',
-    heroAccent: 'Semangat VII',
-    heroSub: 'Rapatkan barisan, satukan langkah, kobarkan semangat.',
+    heroAccent: 'Semangat',
+    heroSub: 'Gerakan Paskibra Semangat. Rapatkan barisan, satukan langkah, kobarkan semangat.',
     about: [
-      'Gerakan Paskibra Semangat (Geranat) adalah kompetisi paskibra tahunan yang diselenggarakan Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta.',
+      'Gerakan Paskibra Semangat adalah kompetisi paskibra tahunan yang diselenggarakan Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta.',
       'Edisi ketujuh tahun 2026 segera hadir. Pantau informasi resmi di akun Instagram Geranat.',
     ],
     facts: [{ label: 'Jenis', value: 'Kompetisi Paskibra' }, { label: 'Edisi', value: 'VII' }, { label: 'Tahun', value: '2026' }],
@@ -178,24 +214,6 @@ export const PROGRAMS = [
     cta: { label: 'Hubungi Piket Mako', url: 'https://wa.me/6281525823503?text=Halo%20Piket%20Mako%20Menwa%20UNJ,%20saya%20ingin%20bertanya%20tentang%20Pengabdian%20Masyarakat.' },
   },
   {
-    slug: 'seminar',
-    title: 'Seminar Kepemudaan dan Bela Negara',
-    icon: 'mic',
-    image: IMG('seminar-menwa-unj'),
-    short: 'Forum edukasi wawasan kepemudaan dan bela negara bagi mahasiswa dan pemuda.',
-    badge: 'Seminar',
-    heroLead: 'Seminar Kepemudaan',
-    heroAccent: 'dan Bela Negara',
-    heroSub: 'Memperkuat wawasan kebangsaan dan peran pemuda melalui forum yang terbuka.',
-    about: [
-      'Seminar Kepemudaan dan Bela Negara adalah forum edukasi yang membahas peran pemuda dan wawasan bela negara.',
-      'Informasi jadwal dan pendaftaran diumumkan melalui kanal resmi Menwa UNJ.',
-    ],
-    facts: [{ label: 'Jenis', value: 'Seminar' }],
-    timeline: ['Pendaftaran', 'Pelaksanaan', 'Penyerahan Sertifikat'],
-    cta: { label: 'Tanya Jadwal Seminar', url: 'https://wa.me/6281525823503?text=Halo%20Piket%20Mako%20Menwa%20UNJ,%20saya%20ingin%20bertanya%20tentang%20Seminar%20Kepemudaan%20dan%20Bela%20Negara.' },
-  },
-  {
     slug: 'pam',
     title: 'Pengamanan Kegiatan',
     icon: 'shield',
@@ -218,11 +236,11 @@ export const PROGRAMS = [
     title: 'Pendidikan dan Pelatihan Karakter',
     icon: 'graduation',
     image: IMG('diklat-menwa-unj'),
-    short: 'Pendidikan dan pelatihan berjenjang untuk membentuk karakter, disiplin, dan kepemimpinan.',
+    short: 'Pendidikan dan pelatihan bertingkat, berjenjang, dan berlanjut untuk membentuk karakter, disiplin, dan kepemimpinan.',
     badge: 'Pendidikan & Pelatihan',
     heroLead: 'Pendidikan dan',
     heroAccent: 'Pelatihan Karakter',
-    heroSub: 'Menempa disiplin, kepemimpinan, dan karakter melalui pendidikan yang berjenjang.',
+    heroSub: 'Menempa disiplin, kepemimpinan, dan karakter melalui pendidikan bertingkat, berjenjang, dan berlanjut.',
     about: [
       'Pendidikan dan Pelatihan Karakter membentuk disiplin, kepemimpinan, dan kemampuan anggota melalui tahapan yang terencana.',
       'Rincian jenjang pendidikan tersedia di tab Pendidikan dan Pelatihan.',
@@ -349,3 +367,21 @@ export const expectedImages = [
     ...KEGIATAN.map((k) => k.image),
   ]),
 ];
+
+
+// ------------------------------------------------------------
+//  PEMUTAR MUSIK (tombol kanan atas). Taruh file di public/musik/ :
+//     public/musik/jazz.mp3   public/musik/pop.mp3   public/musik/rock.mp3
+//  Sampul opsional: public/musik/jazz.jpg, pop.jpg, rock.jpg (kalau tidak ada, dipakai sampul gradien).
+//  Ubah title / artist sesuai judul lagu sebenarnya.
+//  PENTING: pakai lagu bebas royalti atau berlisensi, karena website ini publik.
+// ------------------------------------------------------------
+export const MUSIC = {
+  autoplay: true,   // coba putar otomatis saat web dibuka
+  volume: 0.5,      // 0 - 1
+  tracks: [
+    { id: 'pop',  title: 'Pop',  artist: 'Playlist Menwa UNJ', file: '/musik/pop.mp3',  cover: '/musik/pop.jpg',  from: '#9d174d', to: '#fb923c' },
+    { id: 'jazz', title: 'Jazz', artist: 'Playlist Menwa UNJ', file: '/musik/jazz.mp3', cover: '/musik/jazz.jpg', from: '#1e3a8a', to: '#f59e0b' },
+    { id: 'rock', title: 'Rock', artist: 'Playlist Menwa UNJ', file: '/musik/rock.mp3', cover: '/musik/rock.jpg', from: '#7f1d1d', to: '#52525b' },
+  ],
+};

@@ -22,9 +22,7 @@ export const MotionStyles = () => (
     @keyframes mu-shimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
     @keyframes mu-pulse-ring { 0% { transform: scale(.85); opacity: .6; } 100% { transform: scale(1.8); opacity: 0; } }
     @keyframes mu-kenburns { 0%,100% { transform: scale(1.04); } 50% { transform: scale(1.1) translate(-.8%, -.6%); } }
-    @keyframes mu-caret { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
 
-    .mu-caret-blink { animation: mu-caret 1s steps(1) infinite; }
     .mu-float { animation: mu-float 6s ease-in-out infinite; }
     .mu-blob { animation: mu-blob 18s ease-in-out infinite; }
     .mu-kenburns { animation: mu-kenburns 30s ease-in-out infinite; }
@@ -201,7 +199,7 @@ export const HoverCard = ({ children, className = '', color, inner = '' }) => (
   <Spotlight
     color={color}
     inner={inner}
-    className={`transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_22px_50px_-18px_rgba(0,101,105,.6)] ${className}`}
+    className={`luxury-card transition-all duration-500 ease-out hover:-translate-y-1.5 hover:shadow-[0_28px_70px_-24px_rgba(0,101,105,.48)] ${className}`}
   >
     {children}
   </Spotlight>
@@ -241,6 +239,7 @@ export const HeroStage = ({
   photo = '/foto-kampus-unj.jpg',   // taruh file di folder public/
   blur = 3,                        // px — "sedikit blur"
   dim = 0.55,                      // 0–1 — makin besar makin gelap/samar
+  art = null,                      // gambar header .svg (lihat HeaderArt di Sections.jsx)
 }) => {
   const ref = useRef(null);
 
@@ -302,16 +301,7 @@ export const HeroStage = ({
       <div className="pointer-events-none absolute -left-10 top-0 z-0 h-96 w-96 rounded-full bg-[#006569] opacity-30 blur-[110px] mu-blob" />
       <div className="pointer-events-none absolute -right-10 top-10 z-0 h-96 w-96 rounded-full bg-[#FFDD00] opacity-15 blur-[120px] mu-blob mu-delay-1" />
 
-      {/* Aksen bentuk melayang — supaya hero terasa hidup, tidak statis */}
-      <ParallaxLayer depth={18} className="pointer-events-none absolute left-[8%] top-[18%] z-[1] hidden sm:block">
-        <div className="mu-float h-3 w-3 rounded-full bg-[#FFDD00]/70 shadow-[0_0_20px_rgba(255,221,0,.8)]" />
-      </ParallaxLayer>
-      <ParallaxLayer depth={-14} className="pointer-events-none absolute right-[12%] top-[28%] z-[1] hidden sm:block">
-        <div className="mu-float mu-delay-1 h-2 w-2 rounded-full bg-white/70 shadow-[0_0_14px_rgba(255,255,255,.7)]" />
-      </ParallaxLayer>
-      <ParallaxLayer depth={22} className="pointer-events-none absolute left-[20%] bottom-[14%] z-[1] hidden md:block">
-        <div className="mu-float mu-delay-2 h-1.5 w-1.5 rounded-full bg-[#FFDD00]/50" />
-      </ParallaxLayer>
+      {art && <div className="pointer-events-none absolute inset-0 z-[5]">{art}</div>}
 
       <div className="relative z-10 w-full flex flex-col items-center">{children}</div>
     </section>
@@ -430,7 +420,7 @@ export const Counter = ({ to = 100, duration = 1600, suffix = '', className = ''
 /* ============================================================
    11. NavBar — pill indikator mengikuti kursor + panel preview (gaya Notion)
    ============================================================ */
-export const NavBar = ({ activeTab, onNavigate, isMobileMenuOpen, setIsMobileMenuOpen, navItems, MenuIcon, CloseIcon, logoSrc = '/logo-menwa-unj.png', onLogoError }) => {
+export const NavBar = ({ activeTab, onNavigate, isMobileMenuOpen, setIsMobileMenuOpen, navItems, MenuIcon, CloseIcon, rightSlot, logoSrc = '/logo-menwa-unj.png', onLogoError }) => {
   const listRef = useRef(null);
   const [pill, setPill] = useState({ left: 0, width: 0, opacity: 0 });
   const [hovered, setHovered] = useState(null);
@@ -506,10 +496,13 @@ export const NavBar = ({ activeTab, onNavigate, isMobileMenuOpen, setIsMobileMen
             ))}
           </div>
 
-          <div className="lg:hidden">
-            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-slate-200 hover:text-[#FFDD00]">
-              {isMobileMenuOpen ? CloseIcon : MenuIcon}
-            </button>
+          <div className="flex items-center gap-3">
+            {rightSlot}
+            <div className="lg:hidden">
+              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-slate-200 hover:text-[#FFDD00]">
+                {isMobileMenuOpen ? CloseIcon : MenuIcon}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -587,84 +580,6 @@ export const TabSwitch = ({ tabKey, children }) => {
     >
       {render}
     </div>
-  );
-};
-
-/* ============================================================
-   TypeCycle — teks mengetik lalu menghapus, berganti kata
-   bergantian. Contoh: "Menwa UNJ dalam " + ["Pengabdian", "Anggota", ...]
-   ============================================================ */
-export const TypeCycle = ({
-  words = [], prefix = '', className = '', wordClassName = 'text-[#FFDD00]',
-  typeSpeed = 75, deleteSpeed = 45, pause = 1700,
-}) => {
-  const [text, setText] = useState('');
-  const [i, setI] = useState(0);
-  const [deleting, setDeleting] = useState(false);
-  const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  useEffect(() => {
-    if (reduced || words.length === 0) return;
-    const word = words[i % words.length];
-    let t;
-    if (!deleting && text === word) {
-      t = setTimeout(() => setDeleting(true), pause);
-    } else if (deleting && text === '') {
-      setDeleting(false);
-      setI((n) => (n + 1) % words.length);
-    } else {
-      t = setTimeout(() => {
-        setText((cur) => (deleting ? word.slice(0, cur.length - 1) : word.slice(0, cur.length + 1)));
-      }, deleting ? deleteSpeed : typeSpeed);
-    }
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text, deleting, i, reduced]);
-
-  if (reduced || words.length === 0) {
-    return <span className={className}>{prefix}<span className={wordClassName}>{words[0] || ''}</span></span>;
-  }
-
-  return (
-    <span className={className}>
-      {prefix}
-      <span className={wordClassName}>{text}</span>
-      <span className="mu-caret-blink text-[#FFDD00]" aria-hidden="true">|</span>
-    </span>
-  );
-};
-
-/* ============================================================
-   ThemeToggle — tombol mode terang/gelap. Menyimpan pilihan di
-   localStorage, default mengikuti preferensi sistem.
-   ============================================================ */
-export const ThemeToggle = ({ className = '' }) => {
-  const [dark, setDark] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    const saved = localStorage.getItem('mu-theme');
-    if (saved) return saved === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark);
-    localStorage.setItem('mu-theme', dark ? 'dark' : 'light');
-  }, [dark]);
-
-  return (
-    <button
-      type="button"
-      onClick={() => setDark((d) => !d)}
-      aria-label={dark ? 'Ganti ke mode terang' : 'Ganti ke mode gelap'}
-      title={dark ? 'Mode terang' : 'Mode gelap'}
-      className={`grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-slate-950/80 text-white shadow-lg backdrop-blur transition-colors hover:border-[#FFDD00]/60 dark:border-white/10 dark:bg-white/10 ${className}`}
-    >
-      {dark ? (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-      ) : (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      )}
-    </button>
   );
 };
 
