@@ -382,6 +382,6 @@ export const MUSIC = {
   tracks: [
     { id: 'pop',  title: 'Pop',  artist: 'Playlist Menwa UNJ', file: '/musik/pop.mp3',  cover: '/musik/pop.jpg',  from: '#9d174d', to: '#fb923c' },
     { id: 'jazz', title: 'Jazz', artist: 'Playlist Menwa UNJ', file: '/musik/jazz.mp3', cover: '/musik/jazz.jpg', from: '#1e3a8a', to: '#f59e0b' },
-    { id: 'rock', title: 'Rock', artist: 'Playlist Menwa UNJ', file: '/musik/rock.mp3', cover: '/musik/rock.jpg', from: '#7f1d1d', to: '#52525b' },
+    { id: 'indie', title: 'Indie', artist: 'Playlist Menwa UNJ', file: '/musik/indie.mp3', cover: '/musik/indie.jpg', from: '#7f1d1d', to: '#52525b' },
   ],
 };

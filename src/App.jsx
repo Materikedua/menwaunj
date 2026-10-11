@@ -51,8 +51,8 @@ const handleImgError = (e, text, bgColor = '006569', textColor = 'FFDD00') => {
 };
 
 const RevealOnScroll = Reveal;
-const NAV_ITEMS = [
 
+const NAV_ITEMS = [
   { id: 'beranda', label: 'Beranda', icon: <Compass size={20} />, desc: 'Program unggulan, kegiatan terbaru, dan sorotan giat Satuan UNJ.' },
   { id: 'struktur', label: 'Garis Komando', icon: <Shield size={20} />, desc: 'Struktur organisasi: pimpinan, perencana, pelayanan, dan pelaksana.' },
   { id: 'pendidikan', label: 'Pendidikan dan Pelatihan', icon: <BookOpen size={20} />, desc: 'Pendidikan bertingkat, berjenjang, dan berlanjut.' },

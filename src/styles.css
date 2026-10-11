@@ -77,11 +77,12 @@ img { max-width: 100%; }
 .motion-trophy__spark--two { bottom:30px; left:26px; animation-delay:.3s; }
 
 /* Typing headline expands symmetrically from the center instead of reserving a static left phrase. */
-.pride-line { display: inline-flex; justify-content: center; align-items: baseline; width: 100%; text-align: center; line-height: 1.15; white-space: nowrap; column-gap: 0.3em; }
+.pride-line { display:inline-flex; justify-content:center; align-items:baseline; column-gap:.28em; width:100%; text-align:center; line-height:1.2; white-space:nowrap; }
 .pride-prefix { display:inline; color:#fff; }
-.pride-typing { display:inline-flex; min-width:0; vertical-align:baseline; color:#FFDD00; overflow:visible; }
+.pride-typing { display:inline-flex; min-width:0; vertical-align:baseline; color:#FFDD00; overflow:visible; padding-bottom:.06em; }
 .pride-typing__text { display:inline-block; white-space:nowrap; overflow:visible; width:auto; color:#FFDD00; }
-.pride-typing__caret { display:inline-block; flex:0 0 auto; width:5px; height:.9em; margin-left:6px; background:#FFDD00; animation:menwa-caret .8s steps(1) infinite; }
+.pride-typing__caret { display:inline-block; flex:0 0 auto; width:3px; height:.9em; margin-left:6px; background:#FFDD00; animation:menwa-caret .8s steps(1) infinite; }
+
 
 /* Premium card language: lightweight CSS-only micro-interactions inspired by the Lottie references. */
 .luxury-card {

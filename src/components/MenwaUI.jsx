@@ -487,7 +487,7 @@ export const NavBar = ({ activeTab, onNavigate, isMobileMenuOpen, setIsMobileMen
                 onMouseEnter={(e) => { setHovered(item.id); movePill(e.currentTarget); }}
                 onFocus={(e) => movePill(e.currentTarget)}
                 onClick={() => onNavigate(item.id)}
-                className={`relative z-10 px-4 py-2.5 rounded-full text-xs font-extrabold uppercase tracking-wider transition-colors duration-300 ${
+                className={`relative z-10 px-4 py-2.5 rounded-full text-xs font-black uppercase tracking-tight transition-colors duration-300 ${
                   activeTab === item.id ? 'text-[#FFDD00]' : 'text-slate-300 hover:text-white'
                 }`}
               >
