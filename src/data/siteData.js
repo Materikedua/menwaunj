@@ -80,68 +80,86 @@ export const STEP_DESC = {
 //  6 PROGRAM UNGGULAN  ->  tiap program punya subtab /<slug>/
 //  icon: nama ikon lucide (lihat ICONS di Sections.jsx)
 // ------------------------------------------------------------
+
+/** Referensi mockup jersey sesuai lampiran resmi; desain depan identik untuk keduanya. */
+export const KC_JERSEYS = [
+  { id: 'peserta', label: 'Jersey Peserta', type: 'ATHLETE', priceLabel: 'Gratis untuk peserta terdaftar', badge: 'Benefit Pendaftaran', front: '/jersey/jersey-depan.webp', mockup: '/jersey/mockup-peserta.webp', back: '/jersey/jersey-atlet-belakang.webp', poster: '/jersey/jersey-atlet-poster.webp', button: 'Isi Pendataan Jersey Peserta', form: 'https://forms.gle/voyPEgvxvhS8VrKf8', description: 'Jersey kegiatan khusus peserta dengan tulisan ATHLETE pada punggung. Termasuk dalam fasilitas pendaftaran tim.' },
+  { id: 'official', label: 'Jersey Official', type: 'OFFICIAL', priceLabel: 'Rp150.000', badge: 'Pre-order Berbayar', front: '/jersey/jersey-depan.webp', mockup: '/jersey/mockup-official.webp', back: '/jersey/jersey-official-belakang.webp', poster: '/jersey/jersey-official-poster.webp', button: 'Pre-order Jersey Official', form: 'https://forms.gle/RHoXRFTEVKWHQfFx9', description: 'Jersey khusus official dengan tulisan OFFICIAL pada punggung. Pembelian terpisah dari biaya pendaftaran tim.' },
+];
+
+export const YOUTH_SPARK_REGISTER_URL = 'https://forms.gle/Xc3QsBLNueoXYLfDA';
+export const YOUTH_SPARK_SPEAKERS = [
+  { name: 'Dr. Tomi Ari Sudewo, M.M.', topic: 'Kepemudaan', role: 'Kepala Seksi Kepemudaan Dispora Jakarta Selatan' },
+  { name: 'Dr. Ir. Achmad Fachrodji, M.M.', topic: 'Industri Kreatif', role: 'Direktur Utama PT Balai Pustaka' },
+  { name: 'Deputi Bidang Kewirausahaan', topic: 'UMKM Naik Kelas', role: 'Kementerian UMKM RI' },
+];
+
 export const PROGRAMS = [
   {
     slug: 'kc',
-    title: 'Ksatria Cendekia',
+    title: 'Ksatria Cendekia VIII',
     icon: 'trophy',
     image: IMG('kc-menwa-unj'),
     logo: '/logo-kc-viii.png',
     tag: 'Pendaftaran dibuka',
-    status: 'Pendaftaran dibuka sampai 15 Oktober 2026',
-    short: 'Latihan Integrasi Pemuda Nusantara: seminar nasional dan lima cabang lomba bagi anggota Resimen Mahasiswa se-Indonesia.',
-    badge: 'Lomba Nasional • 06–08 November 2026',
+    status: 'Pendaftaran 18 September – 30 Oktober 2026',
+    short: 'Latihan Integrasi Pemuda Nusantara, 05–08 November 2026: seminar nasional, lima mata lomba, dan pesiar.',
+    badge: 'Lomba Nasional • 05–08 November 2026',
     heroLead: 'Ksatria',
     heroAccent: 'Cendekia VIII',
-    heroSub: 'Latihan Integrasi Pemuda Nusantara 2026. Tunjukkan ketangkasan dan kreativitas kalian sekarang!',
+    heroSub: 'Pemuda Berkarya, Mewujudkan Semangat Sumpah Pemuda untuk Indonesia yang Berkelanjutan.',
     about: [
-      'Latihan Integrasi Pemuda Nusantara Ksatria Cendekia VIII Tahun 2026 diselenggarakan Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta sebagai wadah integrasi dan pengembangan potensi anggota Resimen Mahasiswa Indonesia.',
-      'Rangkaian kegiatan mencakup Seminar Nasional, lima cabang lomba (Esai, Renang, T.H.O.R., Menembak, dan Video Kreatif), serta Pesiar. Seminar Nasional bertema "Pemuda Berkarya: Mewujudkan Semangat Sumpah Pemuda untuk Indonesia yang Berkelanjutan".',
+      'Latihan Integrasi Pemuda Nusantara “Ksatria Cendekia VIII 2026” diselenggarakan oleh Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta. Kegiatan berlangsung pada 05–08 November 2026 dan mempertemukan anggota Resimen Mahasiswa dari berbagai perguruan tinggi.',
+      'Rangkaian mencakup lima cabang perlombaan (Esai, Renang, T.H.O.R., Menembak dan Video Kreatif), Seminar Nasional bertema “Pemuda Berkarya: Mewujudkan Semangat Sumpah Pemuda untuk Indonesia yang Berkelanjutan”, serta pesiar ke Ragunan.',
     ],
     facts: [
-      { label: 'Pelaksanaan', value: '06–08 Nov 2026' },
-      { label: 'Biaya', value: 'Rp2.000.000 / tim' },
-      { label: 'Tim', value: '2 peserta + 1 official (opsional)' },
-      { label: 'Kuota', value: 'Maks. 3 tim / satuan' },
+      { label: 'Pelaksanaan', value: '05–08 November 2026' },
+      { label: 'Biaya pendaftaran', value: 'Rp2.000.000 / tim' },
+      { label: 'Komposisi tim', value: '2 peserta + 1 official opsional' },
+      { label: 'Kuota per satuan', value: 'Maksimal 3 tim' },
     ],
-    // Timeline mengikuti poster; detail tambahan dari proposal. Urutan = urutan waktu.
     timeline: [
-      { label: 'Pendaftaran', date: '18 Sep – 15 Okt 2026', desc: 'Daring lewat formulir panitia atau langsung di Mako Menwa UNJ, pukul 08.00–22.00 WIB.' },
-      { label: 'Pengumpulan Karya', date: '1 – 23 Okt 2026', desc: 'Esai dan Video Kreatif dikirim paling lambat 23 Oktober 2026 pukul 22.00 WIB.' },
-      { label: 'Technical Meeting', date: '17 Okt 2026', desc: 'Technical meeting secara daring bersama seluruh kontingen.' },
-      { label: 'Pengumuman Finalis Karya', date: '30 Okt 2026', desc: 'Finalis Esai dan tiga video terbaik diumumkan.' },
-      { label: 'Daftar Ulang', date: '5 Nov 2026', desc: 'Penyerahan berkas dalam map plastik kuning dan bukti pembayaran untuk memperoleh nomor peserta.' },
-      { label: 'Pelaksanaan', date: '6 – 8 Nov 2026', desc: 'Seminar Nasional, lomba, Malam Keakraban, dan Pesiar di UNJ, Batalyon Intai Tempur, dan Ragunan.' },
-      { label: 'Pengumuman Pemenang', date: '7 – 8 Nov 2026', desc: 'Pemenang tiap mata lomba dan Juara Umum diumumkan; upacara penutupan 8 November.' },
+      { label: 'Pendaftaran', date: '18 Sep – 30 Okt 2026', desc: 'Pendaftaran langsung di Mako Menwa UNJ atau melalui formulir daring, pukul 08.00–22.00 WIB.' },
+      { label: 'Batas Pengumpulan Karya', date: '30 Okt 2026 • 22.00 WIB', desc: 'Tenggat esai dan video kreatif sesuai Petunjuk Teknis KC VIII.' },
+      { label: 'Pengumuman Karya', date: '03 Nov 2026', desc: 'Pengumuman 10 tim esai terbaik dan tiga video kreatif terbaik.' },
+      { label: 'Daftar Ulang', date: '05 Nov 2026', desc: 'Penyerahan berkas dalam map plastik kuning, pemeriksaan bukti pembayaran, dan pengambilan nomor peserta.' },
+      { label: 'Seminar, Esai & Renang', date: '06 Nov 2026', desc: 'Seminar Nasional dan presentasi finalis esai di Kampus A UNJ; lomba renang 50 meter gaya dada di GOR Otista.' },
+      { label: 'T.H.O.R. & Menembak', date: '07 Nov 2026', desc: 'Lomba ketangkasan dan menembak di Batalyon Intai Tempur, Cikarang.' },
+      { label: 'Pesiar', date: '08 Nov 2026', desc: 'Pesiar wajib bagi peserta ke Taman Margasatwa Ragunan menggunakan transportasi umum.' },
     ],
     details: [
-      { title: 'Mata Lomba', items: ['Renang', 'Menembak', 'T.H.O.R. (Tactical Hardest Obstacle Run)', 'Esai', 'Video Kreatif'] },
-      { title: 'Rangkaian Kegiatan', items: ['Seminar Nasional (Pemuda Berkarya: Mewujudkan Semangat Sumpah Pemuda untuk Indonesia yang Berkelanjutan)', 'Pesiar', 'Malam Keakraban'] },
-      { title: 'Persyaratan Umum', items: ['Mahasiswa aktif di seluruh perguruan tinggi', 'Anggota aktif Komando Resimen Mahasiswa Indonesia di Satuan/Batalyon', 'Telah menempuh Pendidikan Dasar Militer'] },
-      {
-        title: 'Benefit',
-        items: [
-          'Sertifikat Nasional', 'Jersey, Topi, dan Tumbler', 'Lanyard dan E-Money eksklusif', 'Brevet PDH & PDL',
-          'Penginapan AC & kasur INOAC', 'Konsumsi rutin bergizi', 'Foto jajar', 'Relasi Komando Resimen Mahasiswa se-Nasional',
-          'Piala & medali*', 'Uang pembinaan*',
-        ],
-        note: '*Untuk pemenang lomba',
-      },
+      { title: 'Lima Mata Lomba', items: [
+        'Esai — tema “Pemuda Berkarya, Bangsa Berdaya: Inovasi Teknologi untuk Pembangunan Berkelanjutan”; minimal 1.000 kata dan maksimal 15% kemiripan Turnitin.',
+        'Renang — 50 meter gaya dada, dimulai dari dalam kolam; peserta wajib menggunakan kacamata renang.',
+        'T.H.O.R. — sepuluh rintangan ketangkasan, diikuti oleh kedua peserta dalam tim.',
+        'Menembak — dua peserta per tim, masing-masing 3 peluru percobaan dan 5 peluru penilaian.',
+        'Video Kreatif — “Eksplorasi Kearifan Lokal”; durasi 5–7 menit, rasio 16:9, resolusi minimum 720p dan ukuran maksimal 100 MB.',
+      ] },
+      { title: 'Ketentuan Pendaftaran', items: [
+        'Peserta adalah mahasiswa aktif sekaligus anggota aktif Resimen Mahasiswa Indonesia.',
+        'Setiap satuan/batalyon maksimal tiga tim; satu tim terdiri atas dua peserta dan dapat didampingi satu official.',
+        'Komposisi peserta laki-laki dan perempuan; dua peserta perempuan diperbolehkan jika satuan terkendala mengirim peserta laki-laki.',
+        'Pendaftaran Rp2.000.000 per tim; bukti pembayaran wajib disimpan untuk daftar ulang.',
+        'Dokumen antara lain formulir, biodata, izin orang tua, pernyataan diri, KTM/KTA, surat keterangan sehat, surat tugas/pengantar dan dokumen pendidikan dasar militer sesuai juknis.',
+      ] },
+      { title: 'Jadwal & Lokasi', items: [
+        '05 November — daftar ulang dan penyerahan berkas.',
+        '06 November — Seminar Nasional di Aula Latief, Kampus A UNJ; presentasi esai; renang di GOR Otista, Jakarta Timur.',
+        '07 November — T.H.O.R. dan menembak di Batalyon Intai Tempur, Cikarang.',
+        '08 November — pesiar ke Taman Margasatwa Ragunan, Jakarta Selatan.',
+        'Esai dan Video Kreatif dikumpulkan secara daring paling lambat 30 Oktober pukul 22.00 WIB.',
+      ] },
+      { title: 'Fasilitas Peserta', items: [
+        'Jersey khusus peserta (ATHLETE) — termasuk fasilitas pendaftaran, tanpa biaya pembelian jersey terpisah.',
+        'Brevet PDL/PDH, topi dan tumbler kegiatan.',
+        'Penginapan dan konsumsi selama kegiatan.',
+        'E-Money, lanyard, dan foto jajar.',
+        'Sertifikat lomba dan Seminar Nasional.',
+      ], note: 'Jersey official ditawarkan melalui pre-order terpisah seharga Rp150.000. Lihat galeri di bawah.' },
     ],
     docs: [
-      {
-        label: 'Proposal Kegiatan',
-        desc: 'Proposal Latihan Integrasi Pemuda Nusantara Ksatria Cendekia VIII 2026.',
-        file: '/dokumen/proposal-kc-viii-menwa-unj.pdf',
-        drive: 'https://drive.google.com/drive/folders/1XoGoVFvMoNJtWb3Ss-kKDBuvirKjSOND?usp=sharing',
-      },
-      {
-        label: 'Petunjuk Teknis (Juknis)',
-        desc: 'Ketentuan teknis tiap mata lomba.',
-        // Taruh PDF juknis di public/dokumen/juknis-kc-viii-menwa-unj.pdf (nama persis). Bila file belum ada, tombol Unduh otomatis disembunyikan.
-        file: '/dokumen/juknis-kc-viii-menwa-unj.pdf',
-        drive: 'https://drive.google.com/drive/folders/1LBWHxr1mJezqBGhaRrTZ5ol9U0c3d_5I?usp=sharing',
-      },
+      { label: 'Proposal KC VIII 2026 (terbaru)', desc: 'Proposal Latihan Integrasi Pemuda Nusantara, diselaraskan dengan dokumen yang disediakan panitia.', file: '/dokumen/proposal-kc-viii-menwa-unj.pdf', drive: 'https://drive.google.com/drive/folders/1XoGoVFvMoNJtWb3Ss-kKDBuvirKjSOND?usp=sharing' },
+      { label: 'Petunjuk Teknis KC VIII 2026 (terbaru)', desc: 'Rujukan utama persyaratan, tenggat, dan teknis perlombaan.', file: '/dokumen/juknis-kc-viii-menwa-unj.pdf', drive: 'https://drive.google.com/drive/folders/1LBWHxr1mJezqBGhaRrTZ5ol9U0c3d_5I?usp=sharing' },
     ],
     docsButton: 'Lihat Proposal dan Juknis',
     cta: { label: 'Daftarkan Tim Kalian', url: 'https://bit.ly/PendaftaranKCVIII' },
@@ -150,34 +168,34 @@ export const PROGRAMS = [
   {
     slug: 'youth-spark',
     title: 'Youth Spark National',
-    icon: 'mic',
-    image: '/kegiatan/poster-youthspark.png',
+    icon: 'sparkles',
+    image: '/kegiatan/youth-spark-2026.webp',
     logo: ['/mitra/unj.png', '/mitra/dispora.png'],
     tag: 'Pendaftaran dibuka',
-    status: 'Pendaftaran dibuka',
-    short: 'Program pengembangan pemuda yang mewadahi pengetahuan dan minat bakat melalui seminar, kompetisi, dan pelatihan pelatih.',
-    badge: 'Program Kepemudaan • 2026',
+    status: 'Youth Spark National Seminar • 24 Oktober 2026',
+    short: 'Pembinaan Aktivitas Pemuda — Youth Spark National Seminar: Empowering Youth, Elevating UMKM.',
+    badge: 'Pembinaan Aktivitas Pemuda • 24 Oktober 2026',
     heroLead: 'Youth Spark',
     heroAccent: 'National',
-    heroSub: 'Wadah pengetahuan dan minat bakat para pemuda melalui berbagai kegiatan yang mendorong ruang belajar, jejaring, dan aksi.',
+    heroSub: 'Pembinaan Aktivitas Pemuda: Empowering Youth, Elevating UMKM.',
     about: [
-      'Youth Spark National merupakan program yang mewadahi pengetahuan dan minat bakat para pemuda melalui berbagai kegiatan.',
-      'Program ini dikembangkan melalui tiga pilihan kegiatan: Seminar & Webinar, Kompetisi, dan Pelatihan Pelatih. Kolaborasi dengan Dinas Pemuda dan Olahraga DKI Jakarta ditampilkan khusus pada program Youth Spark.'
+      'Youth Spark National Seminar merupakan kegiatan Pembinaan Aktivitas Pemuda melalui kolaborasi DISPORA DKI Jakarta dan Menwa UNJ, yang mendukung pengembangan kemampuan, jejaring dan kewirausahaan pemuda.',
+      'Seminar bertema “Empowering Youth, Elevating UMKM” dilaksanakan 24 Oktober 2026 di Aula Latief Hendraningrat, Universitas Negeri Jakarta. Selain seminar, halaman Youth Spark juga menyediakan kategori Kompetisi dan Pelatihan Pelatih untuk pengembangan program berikutnya.',
     ],
     facts: [
-      { label: 'Sasaran', value: 'Pemuda Indonesia' },
-      { label: 'Pilihan', value: '3 kegiatan' },
-      { label: 'Kolaborasi', value: 'DISPORA DKI Jakarta' },
+      { label: 'Tanggal Seminar', value: '24 Oktober 2026' },
+      { label: 'Tempat', value: 'Aula Latief Hendraningrat, UNJ' },
+      { label: 'Kolaborasi', value: 'DISPORA DKI × MENWA UNJ' },
     ],
     timeline: [],
     details: [],
-    cta: { label: 'Pilih Kegiatan', url: '/youth-spark/seminar-webinar' },
+    cta: { label: 'Take Your Seat Now!', url: 'https://forms.gle/Xc3QsBLNueoXYLfDA' },
   },
   {
     slug: 'geranat',
     title: 'Gerakan Paskibra Semangat',
     icon: 'flag',
-    image: IMG('geranat-menwa-unj'),
+    image: '/dokumentasi/geranatvi.svg',
     // Logo Geranat: dicari berurutan di salah satu lokasi ini (pakai yang pertama ditemukan)
     logo: ['/geranat-menwa-unj.png', '/kegiatan/geranat-menwa-unj.png', '/logo/geranat-menwa-unj.png'],
     short: 'Gerakan Paskibra Semangat: kompetisi baris-berbaris dan paskibra yang menyatukan langkah, semangat, dan kekompakan tim.',
@@ -198,7 +216,7 @@ export const PROGRAMS = [
     slug: 'pengabdian',
     title: 'Pengabdian Masyarakat',
     icon: 'heart',
-    image: IMG('pengabdian-menwa-unj'),
+    image: '/dokumentasi/pengabdian26.svg',
     short: 'Bakti sosial dan latihan pemantapan komando yang menyatukan kepedulian dan pembentukan karakter.',
     badge: 'Bakti Masyarakat',
     heroLead: 'Pengabdian',
@@ -217,7 +235,7 @@ export const PROGRAMS = [
     slug: 'pam',
     title: 'Pengamanan Kegiatan',
     icon: 'shield',
-    image: IMG('pam-menwa-unj'),
+    image: '/kegiatan/program-pam.svg',
     short: 'Dukungan personel pengamanan untuk kegiatan kampus dan mitra secara tertib dan terkoordinasi.',
     badge: 'Layanan Pengamanan',
     heroLead: 'Pengamanan',
@@ -235,7 +253,7 @@ export const PROGRAMS = [
     slug: 'diklat',
     title: 'Pendidikan dan Pelatihan Karakter',
     icon: 'graduation',
-    image: IMG('diklat-menwa-unj'),
+    image: '/kegiatan/program-diklat.svg',
     short: 'Pendidikan dan pelatihan bertingkat, berjenjang, dan berlanjut untuk membentuk karakter, disiplin, dan kepemimpinan.',
     badge: 'Pendidikan & Pelatihan',
     heroLead: 'Pendidikan dan',
@@ -273,9 +291,9 @@ export const KEGIATAN = [
     id: 'kc-viii',
     title: 'Latihan Integrasi Pemuda Nusantara Ksatria Cendekia VIII Tahun 2026',
     category: 'Giat Nasional',
-    date: '06 – 08 November 2026',
+    date: '05 – 08 November 2026',
     location: 'UNJ, Cikarang & Ragunan',
-    excerpt: 'Pendaftaran dibuka 18 September – 15 Oktober 2026. Seminar nasional dan lima cabang lomba.',
+    excerpt: 'Pendaftaran 18 September – 30 Oktober 2026. Lima cabang lomba, seminar nasional, dan pesiar.',
     image: 'kc-menwa-unj',
     program: 'kc',
     highlight: true,
@@ -377,7 +395,7 @@ export const expectedImages = [
 //  PENTING: pakai lagu bebas royalti atau berlisensi, karena website ini publik.
 // ------------------------------------------------------------
 export const MUSIC = {
-  autoplay: true,   // coba putar otomatis saat web dibuka
+  autoplay: false,  // portal informasional: musik hanya setelah pengguna menekan Putar
   volume: 0.5,      // 0 - 1
   tracks: [
     { id: 'pop',  title: 'Pop',  artist: 'Playlist Menwa UNJ', file: '/musik/pop.mp3',  cover: '/musik/pop.jpg',  from: '#9d174d', to: '#fb923c' },

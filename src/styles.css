@@ -168,3 +168,50 @@ img { max-width: 100%; }
   .motion-fire.is-active, .motion-fire.is-active .motion-fire__core, .motion-cardstack__card, .motion-plane__icon, .motion-plane__trail, .motion-laptop__code, .motion-laptop__cursor, .motion-trophy__icon, .motion-trophy__ring, .motion-trophy__spark, .motion-playpause__bar, .pride-typing__caret { animation:none !important; }
   .doc-motion-card::before, .doc-motion-card::after, .luxury-card::before, .luxury-card::after, .luxury-card-icon, .luxury-card-arrow, .luxury-card .card-kicker::after { transition:none !important; }
 }
+/* V4 — accessible, purposeful global navigation */
+.portal-search-trigger{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:8px 12px;color:#f4df81;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:rgba(255,255,255,.07);font-size:11px;font-weight:850;white-space:nowrap;transition:background .2s ease,border-color .2s ease;}
+.portal-search-trigger:hover{background:rgba(255,255,255,.14);border-color:rgba(255,221,0,.4);}
+.portal-search-trigger kbd{font:800 10px/1 sans-serif;padding:5px;border:1px solid rgba(255,255,255,.2);border-radius:5px;color:#fff;}
+html{scroll-padding-top:145px;}
+body{overflow-x:hidden;}
+:focus-visible{outline:3px solid #e4bf29;outline-offset:3px;}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important;}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;}}
+
+.portal-skip-link{position:fixed;top:-100px;left:16px;z-index:350;border-radius:12px;background:#ffdd00;color:#00383b;padding:12px 18px;font-size:13px;font-weight:900;transition:top .2s;}
+.portal-skip-link:focus{top:12px;}
+
+/* V5 — header desktop satu baris dan jam WIB selalu terbaca */
+.portal-header-clock{display:inline-flex;align-items:center;gap:7px;flex-shrink:0;padding:8px 10px;border:1px solid rgba(255,221,0,.27);border-radius:12px;background:rgba(255,255,255,.07);color:#ffdd00;font-size:13px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.portal-header-clock small{font-size:9px;font-weight:800;color:#c0c9c9;letter-spacing:.04em;}
+@media(max-width:1279px){.portal-header-clock{padding:7px 8px;font-size:12px;gap:4px;}.portal-header-clock small{display:none;}.portal-search-trigger{padding:8px 9px;}.portal-search-trigger kbd{display:none!important;}}
+@media(max-width:1100px){.portal-search-trigger span{display:none!important;}}
+@media(max-width:767px){.portal-header-clock{font-size:12px;}}
+/* Statistik Pride: nilai profil lama ditampilkan jujur dengan catatan verifikasi */
+.brand-pride{padding:95px 20px;background:radial-gradient(circle at 50% 0%,#123c45,#031723 66%);color:#fff;overflow:hidden;text-align:center;}
+.brand-pride .brand-container{max-width:1200px;margin:auto;}
+.brand-pride-eyebrow{font-size:11px;color:#ffdd00;font-weight:900;letter-spacing:.24em;}
+.brand-pride h2{font-size:clamp(1.9rem,4.5vw,3.8rem);font-weight:950;line-height:1.25;margin:22px 0 8px;}
+.brand-pride-lead{color:#b4cccc;margin:0 auto 34px;max-width:600px;font-size:15px;}
+.brand-pride-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;}
+.brand-pride-stat{display:flex;align-items:center;flex-direction:column;justify-content:center;min-height:240px;padding:25px 14px;border-radius:24px;border:1px solid #ffffff2b;background:linear-gradient(155deg,#ffffff12,#ffffff06);box-shadow:0 24px 50px #0002;transition:transform .26s ease,border-color .26s ease;}
+.brand-pride-stat:hover{transform:translateY(-5px);border-color:#ffdd008a;}
+.brand-pride-icon{display:grid;place-items:center;width:58px;height:58px;border-radius:16px;background:#ffdd0015;color:#ffdd00;margin-bottom:17px;}
+.brand-pride-stat strong{font-size:clamp(2.7rem,4.3vw,4.7rem);line-height:1;font-weight:950;font-variant-numeric:tabular-nums;color:#ffdd00;}
+.brand-pride-stat strong i{font-size:.6em;font-style:normal;}
+.brand-pride-stat>span:last-child{margin-top:16px;max-width:180px;color:#e0ebea;text-transform:uppercase;letter-spacing:.085em;font-size:11px;line-height:1.5;font-weight:900;}
+.brand-pride-disclaimer{color:#95afb4;line-height:1.6;font-size:11px;max-width:840px;margin:25px auto 0;}
+.brand-pride .pride-line{white-space:normal;flex-wrap:wrap;gap:.1em .2em;}
+@media(max-width:767px){.brand-pride-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}.brand-pride{padding:72px 16px;}.brand-pride-stat{min-height:180px;padding:22px 10px;}.brand-pride h2{font-size:clamp(1.65rem,7vw,3rem);}}
+@media(prefers-reduced-motion:reduce){.brand-pride-stat{transition:none;}}
+
+/* V6 — statistik Pride multiwarna, dengan latar yang mengalir ke footer. */
+.brand-pride {background:#020617;padding:100px 20px 95px;border-bottom:1px solid rgba(255,255,255,.06);}
+.brand-pride-stat {--pride-tone:#31d1bc;--pride-bg:rgba(49,209,188,.12);--pride-shadow:rgba(49,209,188,.22);border-color:var(--pride-bg);background:linear-gradient(155deg,var(--pride-bg),rgba(255,255,255,.035));}
+.brand-pride-stat--teal {--pride-tone:#4AD9C9;--pride-bg:rgba(74,217,201,.1);--pride-shadow:rgba(74,217,201,.22);}
+.brand-pride-stat--gold {--pride-tone:#FFCF55;--pride-bg:rgba(255,207,85,.11);--pride-shadow:rgba(255,207,85,.24);}
+.brand-pride-stat--violet {--pride-tone:#C0A2FF;--pride-bg:rgba(192,162,255,.12);--pride-shadow:rgba(192,162,255,.23);}
+.brand-pride-stat--coral {--pride-tone:#FF986C;--pride-bg:rgba(255,152,108,.12);--pride-shadow:rgba(255,152,108,.24);}
+.brand-pride-stat .brand-pride-icon {background:var(--pride-bg);color:var(--pride-tone);box-shadow:0 12px 30px var(--pride-shadow);}
+.brand-pride-stat strong {color:var(--pride-tone);}
+.brand-pride-stat:hover {border-color:var(--pride-tone);box-shadow:0 28px 56px var(--pride-shadow);}
+@media(prefers-reduced-motion:reduce){.brand-pride-stat:hover{transform:none;}}

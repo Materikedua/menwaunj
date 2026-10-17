@@ -1,9 +1,8 @@
 // MusicPlayer.jsx — pemutar musik Menwa UNJ
 //  • Tombol di ujung kanan atas navbar: Play/Pause cepat + tombol pembuka panel.
 //  • Panel ala Spotify: visual album, judul track, previous / play / next, progres, volume, daftar lagu.
-//  • Mencoba memutar otomatis saat web dibuka. Browser memblokir suara otomatis sebelum pengguna
-//    berinteraksi, jadi bila diblokir, musik mulai pada klik/ketukan PERTAMA di mana saja.
-//  • Bila pengguna menekan pause, musik tidak akan dinyalakan lagi oleh sistem.
+//  • Portal informasi: musik OFF secara default, baru diputar saat pengguna mengaktifkannya.
+//  • Pilihan volume/track disimpan lokal, tetapi tidak pernah memutar musik otomatis saat masuk.
 //  Daftar lagu, judul, dan warna diatur di siteData.js (MUSIC).
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Music2, X, Volume2, VolumeX } from 'lucide-react';
@@ -210,7 +209,7 @@ export const MusicPlayer = () => {
       <audio
         ref={audioRef}
         src={track.file}
-        preload="auto"
+        preload="none"
         playsInline
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}

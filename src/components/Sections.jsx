@@ -2,18 +2,21 @@
 // Semua konten dibaca dari ../data/siteData.js
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Trophy, Flag, HeartHandshake, Mic, ShieldCheck, GraduationCap,
+  Trophy, Flag, HeartHandshake, Mic, ShieldCheck, GraduationCap, Sparkles,
   ArrowRight, ArrowLeft, Clock, MapPin, Mail, Phone, Zap, Lock,
   CalendarDays, Check, Download, ExternalLink, FileText,
 } from 'lucide-react';
 import { Reveal, Stagger, HoverCard, HeroStage, ParallaxLayer, MagneticButton } from './MenwaUI';
 import { FireMotion, CardStackMotion, TrophyMotion, LaptopMotion } from './MotionAssets';
 import { Link, navigate } from '../lib/router.jsx';
-import { SITE, PROGRAMS, KEGIATAN, FEED_URL, STEP_DESC, IMG, HERO_PHOTO, HEADER_DIR } from '../data/siteData';
+import { SITE, PROGRAMS, KEGIATAN, FEED_URL, STEP_DESC, IMG, HERO_PHOTO, HEADER_DIR, YOUTH_SPARK_REGISTER_URL, YOUTH_SPARK_SPEAKERS } from '../data/siteData';
+import JerseyShowcase from './JerseyShowcase';
+import { FAQSection } from './PortalUtilities.jsx';
+import PortalIcon from './PortalIcon.jsx';
 
 /* ---------- util ---------- */
 export const ICONS = {
-  trophy: Trophy, flag: Flag, heart: HeartHandshake, mic: Mic, shield: ShieldCheck, graduation: GraduationCap,
+  trophy: Trophy, flag: Flag, heart: HeartHandshake, mic: Mic, sparkles: Sparkles, shield: ShieldCheck, graduation: GraduationCap,
 };
 
 const imgSrc = (v) => (/^(https?:)?\/\//.test(v) || v.startsWith('/') ? v : IMG(v));
@@ -140,8 +143,8 @@ export const ProgramUnggulan = () => (
                   {p.tag}
                 </span>
               )}
-              <span className="luxury-card-icon grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-[#006569] to-[#00383b] text-[#FFDD00] shadow-lg transition-transform duration-500 group-hover/spot:-rotate-6 group-hover/spot:scale-110">
-                <Icon size={28} />
+              <span className="luxury-card-icon grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-white to-[#f1f6f4] shadow-lg ring-1 ring-slate-100 transition-transform duration-500 group-hover/spot:-rotate-6 group-hover/spot:scale-110">
+                <PortalIcon kind={p.slug} size={31} />
               </span>
               <h3 className="mt-8 text-2xl font-black leading-tight text-slate-900">{p.title}</h3>
               {p.fullName && <p className="mt-1 text-sm font-bold text-[#006569]">{p.fullName}</p>}
@@ -357,7 +360,7 @@ export const HighlightCoverflow = () => {
   );
 
   return (
-    <section id="sorotan-giat" data-ui="coverflow-v6" className="relative overflow-hidden bg-white py-20 md:py-24">
+    <section id="sorotan-giat" data-ui="coverflow-v6" className="relative overflow-hidden bg-slate-50 py-20 md:py-24">
       <style>{`
         @keyframes mu-sheen { from { transform: translateX(-80%) skewX(-14deg); } to { transform: translateX(420%) skewX(-14deg); } }
         @keyframes mu-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
@@ -527,8 +530,8 @@ export const HighlightCoverflow = () => {
 /** Paket untuk beranda: ganti blok highlight KC + slider + 6 kartu dengan satu baris ini */
 export const HomeSections = () => (
   <>
-    <ProgramUnggulan />
     <HighlightCoverflow />
+    <ProgramUnggulan />
     <DokumentasiKegiatan />
   </>
 );
@@ -552,7 +555,7 @@ const FooterLink = ({ to, children }) => (
 );
 
 export const SiteFooter = ({ onOpenLogin }) => (
-  <footer id="footer-kontak" className="relative mt-auto overflow-hidden border-t-4 border-[#006569] bg-slate-950 pb-10 pt-16 font-sans text-slate-300">
+  <footer id="footer-kontak" className="relative mt-auto overflow-hidden border-t border-white/10 bg-slate-950 pb-10 pt-16 font-sans text-slate-300">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <Reveal>
         <div className="mx-auto mb-16 flex max-w-5xl flex-wrap items-center justify-center gap-x-10 gap-y-5 rounded-[3rem] bg-white px-8 py-6 shadow-[0_24px_60px_-28px_rgba(0,0,0,.9)]">
@@ -576,6 +579,9 @@ export const SiteFooter = ({ onOpenLogin }) => (
         <div>
           <h4 className="text-lg font-black text-white">Tentang Kami</h4>
           <ul className="mt-6 space-y-4 text-sm">
+            <FooterLink to="/informasi">Pusat Informasi</FooterLink>
+            <FooterLink to="/kc">Ksatria Cendekia VIII</FooterLink>
+            <FooterLink to="/youth-spark/seminar-webinar">Youth Spark</FooterLink>
             <FooterLink to="/garis-komando">Garis Komando</FooterLink>
             <FooterLink to="/pendidikan">Pendidikan dan Pelatihan</FooterLink>
             <FooterLink to="/mako">Markas Komando</FooterLink>
@@ -678,6 +684,9 @@ export const SubHero = ({ program }) => (
               >
                 Lihat Alur Kegiatan
               </a>
+              {program.slug === 'kc' && (
+                <a href="#jersey-kc" onClick={(e) => { e.preventDefault(); document.getElementById('jersey-kc')?.scrollIntoView({ behavior: 'smooth' }); }} className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-5 py-4 text-xs font-black uppercase tracking-wider text-white backdrop-blur transition hover:border-[#FFDD00] hover:text-[#FFDD00] md:text-sm">Lihat Jersey 3D <ArrowRight size={16} /></a>
+              )}
               {program.docs?.length > 0 && (
                 <a
                   href="#dokumen"
@@ -878,29 +887,35 @@ const YouthSparkBrand = ({ seminar = false }) => (
   </div>
 );
 
+const YOUTH_SPARK_POSTER = '/kegiatan/youth-spark-2026.webp';
+
 const YouthSparkHero = ({ subSlug }) => {
   const isSeminar = subSlug === 'seminar-webinar';
-  const title = isSeminar ? 'Youth Spark National: Seminar & Webinar' : 'Youth Spark National';
-  const sub = isSeminar ? 'Empowering Youth, Elevating UMKM — ruang belajar, jejaring, dan aksi bagi pemuda Indonesia.' : 'Program untuk mewadahi pengetahuan dan minat bakat para pemuda melalui berbagai kegiatan.';
   return (
-    <HeroStage className="min-h-[520px] py-24 md:py-32" photo={HERO_PHOTO} blur={3} dim={0.62}>
+    <HeroStage className="min-h-[540px] py-20 md:py-28" photo={HERO_PHOTO} blur={3} dim={0.72}>
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_.85fr]">
           <Reveal>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-white/90 backdrop-blur"><Zap size={14} className="text-[#FFDD00]" /> Youth Spark National</span>
-            <h1 className="mt-6 max-w-4xl text-4xl font-black leading-[1.03] tracking-tight text-white drop-shadow-lg md:text-6xl">{isSeminar ? <>Youth Spark National: <span className="text-[#FFDD00]">Seminar & Webinar</span></> : <>Youth Spark <span className="text-[#FFDD00]">National</span></>}</h1>
-            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-100/90">{sub}</p>
-            {isSeminar ? (
-              <div className="mt-8 flex flex-wrap gap-3">
-                <a href="https://forms.gle/pxnBS5D8JD8j5i9AA" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-[#FFDD00] px-6 py-4 text-xs font-black uppercase tracking-wider text-[#00383b]">Daftar Sekarang <ArrowRight size={17} /></a>
-                <a href="/dokumen/youth-spark-rundown.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-6 py-4 text-xs font-black uppercase tracking-wider text-white backdrop-blur hover:border-[#FFDD00] hover:text-[#FFDD00]">Lihat Rundown <FileText size={16} /></a>
-                <a href="#benefit-youth-spark" className="inline-flex items-center gap-2 rounded-xl border border-white/40 px-6 py-4 text-xs font-black uppercase tracking-wider text-white hover:border-[#FFDD00] hover:text-[#FFDD00]">Benefit <ArrowRight size={16} /></a>
-              </div>
-            ) : null}
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#ff995b]/40 bg-[#ff812f]/15 px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#ffb47a] backdrop-blur"><Zap size={14} /> DISPORA DKI Jakarta × MENWA UNJ</span>
+            <p className="mt-7 inline-block rounded-xl border-l-4 border-[#ff8b40] bg-[#ff8b40]/15 px-4 py-3 text-lg font-black leading-tight tracking-wide text-[#ffad72] sm:text-xl md:text-2xl">Pembinaan Aktivitas Pemuda</p>
+            <h1 className="mt-5 max-w-4xl text-5xl font-black leading-[1.04] tracking-tight text-white drop-shadow-lg md:text-7xl">Youth Spark <span className="text-[#ff8b40]">National</span> Seminar</h1>
+            <p className="mt-5 max-w-2xl text-xl font-bold italic text-white/95">Empowering Youth, Elevating UMKM</p>
+            <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm font-bold text-white/80">
+              <span className="inline-flex items-center gap-2"><CalendarDays size={18} className="text-[#ff995b]" /> 24 Oktober 2026</span>
+              <span className="inline-flex items-center gap-2"><MapPin size={18} className="text-[#ff995b]" /> Aula Latief Hendraningrat, UNJ</span>
+            </div>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <a href={YOUTH_SPARK_REGISTER_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 rounded-xl bg-[#ff8b40] px-6 py-4 text-sm font-black text-[#142d23] shadow-xl transition hover:bg-[#ffb579]">Take Your Seat Now! <ExternalLink size={18} /></a>
+              {isSeminar ? (
+                <a href="#narasumber-youth-spark" className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-6 py-4 text-sm font-black text-white backdrop-blur hover:border-[#ff995b]">Lihat Narasumber <ArrowRight size={17} /></a>
+              ) : (
+                <Link to="/youth-spark/seminar-webinar" className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-6 py-4 text-sm font-black text-white backdrop-blur hover:border-[#ff995b]">Detail Seminar <ArrowRight size={17} /></Link>
+              )}
+            </div>
           </Reveal>
           <Reveal from="zoom" delay={120} className="mx-auto w-full max-w-md">
             <div className="overflow-hidden rounded-[2rem] border border-white/20 bg-white/10 p-2 shadow-2xl backdrop-blur">
-              <img src="/kegiatan/poster-youthspark.png" alt="Poster Youth Spark National" className="w-full rounded-[1.5rem] object-cover" />
+              <img src={YOUTH_SPARK_POSTER} alt="Poster Youth Spark National Seminar 24 Oktober 2026: Pembinaan Aktivitas Pemuda, Empowering Youth Elevating UMKM" className="w-full rounded-[1.5rem] object-cover" />
             </div>
           </Reveal>
         </div>
@@ -915,8 +930,10 @@ const YouthSparkLandingPage = () => (
     <section className="mx-auto max-w-7xl px-4 py-16 text-center sm:px-6 lg:px-8">
       <Reveal>
         <YouthSparkBrand />
-        <h2 className="mx-auto mt-10 max-w-3xl text-3xl font-black tracking-tight text-slate-900 md:text-5xl">Youth Spark National</h2>
-        <p className="mx-auto mt-5 max-w-3xl text-lg leading-relaxed text-slate-600">Program ini untuk mewadahi pengetahuan dan minat bakat para pemuda melalui berbagai kegiatan.</p>
+        <span className="mt-10 inline-block rounded-full bg-[#fce7d7] px-4 py-2 text-xs font-black uppercase tracking-wider text-[#a34818]">Pembinaan Aktivitas Pemuda</span>
+        <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-black tracking-tight text-slate-900 md:text-5xl">Empowering Youth, Elevating UMKM</h2>
+        <p className="mx-auto mt-5 max-w-3xl text-lg leading-relaxed text-slate-600">Youth Spark National Seminar mempertemukan pemuda, pemangku kebijakan, dan pelaku industri kreatif untuk berbagi pengalaman kepemudaan, industri kreatif, dan UMKM naik kelas.</p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3"><Link to="/youth-spark/seminar-webinar" className="inline-flex items-center gap-2 rounded-2xl bg-[#006569] px-7 py-4 text-sm font-black text-white shadow-lg transition hover:bg-[#00383b]">Informasi Seminar dan Narasumber <ArrowRight size={18} /></Link><Link to="/youth-spark/seminar-webinar" className="inline-flex items-center gap-2 rounded-2xl border border-[#006569]/30 bg-white px-7 py-4 text-sm font-black text-[#006569] shadow-sm transition hover:bg-[#e6f3f0]">Rundown 08.00–12.00 WIB <Clock size={17} /></Link></div>
       </Reveal>
     </section>
     <YouthSparkCards />
@@ -938,45 +955,101 @@ const YouthSparkComingSoon = ({ title, subSlug }) => (
   </div>
 );
 
+const YOUTH_SPARK_RUNDOWN_2026 = [
+  { time: '08.00–08.05', title: 'Pembukaan oleh MC' },
+  { time: '08.05–08.08', title: 'Menyanyikan Indonesia Raya' },
+  { time: '08.08–08.10', title: 'Pembacaan Doa' },
+  { time: '08.10–08.15', title: 'Sambutan Komandan Satuan UNJ' },
+  { time: '08.15–08.20', title: 'Sambutan Danmenwa Jayakarta' },
+  { time: '08.20–08.25', title: 'Sambutan Kepala Dispora DKI Jakarta' },
+  { time: '08.25–08.40', title: 'Keynote Speech & Sambutan Rektor UNJ' },
+  { time: '08.40–08.50', title: 'Pre-Test' },
+  { time: '08.50–09.25', title: 'Materi 1 – Pemuda Berdaya, Wirausaha Berkarya', speaker: 'Dr. Tomi Ari Sudewo, M.M.' },
+  { time: '09.25–10.00', title: 'Materi 2 – Dari Literasi ke Industri Kreatif', speaker: 'Dr. Ir. Achmad Fachrodji, M.M.' },
+  { time: '10.00–10.35', title: 'Materi 3 – UMKM Naik Kelas di Era Digital dan AI', speaker: 'Deputi Bidang Kewirausahaan, Kementerian UMKM RI' },
+  { time: '10.35–11.05', title: 'Q&A Panel – Youth Spark Dialogue' },
+  { time: '11.05–11.15', title: 'Post-Test' },
+  { time: '11.15–11.20', title: 'Foto Bersama' },
+  { time: '11.20–11.50', title: 'Coffee Break & Doorprize – Youth Spark Lucky Moment' },
+  { time: '11.50–12.00', title: 'Penutupan & Menyanyikan Bagimu Negeri' },
+];
+
 const YouthSparkSeminarPage = () => {
-  const benefits = ['E-certificate', 'Souvenir', 'Knowledge Sharing', 'Door Prize', 'Networking & Relation'];
+  const benefits = ['E-certificate', 'Knowledge Sharing', 'Door Prize', 'Networking & Relation'];
   return (
     <div className="bg-slate-50">
       <YouthSparkHero subSlug="seminar-webinar" />
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
+        <div className="grid items-center gap-10 lg:grid-cols-[1fr_340px]">
           <Reveal>
             <YouthSparkBrand seminar />
+            <p className="mt-7 max-w-xl text-lg leading-8 text-slate-600">Bagian dari <strong className="text-[#b94f16]">Pembinaan Aktivitas Pemuda</strong> melalui kolaborasi DISPORA DKI Jakarta dan Menwa UNJ, berfokus pada kepemudaan, industri kreatif, dan penguatan UMKM.</p>
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200 bg-white p-5"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tanggal</span><div className="mt-1 text-xl font-black text-slate-900">18 Oktober 2026</div></div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-5"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tempat</span><div className="mt-1 text-xl font-black text-slate-900">Auditorium KH. Hajar Dewantara, UNJ</div></div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-5"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Target</span><div className="mt-1 text-xl font-black text-slate-900">200 pemuda se-Indonesia</div></div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-5"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Biaya</span><div className="mt-1 text-xl font-black text-slate-900">Gratis</div></div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-5"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tanggal</span><div className="mt-1 text-xl font-black text-slate-900">24 Oktober 2026</div></div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-5"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tempat</span><div className="mt-1 text-xl font-black text-slate-900">Aula Latief Hendraningrat, Universitas Negeri Jakarta</div></div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-5"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tema</span><div className="mt-1 text-xl font-black text-slate-900">Empowering Youth, Elevating UMKM</div></div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-5"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Pendaftaran</span><a href={YOUTH_SPARK_REGISTER_URL} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-2 text-xl font-black text-[#006569] hover:underline">Take Your Seat Now! <ExternalLink size={17} /></a></div>
             </div>
           </Reveal>
           <Reveal from="zoom" delay={120}>
-            <img src="/kegiatan/poster-youthspark.png" alt="Poster Youth Spark National Seminar" className="w-full rounded-[2rem] border border-slate-200 bg-white p-2 shadow-xl" />
+            <img src={YOUTH_SPARK_POSTER} alt="Poster terbaru Youth Spark National Seminar" className="w-full rounded-[2rem] border border-slate-200 bg-white p-2 shadow-xl" />
           </Reveal>
         </div>
       </section>
-      <section id="benefit-youth-spark" className="border-y border-slate-100 bg-white py-20">
+
+      <section id="narasumber-youth-spark" className="youth-speakers-section scroll-mt-24 bg-slate-50 py-20 text-slate-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal><Heading eyebrow="Benefit" title="Benefit Peserta" /></Reveal>
-          <Stagger className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5" itemClassName="h-full">
-            {benefits.map((b) => <div key={b} className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-center font-black text-slate-800"><Check className="mx-auto mb-3 text-[#006569]" size={22} />{b}</div>)}
+          <Reveal className="text-center">
+            <span className="text-xs font-black uppercase tracking-[.22em] text-[#c3632b]">Narasumber Seminar</span>
+            <h2 className="mt-3 text-3xl font-black md:text-5xl">Belajar langsung dari <span className="text-[#b85828]">para narasumber</span></h2>
+            <p className="mx-auto mt-4 max-w-2xl leading-relaxed text-slate-600">Tiga materi penting yang menghubungkan potensi generasi muda, industri kreatif, dan pengembangan UMKM Indonesia.</p>
+          </Reveal>
+          <Stagger className="mt-12 grid gap-6 md:grid-cols-3" itemClassName="h-full">
+            {YOUTH_SPARK_SPEAKERS.map((speaker, i) => (
+              <article key={speaker.name} className="youth-speaker-card flex h-full flex-col items-center overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/80 px-6 pt-6 text-center shadow-[0_24px_55px_-35px_rgba(6,59,60,.28)] backdrop-blur-sm">
+                <div className="mb-2 flex w-full items-center justify-between gap-3"><span className="text-3xl font-black text-[#006569]/30">0{i + 1}</span><span className="rounded-full border border-[#ed9f71]/50 bg-[#fff2e8] px-3 py-2 text-[10px] font-black uppercase tracking-wide text-[#a64b1f]">{speaker.topic}</span></div>
+                <div className="youth-speaker-portrait relative my-3 flex h-60 w-full items-end justify-center overflow-hidden rounded-[1.5rem] bg-gradient-to-b from-[#f8f7f2] to-[#e5efec]">
+                  <span className="pointer-events-none absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#006569]/10" />
+                  <img src={speaker.photo || '/narasumber/speaker-placeholder.svg'} loading="lazy" alt={`Placeholder foto narasumber ${speaker.name}`} className="relative z-10 h-[96%] w-auto max-w-[95%] object-contain object-bottom" />
+                </div>
+                <h3 className="mt-5 text-xl font-black leading-snug text-[#0e3435]">{speaker.name}</h3>
+                <p className="mb-8 mt-3 max-w-xs flex-1 text-sm leading-6 text-slate-600">{speaker.role}</p>
+              </article>
+            ))}
           </Stagger>
         </div>
       </section>
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <Reveal><Heading eyebrow="Rangkaian Seminar" title="Youth Spark National Seminar" desc="Keynote dan tiga materi utama yang membawa peserta dari pengembangan diri menuju aksi dan pengembangan UMKM di era digital dan AI." /></Reveal>
-        <Timeline steps={[
-          { label: 'Registrasi', date: '07.00–08.00 WIB', desc: 'Registrasi peserta dan persiapan acara.' },
-          { label: 'Keynote Speech', date: '09.40–09.55 WIB', desc: 'Rektor UNJ: Pemuda sebagai Penggerak Masa Depan Bangsa dan Ekonomi Indonesia.' },
-          { label: 'Materi 1', date: '09.55–10.40 WIB', desc: 'Pemuda Berdaya, Wirausaha Berkarya.' },
-          { label: 'Materi 2', date: '10.40–11.25 WIB', desc: 'Bela Negara melalui Kemandirian Ekonomi.' },
-          { label: 'Materi 3', date: '11.25–12.10 WIB', desc: 'Dari Ide ke Pasar: Strategi Pemuda Membangun UMKM Naik Kelas di Era Digital dan AI.' },
-        ]} />
+
+      <section id="benefit-youth-spark" className="border-y border-slate-100 bg-slate-50 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal><Heading eyebrow="Benefit" title="Benefit Peserta" desc="Empat benefit utama sesuai poster Youth Spark terbaru." /></Reveal>
+          <Stagger className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" itemClassName="h-full">
+            {benefits.map((b) => <div key={b} className="h-full rounded-2xl border border-slate-200 bg-slate-50 p-6 text-center font-black text-slate-800"><Check className="mx-auto mb-3 text-[#006569]" size={25} />{b}</div>)}
+          </Stagger>
+        </div>
       </section>
+      <section id="rundown-youth-spark" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <Reveal><Heading eyebrow="Rundown Resmi • 24 Oktober 2026" title="Susunan Acara Youth Spark" desc="Jadwal lengkap dari dokumen resmi panitia, pukul 08.00–12.00 WIB. Nama pemateri ditambahkan di bawah sesi materi untuk mempermudah peserta." /></Reveal>
+        <div className="mt-9 overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white shadow-xl">
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-[#064947] px-5 py-4 text-white sm:px-7">
+            <span className="text-sm font-black uppercase tracking-wide">Rundown Kegiatan</span>
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs font-black"><Clock size={15} /> 08.00–12.00 WIB</span>
+          </div>
+          <div className="divide-y divide-slate-100" role="list" aria-label="Susunan acara Youth Spark National Seminar 2026">
+            {YOUTH_SPARK_RUNDOWN_2026.map((step, index) => (
+              <div role="listitem" key={step.time} className={`grid grid-cols-[102px_minmax(0,1fr)] items-start gap-3 px-4 py-4 transition-colors hover:bg-[#fff3e9] sm:grid-cols-[170px_minmax(0,1fr)] sm:gap-6 sm:px-7 ${step.speaker ? 'bg-[#fffaf4]' : ''}`}>
+                <span className="rounded-lg bg-[#e3f1ed] px-2 py-2 text-center text-xs font-black tabular-nums text-[#006569] sm:text-sm">{step.time}</span>
+                <div className="min-w-0 py-1"><div className="flex items-start gap-3"><span className="hidden shrink-0 text-xs font-black text-[#c16a36] sm:inline">{String(index + 1).padStart(2, '0')}</span><span className="text-sm font-bold leading-6 text-slate-800 sm:text-base">{step.title}</span></div>{step.speaker && <div className="mt-1 text-xs font-semibold text-[#a94c21] sm:ml-7 sm:text-sm">Narasumber: {step.speaker}</div>}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="mt-9 flex flex-wrap items-center gap-4">
+          <a href={YOUTH_SPARK_REGISTER_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 rounded-xl bg-[#006569] px-7 py-4 text-sm font-black text-white transition hover:bg-[#00383b]">Take Your Seat Now! <ExternalLink size={18} /></a>
+          <a href="/dokumen/youth-spark-rundown.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-black text-[#006569] hover:underline"><FileText size={17} /> Lihat PDF rundown resmi</a>
+        </div>
+      </section>
+      <FAQSection id="faq-youth-spark" type="youth" />
     </div>
   );
 };
@@ -998,10 +1071,9 @@ export const ProgramPage = ({ slug }) => {
 
   return (
     <div className="flex-grow bg-slate-50 font-sans">
-      {slug === 'kc' && <KcIntro />}
       <SubHero program={program} />
 
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+      <section id="tentang-program" className="mx-auto max-w-7xl scroll-mt-32 px-4 py-20 sm:px-6 lg:px-8">
         <div className="grid items-start gap-12 lg:grid-cols-12">
           <Reveal className="lg:col-span-7">
             <span className="text-xs font-black uppercase tracking-[0.25em] text-[#006569]">Tentang Program</span>
@@ -1045,6 +1117,8 @@ export const ProgramPage = ({ slug }) => {
         </div>
       </section>
 
+      {slug === 'kc' && <JerseyShowcase />}
+
       {showTimeline && (
         <section id="alur" className="border-y border-slate-100 bg-white py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -1055,7 +1129,7 @@ export const ProgramPage = ({ slug }) => {
       )}
 
       {program.details?.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <section id="ketentuan-program" className="mx-auto max-w-7xl scroll-mt-32 px-4 py-20 sm:px-6 lg:px-8">
           <Reveal><Heading eyebrow="Informasi Lengkap" title="Yang Perlu Kamu Ketahui" /></Reveal>
           <Stagger className="grid gap-6 md:grid-cols-2" itemClassName="h-full" step={80}>
             {program.details.map((d) => (
@@ -1076,6 +1150,8 @@ export const ProgramPage = ({ slug }) => {
         </section>
       )}
 
+      {slug === 'kc' && <FAQSection id="faq-program" type="kc" />}
+
       {related.length > 0 && (
         <section className="bg-[#eef2fb] py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -1095,7 +1171,7 @@ export const ProgramPage = ({ slug }) => {
             return (
               <Link key={p.slug} to={`/${p.slug}`} className="block h-full">
                 <HoverCard className="h-full rounded-2xl border border-slate-100 bg-white" inner="flex h-full items-center gap-3 p-4">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#006569] text-[#FFDD00]"><Icon size={18} /></span>
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f1f6f4]"><PortalIcon kind={p.slug} size={21}/></span>
                   <span className="text-sm font-black leading-tight text-slate-900">{p.title}</span>
                 </HoverCard>
               </Link>

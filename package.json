@@ -7,8 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "test:source": "node scripts/validate-source.mjs",
-    "test": "npm run test:source && npm run test:api && npm run build",
-    "test:api": "node --check api/chat.js"
+    "test": "npm run test:source && npm run test:jsx && npm run test:events && npm run test:v7 && npm run test:api && npm run build",
+    "test:events": "node scripts/validate-events.mjs",
+    "test:api": "node --check api/chat.js && node --check api/search.js && node scripts/validate-ai-search.mjs",
+    "test:jsx": "node scripts/validate-jsx.mjs",
+    "test:v7": "node scripts/validate-v7.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

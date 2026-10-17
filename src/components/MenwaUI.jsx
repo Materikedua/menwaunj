@@ -455,24 +455,24 @@ export const NavBar = ({ activeTab, onNavigate, isMobileMenuOpen, setIsMobileMen
       }`}
     >
       <div className="h-[3px] w-full bg-gradient-to-r from-[#006569] via-[#FFDD00] to-[#006569] opacity-80" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1760px] mx-auto px-3 sm:px-4 2xl:px-8">
         <div className={`flex justify-between items-center transition-all duration-500 ${scrolled ? 'h-16' : 'h-20'}`}>
           <MagneticButton
             onClick={() => onNavigate('beranda')}
             strength={0.15}
-            className="flex items-center cursor-pointer group bg-transparent"
+            className="flex shrink-0 items-center cursor-pointer group bg-transparent"
           >
             <img
               src={logoSrc} onError={onLogoError} alt="Logo Menwa UNJ"
-              className="w-11 h-11 object-contain mr-3 drop-shadow-md transition-transform duration-500 group-hover:scale-110"
+              className="w-9 h-9 xl:w-11 xl:h-11 object-contain mr-2 xl:mr-3 drop-shadow-md transition-transform duration-500 group-hover:scale-110"
             />
             <div className="text-left">
-              <h1 className="text-sm md:text-base font-black text-white leading-tight tracking-tight">RESIMEN MAHASISWA</h1>
-              <p className="text-[10px] font-black text-[#FFDD00] tracking-[0.25em] uppercase">Satuan UNJ</p>
+              <h1 className="text-xs 2xl:text-sm font-black text-white whitespace-nowrap leading-tight tracking-tight">RESIMEN MAHASISWA</h1>
+              <p className="text-[9px] font-black text-[#FFDD00] tracking-[0.2em] uppercase">Satuan UNJ</p>
             </div>
           </MagneticButton>
 
-          <div ref={listRef} className="hidden lg:flex relative items-center gap-1">
+          <div ref={listRef} className="hidden xl:flex relative min-w-0 items-center gap-0.5 xl:gap-1">
             <div
               className="absolute top-1/2 -translate-y-1/2 h-10 rounded-full bg-white/10 border border-[#FFDD00]/30 backdrop-blur-sm"
               style={{
@@ -487,7 +487,7 @@ export const NavBar = ({ activeTab, onNavigate, isMobileMenuOpen, setIsMobileMen
                 onMouseEnter={(e) => { setHovered(item.id); movePill(e.currentTarget); }}
                 onFocus={(e) => movePill(e.currentTarget)}
                 onClick={() => onNavigate(item.id)}
-                className={`relative z-10 px-4 py-2.5 rounded-full text-xs font-black uppercase tracking-tight transition-colors duration-300 ${
+                className={`relative z-10 whitespace-nowrap px-2 xl:px-3 2xl:px-4 py-2.5 rounded-full text-[11px] 2xl:text-xs font-black uppercase tracking-tight transition-colors duration-300 ${
                   activeTab === item.id ? 'text-[#FFDD00]' : 'text-slate-300 hover:text-white'
                 }`}
               >
@@ -498,8 +498,8 @@ export const NavBar = ({ activeTab, onNavigate, isMobileMenuOpen, setIsMobileMen
 
           <div className="flex items-center gap-3">
             {rightSlot}
-            <div className="lg:hidden">
-              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-slate-200 hover:text-[#FFDD00]">
+            <div className="xl:hidden">
+              <button type="button" aria-label={isMobileMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'} aria-expanded={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-slate-200 hover:text-[#FFDD00]">
                 {isMobileMenuOpen ? CloseIcon : MenuIcon}
               </button>
             </div>
@@ -508,7 +508,7 @@ export const NavBar = ({ activeTab, onNavigate, isMobileMenuOpen, setIsMobileMen
       </div>
 
       <div
-        className={`hidden lg:block absolute left-0 right-0 top-full origin-top transition-all duration-300 ${
+        className={`hidden xl:block absolute left-0 right-0 top-full origin-top transition-all duration-300 ${
           hovered ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-3 pointer-events-none'
         }`}
       >
@@ -533,7 +533,7 @@ export const NavBar = ({ activeTab, onNavigate, isMobileMenuOpen, setIsMobileMen
         </div>
       </div>
 
-      <div className={`lg:hidden overflow-hidden bg-slate-950 border-t border-slate-800 absolute w-full transition-[max-height] duration-500 ${isMobileMenuOpen ? 'max-h-[60vh]' : 'max-h-0'}`}>
+      <div className={`xl:hidden overflow-y-auto overflow-x-hidden bg-slate-950 border-t border-slate-800 absolute w-full transition-[max-height] duration-500 ${isMobileMenuOpen ? 'max-h-[calc(100dvh-64px)]' : 'max-h-0'}`}>
         <div className="px-4 py-4 space-y-2">
           {navItems.map((item) => (
             <button
