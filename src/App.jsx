@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { 
   X, 
   Menu, 
@@ -47,6 +47,9 @@ import MenwaPet from './components/MenwaPet';
 import { BrandHome, BrandValues, InformationHub } from './components/BrandExperience.jsx';
 import { CommandPalette, PageWayfinder, BackToTop } from './components/PortalUtilities.jsx';
 import { PROGRAMS, HERO_PHOTO } from './data/siteData';
+import { PublishedActionsProvider } from './command/PublicActions.jsx';
+
+const CommandCenter = lazy(() => import('./command/CommandCenter.jsx'));
 
 const handleImgError = (e, text, bgColor = '006569', textColor = 'FFDD00') => {
   e.target.onerror = null;
@@ -1431,7 +1434,7 @@ const BootLoader = ({ done }) => {
   );
 };
 
-export default function App() {
+function PublicPortal() {
   const path = useRoute();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -1498,7 +1501,7 @@ export default function App() {
           </TabSwitch>
         </main>
 
-        <Footer />
+        <Footer onOpenLogin={() => navigate('/command-center')} />
 
         <LiveChatWidget />
         <BackToTop />
@@ -1508,4 +1511,12 @@ export default function App() {
       </div>
     </AppErrorBoundary>
   );
+}
+
+export default function App() {
+  const path = useRoute();
+  if (path === '/command-center' || path.startsWith('/command-center/')) {
+    return <AppErrorBoundary><Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50" role="status">Memuat Command Center…</div>}><CommandCenter /></Suspense></AppErrorBoundary>;
+  }
+  return <PublishedActionsProvider><PublicPortal /></PublishedActionsProvider>;
 }

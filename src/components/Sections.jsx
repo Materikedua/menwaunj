@@ -13,6 +13,7 @@ import { SITE, PROGRAMS, KEGIATAN, FEED_URL, STEP_DESC, IMG, HERO_PHOTO, HEADER_
 import JerseyShowcase from './JerseyShowcase';
 import { FAQSection } from './PortalUtilities.jsx';
 import PortalIcon from './PortalIcon.jsx';
+import { usePublishedAction } from '../command/PublicActions.jsx';
 
 /* ---------- util ---------- */
 export const ICONS = {
@@ -641,7 +642,11 @@ export const SiteFooter = ({ onOpenLogin }) => (
 /* ============================================================
    5. HEADER SUBTAB  (foto hero + pill + judul besar + 2 tombol)
    ============================================================ */
-export const SubHero = ({ program }) => (
+const programActionId = (slug) => ({ kc: 'kc-registration', 'youth-spark': 'youth-spark-registration' })[slug];
+
+export const SubHero = ({ program }) => {
+  const registrationUrl = usePublishedAction(programActionId(program.slug), program.cta.url);
+  return (
   <HeroStage
     className="min-h-[540px] py-24 md:py-32" photo={HERO_PHOTO} blur={2.5} dim={0.62}
   >
@@ -670,7 +675,7 @@ export const SubHero = ({ program }) => (
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <MagneticButton as="div" className="inline-block">
                 <Link
-                  to={program.cta.url}
+                  to={registrationUrl}
                   className="inline-flex items-center gap-3 bg-[#FFDD00] py-4 pl-7 pr-10 text-xs font-black uppercase tracking-wider text-[#00383b] shadow-xl transition hover:bg-yellow-300 md:text-sm"
                   style={{ clipPath: 'polygon(0 0, 100% 0, 94% 100%, 0 100%)' }}
                 >
@@ -714,7 +719,8 @@ export const SubHero = ({ program }) => (
       </div>
     </div>
   </HeroStage>
-);
+  );
+};
 
 /* ============================================================
    6. TIMELINE — horizontal di desktop, vertikal di HP; garis terisi saat terlihat
@@ -890,6 +896,7 @@ const YouthSparkBrand = ({ seminar = false }) => (
 const YOUTH_SPARK_POSTER = '/kegiatan/youth-spark-2026.webp';
 
 const YouthSparkHero = ({ subSlug }) => {
+  const registrationUrl = usePublishedAction('youth-spark-registration', YOUTH_SPARK_REGISTER_URL);
   const isSeminar = subSlug === 'seminar-webinar';
   return (
     <HeroStage className="min-h-[540px] py-20 md:py-28" photo={HERO_PHOTO} blur={3} dim={0.72}>
@@ -905,7 +912,7 @@ const YouthSparkHero = ({ subSlug }) => {
               <span className="inline-flex items-center gap-2"><MapPin size={18} className="text-[#ff995b]" /> Aula Latief Hendraningrat, UNJ</span>
             </div>
             <div className="mt-9 flex flex-wrap gap-3">
-              <a href={YOUTH_SPARK_REGISTER_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 rounded-xl bg-[#ff8b40] px-6 py-4 text-sm font-black text-[#142d23] shadow-xl transition hover:bg-[#ffb579]">Take Your Seat Now! <ExternalLink size={18} /></a>
+              <a href={registrationUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 rounded-xl bg-[#ff8b40] px-6 py-4 text-sm font-black text-[#142d23] shadow-xl transition hover:bg-[#ffb579]">Take Your Seat Now! <ExternalLink size={18} /></a>
               {isSeminar ? (
                 <a href="#narasumber-youth-spark" className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-6 py-4 text-sm font-black text-white backdrop-blur hover:border-[#ff995b]">Lihat Narasumber <ArrowRight size={17} /></a>
               ) : (
@@ -975,6 +982,7 @@ const YOUTH_SPARK_RUNDOWN_2026 = [
 ];
 
 const YouthSparkSeminarPage = () => {
+  const registrationUrl = usePublishedAction('youth-spark-registration', YOUTH_SPARK_REGISTER_URL);
   const benefits = ['E-certificate', 'Knowledge Sharing', 'Door Prize', 'Networking & Relation'];
   return (
     <div className="bg-slate-50">
@@ -988,7 +996,7 @@ const YouthSparkSeminarPage = () => {
               <div className="rounded-2xl border border-slate-200 bg-white p-5"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tanggal</span><div className="mt-1 text-xl font-black text-slate-900">24 Oktober 2026</div></div>
               <div className="rounded-2xl border border-slate-200 bg-white p-5"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tempat</span><div className="mt-1 text-xl font-black text-slate-900">Aula Latief Hendraningrat, Universitas Negeri Jakarta</div></div>
               <div className="rounded-2xl border border-slate-200 bg-white p-5"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tema</span><div className="mt-1 text-xl font-black text-slate-900">Empowering Youth, Elevating UMKM</div></div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-5"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Pendaftaran</span><a href={YOUTH_SPARK_REGISTER_URL} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-2 text-xl font-black text-[#006569] hover:underline">Take Your Seat Now! <ExternalLink size={17} /></a></div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-5"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Pendaftaran</span><a href={registrationUrl} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-2 text-xl font-black text-[#006569] hover:underline">Take Your Seat Now! <ExternalLink size={17} /></a></div>
             </div>
           </Reveal>
           <Reveal from="zoom" delay={120}>
@@ -1045,7 +1053,7 @@ const YouthSparkSeminarPage = () => {
           </div>
         </div>
         <div className="mt-9 flex flex-wrap items-center gap-4">
-          <a href={YOUTH_SPARK_REGISTER_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 rounded-xl bg-[#006569] px-7 py-4 text-sm font-black text-white transition hover:bg-[#00383b]">Take Your Seat Now! <ExternalLink size={18} /></a>
+          <a href={registrationUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 rounded-xl bg-[#006569] px-7 py-4 text-sm font-black text-white transition hover:bg-[#00383b]">Take Your Seat Now! <ExternalLink size={18} /></a>
           <a href="/dokumen/youth-spark-rundown.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-black text-[#006569] hover:underline"><FileText size={17} /> Lihat PDF rundown resmi</a>
         </div>
       </section>
@@ -1064,6 +1072,7 @@ export const YouthSparkPage = ({ subSlug }) => {
 
 export const ProgramPage = ({ slug }) => {
   const program = PROGRAMS.find((p) => p.slug === slug);
+  const registrationUrl = usePublishedAction(programActionId(slug), program?.cta.url || '');
   const related = useKegiatan().filter((k) => k.program === slug).slice(0, 3);
   if (!program) return null;
   const others = PROGRAMS.filter((p) => p.slug !== slug);
@@ -1097,7 +1106,7 @@ export const ProgramPage = ({ slug }) => {
               <h3 className="text-lg font-black text-[#FFDD00]">Ingin ikut atau bertanya?</h3>
               <p className="mt-2 text-sm text-slate-200">Gunakan tautan resmi di bawah ini agar informasi yang kamu terima akurat.</p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link to={program.cta.url} className="inline-flex items-center gap-2 rounded-xl bg-[#FFDD00] px-6 py-3 text-sm font-black uppercase tracking-wider text-[#00383b] transition hover:-translate-y-0.5 hover:bg-yellow-300">
+                <Link to={registrationUrl} className="inline-flex items-center gap-2 rounded-xl bg-[#FFDD00] px-6 py-3 text-sm font-black uppercase tracking-wider text-[#00383b] transition hover:-translate-y-0.5 hover:bg-yellow-300">
                   {program.cta.label} <ArrowRight size={16} />
                 </Link>
                 {program.ig && (
