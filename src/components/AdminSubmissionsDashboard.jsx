@@ -17,11 +17,32 @@ import {
   Mail,
   Calendar,
   ShieldCheck,
-  ArrowUpDown
+  ArrowUpDown,
+  FileSpreadsheet,
+  Share2,
+  Heart,
+  Vote,
+  Trash2,
+  Sparkles,
+  HelpCircle,
+  X,
+  GraduationCap
 } from 'lucide-react';
-import { getAllSubmissionsForAdmin, updateSubmissionStatus } from '../firebase.js';
+import { useAuth } from '../hooks/useAuth.jsx';
+import { 
+  getAllSubmissionsForAdmin, 
+  updateSubmissionStatus,
+  getAllVotingTransactionsForAdmin,
+  getGeranatTeams,
+  resetCharityVotingData,
+  resetGamificationLeaderboard
+} from '../firebase.js';
 
 export function AdminSubmissionsDashboard() {
+  const { user } = useAuth();
+  const userEmail = user?.email?.toLowerCase();
+  const isSuperAdmin = !!(user && (userEmail === 'unjmenwa@gmail.com' || userEmail === 'rafflysyahpoetra@gmail.com'));
+
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,6 +50,10 @@ export function AdminSubmissionsDashboard() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [updatingId, setUpdatingId] = useState(null);
   const [successBanner, setSuccessBanner] = useState('');
+
+  // State Modal Panduan Google Sheets
+  const [sheetsModalOpen, setSheetsModalOpen] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const loadSubmissions = async () => {
     setLoading(true);
@@ -69,7 +94,6 @@ export function AdminSubmissionsDashboard() {
       );
     }
 
-    // Urutkan dari yang terbaru
     return list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   }, [submissions, statusFilter, categoryFilter, searchQuery]);
 
@@ -97,14 +121,31 @@ export function AdminSubmissionsDashboard() {
     }
   };
 
-  // Ekspor ke Excel (.CSV)
-  const handleExportCSV = () => {
+  // Helper Pemicu Unduhan File Blob CSV dengan UTF-8 BOM
+  const triggerDownloadCSV = (filename, headers, rows) => {
+    const csvContent = '\uFEFF' + [
+      headers.map(h => `"${String(h).replace(/"/g, '""')}"`).join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+    ].join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // 1. Ekspor Berkas Pendaftaran & Administrasi (.CSV)
+  const handleExportSubmissionsCSV = () => {
     if (filteredList.length === 0) {
       alert('Tidak ada data pendaftaran untuk diekspor.');
       return;
     }
 
-    // Header Kolom CSV
     const headers = [
       'ID Berkas',
       'Tanggal Pengajuan',
@@ -120,7 +161,6 @@ export function AdminSubmissionsDashboard() {
       'Catatan / Keperluan'
     ];
 
-    // Format baris CSV dengan escaping kutip ganda
     const rows = filteredList.map(item => [
       item.submissionId || item.id || '-',
       item.createdAt ? new Date(item.createdAt).toLocaleString('id-ID') : '-',
@@ -136,61 +176,199 @@ export function AdminSubmissionsDashboard() {
       item.notes ? item.notes.replace(/\r?\n/g, ' ') : '-'
     ]);
 
-    // Gabungkan menjadi format CSV standar dengan UTF-8 BOM agar kompatibel dengan Excel
-    const csvContent = '\uFEFF' + [
-      headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','),
-      ...rows.map(row => row.map(cell => `"${String(cell || '').replace(/"/g, '""')}"`).join(','))
-    ].join('\r\n');
-
-    // Buat Blob dan picu unduhan
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
     const today = new Date().toISOString().split('T')[0];
-    link.setAttribute('href', url);
-    link.setAttribute('download', `Rekapitulasi_Pendaftar_Menwa_UNJ_${today}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    triggerDownloadCSV(`Pemberkasan_Administrasi_Menwa_UNJ_${today}.csv`, headers, rows);
+    setSuccessBanner('File CSV Pemberkasan Administrasi berhasil diunduh. Siap diimpor ke Google Sheets.');
+  };
+
+  // 2. Ekspor Transaksi Charity Vote (.CSV)
+  const handleExportCharityVotesCSV = async () => {
+    setExportLoading(true);
+    try {
+      const votes = await getAllVotingTransactionsForAdmin();
+      if (!votes || votes.length === 0) {
+        alert('Belum ada data transaksi donasi Charity Vote yang tercatat di database.');
+        return;
+      }
+
+      const headers = [
+        'ID Transaksi',
+        'Tanggal / Waktu',
+        'Nama Donatur',
+        'Program / Inisiatif Tujuan',
+        'Jumlah Suara',
+        'Nominal Donasi (IDR)',
+        'Status Pembayaran',
+        'Metode Pembayaran',
+        'UID Donatur'
+      ];
+
+      const rows = votes.map(v => [
+        v.txId || v.id || '-',
+        v.createdAt ? new Date(v.createdAt).toLocaleString('id-ID') : '-',
+        v.voterName || 'Donatur Kemanusiaan',
+        v.teamName || v.teamId || '-',
+        Number(v.votes || 0),
+        Number(v.amount || (v.votes || 0) * 1000),
+        v.status || 'pending',
+        v.paymentMethod || 'QRIS Statis Mako',
+        v.voterUid || '-'
+      ]);
+
+      const today = new Date().toISOString().split('T')[0];
+      triggerDownloadCSV(`Transaksi_Charity_Vote_Menwa_UNJ_${today}.csv`, headers, rows);
+      setSuccessBanner('File CSV Transaksi Charity Vote berhasil diunduh. Siap diimpor ke Google Sheets.');
+    } catch (err) {
+      alert('Gagal mengekspor transaksi charity: ' + (err?.message || err));
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  // 3. Ekspor Data Tim & Penerima Beasiswa / Logistik (.CSV)
+  const handleExportTeamsCSV = async () => {
+    setExportLoading(true);
+    try {
+      const teams = await getGeranatTeams();
+      if (!teams || teams.length === 0) {
+        alert('Belum ada data penerima beasiswa / tim terdaftar saat ini.');
+        return;
+      }
+
+      const headers = [
+        'ID Penerima / Tim',
+        'Nama Penerima / Inisiatif',
+        'Asal Lembaga / Lokasi Posko',
+        'Kategori Inisiatif',
+        'Penanggung Jawab',
+        'Akumulasi Suara Masuk',
+        'Total Donasi Terkumpul (IDR)',
+        'Target Donasi (IDR)',
+        'Deskripsi / Catatan',
+        'Terakhir Diperbarui'
+      ];
+
+      const rows = teams.map(t => [
+        t.teamId || t.id || '-',
+        t.teamName || '-',
+        t.institution || '-',
+        t.category || 'Beasiswa Menwa',
+        t.dantonName || '-',
+        Number(t.votesCount || 0),
+        Number(t.totalAmountReceived || (t.votesCount || 0) * 1000),
+        Number(t.targetDonation || 5000000),
+        t.motto ? t.motto.replace(/\r?\n/g, ' ') : '-',
+        t.updatedAt ? new Date(t.updatedAt).toLocaleString('id-ID') : '-'
+      ]);
+
+      const today = new Date().toISOString().split('T')[0];
+      triggerDownloadCSV(`Daftar_Penerima_Charity_Menwa_UNJ_${today}.csv`, headers, rows);
+      setSuccessBanner('File CSV Daftar Penerima Charity berhasil diunduh.');
+    } catch (err) {
+      alert('Gagal mengekspor data tim: ' + (err?.message || err));
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  // Reset Data Voting oleh Super Admin
+  const handleAdminResetVoting = async () => {
+    if (!isSuperAdmin) return;
+    const ok = window.confirm('Peringatan: Apakah Anda yakin ingin MENGHAPUS SEMUA DATA TIM/PENERIMA di Charity Vote?');
+    if (!ok) return;
+    try {
+      await resetCharityVotingData();
+      setSuccessBanner('Data Charity Vote berhasil dibersihkan.');
+    } catch (err) {
+      alert('Gagal reset: ' + err.message);
+    }
+  };
+
+  // Reset Gamifikasi oleh Super Admin
+  const handleAdminResetGamification = async () => {
+    if (!isSuperAdmin) return;
+    const ok = window.confirm('Peringatan: Apakah Anda yakin ingin MERESET SEMUA SKOR GAMIFIKASI (EXP) pengguna ke 0?');
+    if (!ok) return;
+    try {
+      await resetGamificationLeaderboard();
+      setSuccessBanner('Seluruh skor gamifikasi berhasil direset ke 0.');
+    } catch (err) {
+      alert('Gagal reset gamifikasi: ' + err.message);
+    }
   };
 
   return (
     <div className="space-y-6 font-sans">
       
-      {/* Header Dashboard & Tombol Ekspor */}
-      <div className="bg-slate-900 border border-teal-500/30 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1.5 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-[#006569]/50 text-[#FFDD00] border border-[#FFDD00]/30">
+      {/* Header Dashboard & Tombol Ekspor Multi-Dataset */}
+      <div className="bg-slate-900 border border-teal-500/30 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div className="space-y-2 max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-[#006569]/60 text-[#FFDD00] border border-[#FFDD00]/30">
             <ShieldCheck size={14} className="text-[#FFDD00]" />
-            <span>Mako Admin Command • Manajemen Berkas Pendaftaran</span>
+            <span>Mako Admin Command • Pusat Rekapitulasi & Spreadsheet</span>
           </div>
           <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Rekapitulasi Pendaftaran & Layanan Masuk
+            Rekapitulasi Berkas & Transparansi Donasi
           </h3>
           <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            Kelola seluruh berkas pendaftaran Calon Anggota (Camen LIII), Lomba KC VIII, GERANAT, dan permohonan dinas satuan secara terpadu.
+            Ekspor data terstruktur ke format Excel (.CSV) dengan UTF-8 BOM, terintegrasi penuh untuk pembuatan Google Sheets konfidensial view-only untuk transparansi dewan juri, pimpinan, dan donatur.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
             type="button"
             onClick={loadSubmissions}
             disabled={loading}
-            className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-2xl transition border border-slate-700"
+            className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-2xl transition border border-slate-700 cursor-pointer"
             title="Segarkan Data"
           >
             <RefreshCw size={16} className={loading ? 'animate-spin text-[#FFDD00]' : ''} />
           </button>
 
+          {/* Tombol Ekspor Berkas Administrasi */}
           <button
             type="button"
-            onClick={handleExportCSV}
-            className="px-5 py-3.5 bg-[#FFDD00] hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg transition flex items-center gap-2 hover:scale-105 active:scale-95 cursor-pointer"
+            onClick={handleExportSubmissionsCSV}
+            className="px-4 py-3 bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs uppercase tracking-wider rounded-2xl shadow transition flex items-center gap-2 cursor-pointer"
+            title="Ekspor Seluruh Pengajuan Berkas Administrasi"
           >
-            <Download size={16} />
-            <span>Ekspor ke Excel (.CSV)</span>
+            <FileText size={15} className="text-[#006569]" />
+            <span>Ekspor Berkas (.CSV)</span>
+          </button>
+
+          {/* Tombol Ekspor Charity Vote */}
+          <button
+            type="button"
+            disabled={exportLoading}
+            onClick={handleExportCharityVotesCSV}
+            className="px-4 py-3 bg-[#4285F4] hover:bg-blue-600 text-white font-bold text-xs uppercase tracking-wider rounded-2xl shadow transition flex items-center gap-2 cursor-pointer"
+            title="Ekspor Seluruh Transaksi Charity Vote"
+          >
+            <Heart size={15} className="fill-white" />
+            <span>Ekspor Charity Vote (.CSV)</span>
+          </button>
+
+          {/* Tombol Ekspor Tim / Penerima */}
+          <button
+            type="button"
+            disabled={exportLoading}
+            onClick={handleExportTeamsCSV}
+            className="px-4 py-3 bg-[#34A853] hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider rounded-2xl shadow transition flex items-center gap-2 cursor-pointer"
+            title="Ekspor Daftar Tim & Penerima Beasiswa"
+          >
+            <GraduationCap size={15} />
+            <span>Ekspor Tim (.CSV)</span>
+          </button>
+
+          {/* Tombol Panduan Google Sheets */}
+          <button
+            type="button"
+            onClick={() => setSheetsModalOpen(true)}
+            className="px-4 py-3 bg-[#FFDD00] hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg transition flex items-center gap-2 hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <FileSpreadsheet size={16} />
+            <span>Integrasi Google Sheets</span>
           </button>
         </div>
       </div>
@@ -200,6 +378,34 @@ export function AdminSubmissionsDashboard() {
         <div className="p-4 bg-emerald-950/90 border border-emerald-500/60 rounded-2xl flex items-center gap-3 text-emerald-200 text-xs sm:text-sm shadow-md animate-fade-in">
           <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
           <span>{successBanner}</span>
+        </div>
+      )}
+
+      {/* Super Admin Quick Actions Banner */}
+      {isSuperAdmin && (
+        <div className="bg-slate-100 border border-slate-300 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-slate-700 font-bold">
+            <ShieldCheck size={16} className="text-[#006569]" />
+            <span>Pemeliharaan Basis Data Super Admin:</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleAdminResetVoting}
+              className="px-3 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 font-bold flex items-center gap-1 transition cursor-pointer"
+            >
+              <Trash2 size={13} />
+              <span>Bersihkan Data Charity Vote</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleAdminResetGamification}
+              className="px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-300 font-bold flex items-center gap-1 transition cursor-pointer"
+            >
+              <RefreshCw size={13} />
+              <span>Reset Skor Gamifikasi (0 EXP)</span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -230,172 +436,120 @@ export function AdminSubmissionsDashboard() {
         </div>
       </div>
 
-      {/* Kontrol Filter & Pencarian */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-        
-        {/* Kolom Pencarian */}
-        <div className="relative flex-1 max-w-md">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Cari nama, email, asal kampus/sekolah, atau no HP..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:border-[#006569] text-slate-900"
-          />
+      {/* Toolbar Filter & Pencarian */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold mr-2">
+            <Filter size={14} />
+            <span>Status:</span>
+          </div>
+          {[
+            { id: 'all', label: 'Semua' },
+            { id: 'menunggu', label: 'Menunggu' },
+            { id: 'disetujui', label: 'Disetujui' },
+            { id: 'selesai', label: 'Selesai' },
+            { id: 'ditolak', label: 'Ditolak' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setStatusFilter(tab.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                statusFilter === tab.id
+                  ? 'bg-[#006569] text-[#FFDD00] shadow-sm'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Filter Kategori & Status */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#006569]"
-          >
-            <option value="all">Semua Status ({submissions.length})</option>
-            <option value="menunggu">Menunggu Verifikasi</option>
-            <option value="disetujui">Disetujui</option>
-            <option value="selesai">Selesai</option>
-            <option value="ditolak">Ditolak</option>
-          </select>
-
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#006569]"
-          >
-            <option value="all">Semua Jenis Layanan</option>
-            <option value="camen">Pendaftaran Camen LIII</option>
-            <option value="kc">Ksatria Cendekia (KC VIII)</option>
-            <option value="geranat">Paskibra GERANAT</option>
-            <option value="personil">Permohonan Personel</option>
-            <option value="barang">Peminjaman Barang/Sarpras</option>
-            <option value="pemateri">Pemateri / Instruktur</option>
-            <option value="kerjasama">Kerjasama & Sponsorship</option>
-          </select>
+        <div className="relative w-full md:w-72">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Cari nama, email, instansi..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#006569]"
+          />
         </div>
       </div>
 
-      {/* Tabel Data Pendaftar */}
-      <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+      {/* Tabel Data Berkas */}
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         {loading ? (
-          <div className="py-20 text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-3">
-            <RefreshCw className="w-6 h-6 animate-spin text-[#006569]" />
-            <span>Memuat database pendaftaran Mako...</span>
+          <div className="text-center py-16 space-y-2">
+            <RefreshCw size={24} className="animate-spin text-[#006569] mx-auto" />
+            <p className="text-xs text-slate-500 font-bold">Memuat data pengajuan...</p>
           </div>
         ) : filteredList.length === 0 ? (
-          <div className="py-20 text-center space-y-3 px-4">
-            <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto text-slate-400">
-              <FileText size={26} />
-            </div>
-            <h4 className="text-base font-bold text-slate-800">Tidak ada berkas yang cocok</h4>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              Coba sesuaikan kata kunci pencarian atau ubah filter status dan kategori di atas.
-            </p>
+          <div className="text-center py-16 text-slate-400 text-xs">
+            Tidak ada berkas yang sesuai dengan kriteria pencarian ini.
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-black tracking-wider text-[10px]">
-                  <th className="py-3.5 px-4">No.</th>
-                  <th className="py-3.5 px-4">Nama Pemohon & Kontak</th>
-                  <th className="py-3.5 px-4">Instansi & Pekerjaan</th>
-                  <th className="py-3.5 px-4">Layanan / Giat</th>
-                  <th className="py-3.5 px-4">Waktu Masuk</th>
-                  <th className="py-3.5 px-4">Status Berkas</th>
-                  <th className="py-3.5 px-4 text-right">Aksi Admin</th>
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-black uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th className="py-3.5 px-4">ID & Tanggal</th>
+                  <th className="py-3.5 px-4">Pemohon</th>
+                  <th className="py-3.5 px-4">Layanan</th>
+                  <th className="py-3.5 px-4">Kontak</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4 text-right">Tindakan</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredList.map((item, index) => {
-                  const status = (item.status || 'menunggu').toLowerCase();
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {filteredList.map((item) => {
                   const isUpdating = updatingId === (item.submissionId || item.id);
+                  const status = (item.status || 'menunggu').toLowerCase();
 
                   return (
-                    <tr key={item.id || item.submissionId || index} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-4 px-4 font-mono text-slate-400">
-                        {index + 1}
-                      </td>
-
-                      <td className="py-4 px-4">
-                        <div className="font-black text-slate-900 text-sm">
-                          {item.fullName || 'Nama Tidak Diketahui'}
+                    <tr key={item.submissionId || item.id} className="hover:bg-slate-50/80 transition">
+                      <td className="py-4 px-4 whitespace-nowrap">
+                        <div className="font-mono font-bold text-slate-900">
+                          #{item.submissionId || item.id}
                         </div>
-                        <div className="flex flex-col gap-0.5 mt-0.5 text-slate-500 text-[11px]">
-                          {item.email && (
-                            <span className="flex items-center gap-1">
-                              <Mail size={11} className="text-slate-400" /> {item.email}
-                            </span>
-                          )}
-                          {item.phone && (
-                            <span className="flex items-center gap-1 font-mono">
-                              <Phone size={11} className="text-slate-400" /> {item.phone}
-                            </span>
-                          )}
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          {item.createdAt ? new Date(item.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
                         </div>
                       </td>
 
                       <td className="py-4 px-4">
-                        <div className="font-bold text-slate-800">
-                          {item.institution || 'Universitas Negeri Jakarta'}
+                        <div className="font-black text-slate-900">
+                          {item.fullName || 'Pemohon'}
                         </div>
-                        <div className="text-[11px] text-slate-500 mt-0.5">
-                          {item.occupation || 'Mahasiswa'} {item.birthDate ? `• Lahir: ${item.birthDate}` : ''}
+                        <div className="text-[11px] text-slate-500">
+                          {item.institution || item.occupation || '-'}
                         </div>
                       </td>
 
                       <td className="py-4 px-4">
-                        <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#006569]/10 text-[#006569] max-w-[220px] truncate">
-                          {item.serviceType || 'Pendaftaran Camen LIII'}
+                        <span className="font-semibold text-slate-800">
+                          {item.serviceType || 'Administrasi Umum'}
                         </span>
-                        {item.documentPdfBase64 ? (
-                          <div className="mt-1.5">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const downloadLink = document.createElement('a');
-                                downloadLink.href = item.documentPdfBase64;
-                                downloadLink.download = item.documentPdfName || `Berkas-${(item.fullName || 'Pemohon').replace(/\s+/g, '_')}.pdf`;
-                                downloadLink.target = '_blank';
-                                downloadLink.click();
-                              }}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-[10px] font-bold transition shadow-xs cursor-pointer"
-                              title="Buka / Unduh Berkas Dokumen PDF"
-                            >
-                              <FileText size={11} className="text-red-600 shrink-0" />
-                              <span className="truncate max-w-[120px]">{item.documentPdfName || 'Dokumen PDF'}</span>
-                              <ExternalLink size={10} className="shrink-0" />
-                            </button>
+                        {item.documentPdfName && (
+                          <div className="text-[10px] text-teal-700 font-mono mt-0.5">
+                            📄 {item.documentPdfName}
                           </div>
-                        ) : null}
-                        {item.notes && (
-                          <p className="text-[11px] text-slate-500 mt-1 italic max-w-xs truncate" title={item.notes}>
-                            "{item.notes}"
-                          </p>
                         )}
                       </td>
 
-                      <td className="py-4 px-4 text-slate-500 font-mono text-[11px] whitespace-nowrap">
-                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString('id-ID', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric'
-                        }) : '-'}
+                      <td className="py-4 px-4 whitespace-nowrap text-[11px]">
+                        <div>{item.email || '-'}</div>
+                        <div className="text-slate-400 font-mono">{item.phone || '-'}</div>
                       </td>
 
-                      <td className="py-4 px-4">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                          status === 'disetujui' ? 'bg-teal-100 text-teal-800' :
+                      <td className="py-4 px-4 whitespace-nowrap">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                          status === 'disetujui' ? 'bg-teal-100 text-[#006569]' :
                           status === 'selesai' ? 'bg-emerald-100 text-emerald-800' :
                           status === 'ditolak' ? 'bg-red-100 text-red-800' :
                           'bg-amber-100 text-amber-800'
                         }`}>
-                          {status === 'disetujui' && <CheckCircle2 size={11} />}
-                          {status === 'selesai' && <CheckCircle2 size={11} />}
-                          {status === 'menunggu' && <Clock size={11} />}
-                          {status === 'ditolak' && <XCircle size={11} />}
-                          <span>{status}</span>
+                          {item.status || 'Menunggu'}
                         </span>
                       </td>
 
@@ -406,8 +560,7 @@ export function AdminSubmissionsDashboard() {
                               type="button"
                               disabled={isUpdating}
                               onClick={() => handleStatusChange(item.submissionId || item.id, 'disetujui')}
-                              className="px-2.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 font-bold rounded-lg transition text-[11px]"
-                              title="Tandai Disetujui"
+                              className="px-2.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-[#006569] font-bold rounded-lg transition text-[11px] cursor-pointer"
                             >
                               Setujui
                             </button>
@@ -417,8 +570,7 @@ export function AdminSubmissionsDashboard() {
                               type="button"
                               disabled={isUpdating}
                               onClick={() => handleStatusChange(item.submissionId || item.id, 'selesai')}
-                              className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg transition text-[11px]"
-                              title="Tandai Selesai"
+                              className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg transition text-[11px] cursor-pointer"
                             >
                               Selesai
                             </button>
@@ -428,8 +580,7 @@ export function AdminSubmissionsDashboard() {
                               type="button"
                               disabled={isUpdating}
                               onClick={() => handleStatusChange(item.submissionId || item.id, 'ditolak')}
-                              className="px-2 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-lg transition text-[11px]"
-                              title="Tolak Berkas"
+                              className="px-2 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-lg transition text-[11px] cursor-pointer"
                             >
                               Tolak
                             </button>
@@ -444,6 +595,123 @@ export function AdminSubmissionsDashboard() {
           </div>
         )}
       </div>
+
+      {/* MODAL PANDUAN INTEGRASI GOOGLE SHEETS & BERBAGI AKSES KONFIDENSIAL */}
+      {sheetsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in font-sans">
+          <div className="relative w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900 my-8 border border-slate-200">
+            
+            <div className="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-[#006569] flex items-center justify-center">
+                  <FileSpreadsheet size={22} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900">
+                    Panduan Ekspor Google Sheets & Akses Konfidensial
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Cara membuat spreadsheet transparansi view-only untuk donatur, juri, & pimpinan.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSheetsModalOpen(false)}
+                className="p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#006569]">
+                  Langkah Cepat 3 Menit:
+                </span>
+                <p className="text-xs font-semibold text-slate-800">
+                  Data yang diekspor berformat <code>.CSV</code> dengan pengkodean <strong>UTF-8 BOM</strong> sehingga saat dibuka di Microsoft Excel atau Google Sheets, seluruh karakter, angka nominal, dan simbol otomatis rapi tanpa huruf rusak.
+                </p>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-[#006569] text-[#FFDD00] font-black flex items-center justify-center text-xs shrink-0 mt-0.5">
+                    1
+                  </span>
+                  <div>
+                    <h5 className="font-bold text-slate-900">Unduh Berkas CSV yang Dibutuhkan</h5>
+                    <p className="text-slate-600 mt-0.5">
+                      Klik tombol <strong>Ekspor Charity Vote (.CSV)</strong>, <strong>Ekspor Tim (.CSV)</strong>, atau <strong>Ekspor Berkas (.CSV)</strong> di panel dashboard atas.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-[#4285F4] text-white font-black flex items-center justify-center text-xs shrink-0 mt-0.5">
+                    2
+                  </span>
+                  <div>
+                    <h5 className="font-bold text-slate-900">Buka Lembar Kerja Google Sheets Baru</h5>
+                    <p className="text-slate-600 mt-0.5">
+                      Buka Google Sheets di tab baru (Anda bisa klik tombol pintas di bawah).
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-[#FBBC05] text-slate-950 font-black flex items-center justify-center text-xs shrink-0 mt-0.5">
+                    3
+                  </span>
+                  <div>
+                    <h5 className="font-bold text-slate-900">Impor File CSV ke Google Sheets</h5>
+                    <p className="text-slate-600 mt-0.5">
+                      Di Google Sheets, klik menu <strong>File → Import (Impor) → Upload (Upload)</strong> lalu seret file <code>.CSV</code> yang baru diunduh. Pilih <em>"Replace current sheet"</em> dan klik <em>"Import data"</em>.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-[#EA4335] text-white font-black flex items-center justify-center text-xs shrink-0 mt-0.5">
+                    4
+                  </span>
+                  <div>
+                    <h5 className="font-bold text-slate-900">Kunci Akses Menjadi Konfidensial (Lihat Saja / View-Only)</h5>
+                    <p className="text-slate-600 mt-0.5">
+                      Klik tombol hijau <strong>Share (Bagikan)</strong> di pojok kanan atas Google Sheets. Di bagian <em>"General access"</em>, pilih <strong>"Anyone with the link"</strong> dan pastikan perannya disetel ke <strong>"Viewer" (Pelihat / Akses Lihat Saja)</strong>.
+                    </p>
+                    <p className="text-[11px] text-[#006569] font-bold mt-1">
+                      🔒 Dengan mode Viewer, pihak luar atau audiens hanya dapat melihat transparansi angka suara & donasi secara resmi, tanpa bisa mengubah data apa pun!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <a
+                  href="https://sheets.new"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition"
+                >
+                  <ExternalLink size={14} />
+                  <span>Buka Google Sheets Baru (sheets.new)</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setSheetsModalOpen(false)}
+                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs uppercase tracking-wider transition cursor-pointer"
+                >
+                  Tutup Panduan
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -1465,7 +1465,7 @@ const AdministrasiUmumTab = ({ onOpenAdminForm, onOpenAccountModal }) => {
               activeSubTab === 'rekapitulasi-admin' ? 'bg-[#006569] text-[#FFDD00] shadow-lg shadow-[#006569]/40 scale-105' : 'text-slate-600 hover:text-[#006569]'
             }`}
           >
-            <FileSpreadsheet size={16} /> 7. Rekapitulasi Berkas {isAdmin && <span className="bg-[#FFDD00] text-slate-950 text-[10px] px-1.5 py-0.5 rounded-full font-black ml-1">Admin</span>}
+            <FileSpreadsheet size={16} /> 7. Rekapitulasi & Spreadsheet {isAdmin && <span className="bg-[#FFDD00] text-slate-950 text-[10px] px-1.5 py-0.5 rounded-full font-black ml-1">Admin</span>}
           </button>
         </div>
 
@@ -1792,7 +1792,7 @@ export default function App() {
       ? 'informasi'
       : path === '/kc'
       ? 'kc'
-      : path === '/geranat' || path === '/geranat/voting'
+      : path === '/geranat' || path === '/geranat/voting' || path === '/charity/voting'
       ? 'geranat'
       : path === '/games'
       ? 'games'
@@ -1919,7 +1919,7 @@ export default function App() {
             <TabSwitch tabKey={path}>
               {path === '/games' ? (
                 <GamesPage onOpenAuth={() => setAccountModalOpen(true)} />
-              ) : path === '/geranat/voting' ? (
+              ) : path === '/geranat/voting' || path === '/charity/voting' ? (
                 <GeranatVoting onOpenAuth={() => setAccountModalOpen(true)} />
               ) : path === '/portal-peserta' ? (
                 <div className="bg-slate-50 min-h-screen py-10 px-4 max-w-6xl mx-auto w-full">

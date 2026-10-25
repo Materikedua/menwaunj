@@ -65,90 +65,8 @@ export const HONORARY_TITLES = {
   }
 };
 
-// Data simulasi kohort untuk melengkapi papan peringkat agar selalu kompetitif dan hidup
-const SEED_COMPETITORS = [
-  {
-    id: 'seed-1',
-    displayName: 'Letda M. Farhan Wicaksono',
-    institution: 'Menwa UNJ (Batalyon Jayakarta)',
-    occupation: 'Mahasiswa / Menwa UNJ',
-    isVerifiedMenwa: true,
-    menwaIdNumber: 'NBP.22010742250',
-    tacticalPoints: 1240,
-    weeklyPoints: 480,
-    monthlyPoints: 920,
-    avatarSeed: 'Farhan'
-  },
-  {
-    id: 'seed-2',
-    displayName: 'Siti Rahma Nurfadilah',
-    institution: 'Universitas Indonesia',
-    occupation: 'Mahasiswa Psikologi',
-    isVerifiedMenwa: false,
-    tacticalPoints: 1080,
-    weeklyPoints: 420,
-    monthlyPoints: 850,
-    avatarSeed: 'Rahma'
-  },
-  {
-    id: 'seed-3',
-    displayName: 'Sersan Dwi Satria Utama',
-    institution: 'Menwa UNJ (Kaur Ops)',
-    occupation: 'Mahasiswa / Menwa UNJ',
-    isVerifiedMenwa: true,
-    menwaIdNumber: 'NBP.22020742289',
-    tacticalPoints: 960,
-    weeklyPoints: 370,
-    monthlyPoints: 780,
-    avatarSeed: 'Dwi'
-  },
-  {
-    id: 'seed-4',
-    displayName: 'Bagus Pratama Kusuma',
-    institution: 'SMKN 1 Jakarta (Paskibra)',
-    occupation: 'Pelajar / Paskibra Sekolah',
-    isVerifiedMenwa: false,
-    tacticalPoints: 840,
-    weeklyPoints: 310,
-    monthlyPoints: 690,
-    avatarSeed: 'Bagus'
-  },
-  {
-    id: 'seed-5',
-    displayName: 'Kopral Anisa Putri Cahyani',
-    institution: 'Menwa UNJ (Kaur Humas)',
-    occupation: 'Mahasiswa / Menwa UNJ',
-    isVerifiedMenwa: true,
-    menwaIdNumber: 'NBP.22030742301',
-    tacticalPoints: 790,
-    weeklyPoints: 290,
-    monthlyPoints: 610,
-    avatarSeed: 'Anisa'
-  },
-  {
-    id: 'seed-6',
-    displayName: 'Kevin Aldiansyah',
-    institution: 'Institut Pertanian Bogor',
-    occupation: 'Mahasiswa Kehutanan',
-    isVerifiedMenwa: false,
-    tacticalPoints: 670,
-    weeklyPoints: 250,
-    monthlyPoints: 530,
-    avatarSeed: 'Kevin'
-  },
-  {
-    id: 'seed-7',
-    displayName: 'Praka Ilham Ramadhan',
-    institution: 'Menwa UNJ (Provos Satuan)',
-    occupation: 'Mahasiswa / Menwa UNJ',
-    isVerifiedMenwa: true,
-    menwaIdNumber: 'NBP.22010742277',
-    tacticalPoints: 580,
-    weeklyPoints: 210,
-    monthlyPoints: 440,
-    avatarSeed: 'Ilham'
-  }
-];
+// Data simulasi kohort kosong setelah direset sesuai arahan admin
+const SEED_COMPETITORS = [];
 
 export function Leaderboard({ onOpenQuiz, onOpenAuth }) {
   const { user, profile } = useAuth();
@@ -198,13 +116,6 @@ export function Leaderboard({ onOpenQuiz, onOpenAuth }) {
         isCurrentUser: true
       });
     }
-
-    // Selalu pastikan ada minimal 7 peserta kompetitif
-    SEED_COMPETITORS.forEach(seed => {
-      if (!list.some(u => u.displayName?.toLowerCase() === seed.displayName.toLowerCase())) {
-        list.push(seed);
-      }
-    });
 
     return list;
   }, [rawUsers, user, profile]);
@@ -285,7 +196,7 @@ export function Leaderboard({ onOpenQuiz, onOpenAuth }) {
 
   // 3 Besar untuk Podium
   const topThree = rankedUsers.slice(0, 3);
-  const remainingRanks = rankedUsers.slice(3);
+  const remainingRanks = topThree.length >= 3 ? rankedUsers.slice(3) : rankedUsers;
 
   return (
     <div className="w-full space-y-8 animate-fade-in">
@@ -570,7 +481,7 @@ export function Leaderboard({ onOpenQuiz, onOpenAuth }) {
         <div className="px-6 py-4 border-b border-slate-800 bg-slate-950/50 flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400">
             <Users size={15} className="text-teal-400" />
-            <span>Peringkat 4 dan Seterusnya ({remainingRanks.length} Peserta)</span>
+            <span>{topThree.length >= 3 ? 'Peringkat 4 dan Seterusnya' : 'Daftar Peringkat Peserta'} ({remainingRanks.length} Peserta)</span>
           </div>
           <span className="text-[11px] text-slate-500 font-mono">
             Periode: {period === 'weekly' ? 'Mingguan' : period === 'monthly' ? 'Bulanan' : 'Sepanjang Masa'}
@@ -580,7 +491,7 @@ export function Leaderboard({ onOpenQuiz, onOpenAuth }) {
         <div className="divide-y divide-slate-800/80">
           {remainingRanks.length === 0 ? (
             <div className="p-8 text-center text-slate-400 text-sm">
-              Tidak ada peserta yang cocok dengan filter pencarian ini.
+              Belum ada perolehan skor gamifikasi aktif. Jadilah yang pertama menyelesaikan kuis taktis untuk memimpin klasemen!
             </div>
           ) : (
             remainingRanks.map((entry) => (

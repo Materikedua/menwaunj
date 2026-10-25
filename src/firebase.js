@@ -625,6 +625,119 @@ export function subscribeToRecentVotes(onUpdate, maxCount = 10) {
   );
 }
 
+// Ambil seluruh riwayat transaksi voting untuk ekspor Spreadsheet / CSV Admin
+export async function getAllVotingTransactionsForAdmin() {
+  const path = 'voting_transactions';
+  try {
+    const snap = await getDocs(collection(firestore, 'voting_transactions'));
+    return snap.docs.map(d => ({ ...d.data(), id: d.id }));
+  } catch (error) {
+    console.warn('All voting transactions fetch warning:', error);
+    return [];
+  }
+}
+
+// Konfigurasi Charity Voting (Buka/Tutup, Target Dana, Mode Siaga)
+export const DEFAULT_CHARITY_CONFIG = {
+  isVotingOpen: false, // Default tertutup (Mode Siaga) sesuai instruksi user
+  programName: 'Charity Vote: Beasiswa Menwa & Bantuan Kemanusiaan',
+  headline: 'Pintu Donasi Charity Vote Sedang Disiapkan',
+  subheadline: 'Dukungan untuk Beasiswa Taruna Menwa, Bantuan Logistik Bencana Kemanusiaan, & Aksi Cepat Karhutla',
+  scheduledOpenAt: '2026-11-01T08:00:00+07:00',
+  targetGoalAmount: 25000000,
+  pricePerVote: 1000,
+  updatedAt: new Date().toISOString()
+};
+
+export async function getCharityVotingConfig() {
+  try {
+    const snap = await getDoc(doc(firestore, 'settings', 'charity_voting_config'));
+    if (snap.exists()) {
+      return { ...DEFAULT_CHARITY_CONFIG, ...snap.data() };
+    }
+    return DEFAULT_CHARITY_CONFIG;
+  } catch (err) {
+    console.warn('Charity voting config fetch warning:', err);
+    return DEFAULT_CHARITY_CONFIG;
+  }
+}
+
+export async function setCharityVotingConfig(newConfig) {
+  try {
+    const payload = {
+      ...DEFAULT_CHARITY_CONFIG,
+      ...newConfig,
+      updatedAt: new Date().toISOString()
+    };
+    await setDoc(doc(firestore, 'settings', 'charity_voting_config'), payload, { merge: true });
+    return payload;
+  } catch (err) {
+    handleFirestoreError(err, 'update', 'settings/charity_voting_config');
+  }
+}
+
+export function subscribeToCharityVotingConfig(onUpdate) {
+  if (typeof onUpdate !== 'function') return () => {};
+  const cfgRef = doc(firestore, 'settings', 'charity_voting_config');
+  return onSnapshot(
+    cfgRef,
+    (snap) => {
+      if (snap.exists()) {
+        onUpdate({ ...DEFAULT_CHARITY_CONFIG, ...snap.data() });
+      } else {
+        onUpdate(DEFAULT_CHARITY_CONFIG);
+      }
+    },
+    (err) => console.warn('Charity voting config snapshot warning:', err)
+  );
+}
+
+// Hapus tim tertentu
+export async function deleteGeranatTeam(teamId) {
+  if (!teamId) return;
+  try {
+    await deleteDoc(doc(firestore, 'geranat_teams', teamId));
+    return true;
+  } catch (err) {
+    handleFirestoreError(err, 'delete', `geranat_teams/${teamId}`);
+  }
+}
+
+// Reset Bersih Data E-Voting / Charity: Hapus seluruh dokumen tim di geranat_teams
+export async function resetCharityVotingData() {
+  try {
+    const teamsSnap = await getDocs(collection(firestore, 'geranat_teams'));
+    const deletePromises = teamsSnap.docs.map(d => deleteDoc(d.ref));
+    await Promise.all(deletePromises);
+    return true;
+  } catch (err) {
+    console.warn('Reset charity voting data warning:', err);
+    throw err;
+  }
+}
+
+// Reset Bersih Seluruh Skor Gamifikasi Pengguna (tacticalPoints, weeklyPoints, monthlyPoints, streak)
+export async function resetGamificationLeaderboard() {
+  try {
+    const usersSnap = await getDocs(collection(firestore, 'users'));
+    const resetPromises = usersSnap.docs.map(userDoc => 
+      updateDoc(userDoc.ref, {
+        tacticalPoints: 0,
+        weeklyPoints: 0,
+        monthlyPoints: 0,
+        currentStreak: 0,
+        streakMilestonesClaimed: [],
+        updatedAt: new Date().toISOString()
+      }).catch(err => console.warn(`Skip user ${userDoc.id}:`, err))
+    );
+    await Promise.all(resetPromises);
+    return true;
+  } catch (err) {
+    console.warn('Reset gamification leaderboard warning:', err);
+    throw err;
+  }
+}
+
 // Ambil data Portal Peserta berdasarkan Token Unik
 export async function getParticipantPortal(token) {
   if (!token) return null;

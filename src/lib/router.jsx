@@ -89,6 +89,7 @@ export const TAB_PATHS = {
   'mako-ops': '/mako-ops',
   games: '/games',
   geranat_voting: '/geranat/voting',
+  charity_voting: '/charity/voting',
   portal_peserta: '/portal-peserta',
 };
 export const PATH_TABS = Object.fromEntries(Object.entries(TAB_PATHS).map(([k, v]) => [v, k]));

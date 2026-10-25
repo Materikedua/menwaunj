@@ -10,8 +10,7 @@ import {
   Building,
   RefreshCw,
   Clock,
-  AlertTriangle,
-  Sparkles
+  AlertTriangle
 } from 'lucide-react';
 import { DEFAULT_BANK_CONFIG, formatRupiah } from '../lib/qris.js';
 import { 
@@ -51,7 +50,6 @@ export function DynamicQRISModal({
   const [copiedNominal, setCopiedNominal] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(TOTAL_SECONDS);
   const [pollingCount, setPollingCount] = useState(0);
-  const [isVerifying, setIsVerifying] = useState(false);
 
   const hasCompletedRef = useRef(false);
   const activeTxIdRef = useRef('');
@@ -262,39 +260,6 @@ export function DynamicQRISModal({
     }
   };
 
-  // Trigger verifikasi pembayaran otomatis via endpoint /api/verify-payment + callback
-  const handleTriggerVerifyNow = async () => {
-    if (hasCompletedRef.current || isVerifying) return;
-    setIsVerifying(true);
-    try {
-      await fetch('/api/verify-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          txId: currentTxId,
-          expectedAmount: amount,
-          simulatePaid: true
-        })
-      }).catch(() => {});
-
-      hasCompletedRef.current = true;
-      const receipt = {
-        txId: currentTxId,
-        amount,
-        votes,
-        paidAt: new Date().toISOString(),
-        bankName: bankConfig.bankName,
-        accountNumber: bankConfig.accountNumber,
-        accountHolder: bankConfig.accountHolder,
-        status: 'LUNAS'
-      };
-      onPaymentSuccess?.(receipt);
-      onClose?.();
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in font-sans">
       <div className="relative w-full max-w-md bg-white rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden text-slate-900 my-6">
@@ -428,27 +393,20 @@ export function DynamicQRISModal({
             </div>
           </div>
 
-          {/* Status Deteksi Pembayaran Otomatis (Tanpa Tombol Konfirmasi Manual) */}
-          <div className="bg-teal-50 border border-teal-200/80 rounded-2xl p-3.5 text-center space-y-1.5">
+          {/* Status Deteksi Pembayaran Otomatis & Listener Real-Time Murni */}
+          <div className="bg-gradient-to-br from-teal-50 via-emerald-50 to-blue-50 border border-teal-200/80 rounded-2xl p-4 text-center space-y-2 shadow-sm">
             <div className="flex items-center justify-center gap-2 text-xs font-black text-[#006569]">
-              <RefreshCw size={14} className="animate-spin text-teal-600" />
-              <span>Deteksi Pembayaran Otomatis Aktif (Cek #{pollingCount + 1})</span>
+              <RefreshCw size={14} className="animate-spin text-[#006569]" />
+              <span>Memantau Pembayaran Masuk Secara Real-Time (Cek #{pollingCount + 1})</span>
             </div>
             <p className="text-[11px] text-slate-600 leading-relaxed">
-              Sistem memantau mutasi QRIS setiap 5 detik secara real-time. Panel akan otomatis tertutup dan suara langsung bertambah begitu pembayaran terdeteksi.
+              Begitu Anda menyelesaikan transfer di aplikasi perbankan/e-wallet Anda, sistem akan mendeteksi mutasi secara otomatis dalam beberapa detik. Jendela ini akan tertutup otomatis dan donasi/suara Anda akan langsung tercatat.
             </p>
+            <div className="flex items-center justify-center gap-1.5 text-[10px] text-teal-700 font-semibold pt-1">
+              <ShieldCheck size={13} className="text-emerald-600" />
+              <span>Verifikasi Kriptografis Mako Aman & Transparan</span>
+            </div>
           </div>
-
-          {/* Pemicu Simulasi / Verifikasi Instan Setelah Transfer */}
-          <button
-            type="button"
-            disabled={isVerifying}
-            onClick={handleTriggerVerifyNow}
-            className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-center text-xs font-bold text-[#006569] hover:text-emerald-800 transition flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <Sparkles size={14} />
-            <span>{isVerifying ? 'Memverifikasi Mutasi...' : 'Sudah Transfer? Klik untuk Deteksi Seketika →'}</span>
-          </button>
 
         </div>
       </div>

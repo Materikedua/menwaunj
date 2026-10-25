@@ -12,75 +12,37 @@ import {
   Clock, 
   X,
   Lock,
+  Unlock,
   AlertTriangle,
-  RotateCw
+  RotateCw,
+  Heart,
+  GraduationCap,
+  Sparkles,
+  ShieldCheck,
+  Send,
+  Trash2,
+  Share2,
+  Calendar,
+  Layers,
+  Check
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.jsx';
 import { 
   getGeranatTeams, 
   saveGeranatTeam, 
+  deleteGeranatTeam,
   submitGeranatVote,
   subscribeToGeranatTeams,
-  subscribeToRecentVotes
+  subscribeToRecentVotes,
+  subscribeToCharityVotingConfig,
+  setCharityVotingConfig,
+  resetCharityVotingData,
+  resetGamificationLeaderboard
 } from '../firebase.js';
 import { DynamicQRISModal } from './DynamicQRISModal.jsx';
 import { TacticalConfetti } from './TacticalConfetti.jsx';
 import { formatRupiah } from '../lib/qris.js';
 import { navigate } from '../lib/router.jsx';
-
-// Data bibit tim paskibra resmi GERANAT 2026
-const INITIAL_SEED_TEAMS = [
-  {
-    teamId: 'team-1',
-    teamName: 'Pasukan Satria Pandawa',
-    institution: 'SMA Negeri 1 Jakarta',
-    category: 'Wira Utama (SMA/SMK)',
-    dantonName: 'Muhammad Aditya Pratama',
-    motto: 'Disiplin, Berani, & Berjiwa Ksatria',
-    votesCount: 2480,
-    photoUrl: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=600&q=80'
-  },
-  {
-    teamId: 'team-2',
-    teamName: 'Paskibra Garda Mandiri',
-    institution: 'SMKN 26 Jakarta',
-    category: 'Wira Utama (SMA/SMK)',
-    dantonName: 'Reza Firmansyah',
-    motto: 'Satu Komando, Pantang Pulang Sebelum Menang',
-    votesCount: 2150,
-    photoUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80'
-  },
-  {
-    teamId: 'team-3',
-    teamName: 'Pasukan Rajawali Emas',
-    institution: 'SMA Negeri 8 Jakarta',
-    category: 'Wira Utama (SMA/SMK)',
-    dantonName: 'Farhan Naufal',
-    motto: 'Menembus Batas, Menjaga Wibawa',
-    votesCount: 1890,
-    photoUrl: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=600&q=80'
-  },
-  {
-    teamId: 'team-4',
-    teamName: 'Laskar Taruna Jayakarta',
-    institution: 'SMA Negeri 39 Jakarta',
-    category: 'Wira Utama (SMA/SMK)',
-    dantonName: 'Dinda Ayu Maharani',
-    motto: 'Kompak, Tangguh, & Berakhlak Mulia',
-    votesCount: 1420,
-    photoUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80'
-  },
-  {
-    teamId: 'team-5',
-    teamName: 'Paskibra Satya Bhakti',
-    institution: 'SMP Negeri 115 Jakarta',
-    category: 'Madya (SMP/MTs)',
-    dantonName: 'Kevin Anugrah Putra',
-    motto: 'Muda, Berkarya, Harumkan Bangsa',
-    votesCount: 1180,
-    photoUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=600&q=80'
-  }
-];
 
 /** Komponen Odometer / Count-Up Angka Suara */
 function AnimatedVoteCounter({ value }) {
@@ -111,59 +73,49 @@ function AnimatedVoteCounter({ value }) {
 export function GeranatVoting() {
   const { user, profile } = useAuth();
   const userEmail = user?.email?.toLowerCase();
-  const isAdmin = !!(user && (userEmail === 'unjmenwa@gmail.com' || userEmail === 'rafflysyahpoetra@gmail.com'));
+  const isSuperAdmin = !!(user && (userEmail === 'unjmenwa@gmail.com' || userEmail === 'rafflysyahpoetra@gmail.com'));
 
-  const [teams, setTeams] = useState(INITIAL_SEED_TEAMS);
+  // Konfigurasi Charity Voting dari Firestore
+  const [votingConfig, setVotingConfig] = useState({
+    isVotingOpen: false, // Default Mode Siaga
+    programName: 'Charity Vote: Beasiswa Menwa & Bantuan Kemanusiaan',
+    headline: 'Pintu Donasi Charity Vote Sedang Disiapkan',
+    subheadline: 'Dukungan untuk Beasiswa Taruna Menwa, Bantuan Logistik Bencana Kemanusiaan, & Aksi Cepat Karhutla',
+    scheduledOpenAt: '2026-11-01T08:00:00+07:00',
+    targetGoalAmount: 25000000,
+    pricePerVote: 1000
+  });
+
+  const [teams, setTeams] = useState([]);
   const [recentVotes, setRecentVotes] = useState([]);
   const [flippedCards, setFlippedCards] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all'); // 'all' | 'wira' | 'madya'
+  const [categoryFilter, setCategoryFilter] = useState('all');
 
   // Auto-refresh countdown (15 detik)
   const AUTO_REFRESH_SECONDS = 15;
   const [countdown, setCountdown] = useState(AUTO_REFRESH_SECONDS);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Batas Waktu Resmi Voting GERANAT 2026: 08 November 2026 18:00 WIB
-  const VOTING_DEADLINE_MS = new Date('2026-11-08T18:00:00+07:00').getTime();
-  const [adminManualClose, setAdminManualClose] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const diff = Math.max(0, VOTING_DEADLINE_MS - Date.now());
-    return {
-      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-      hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-      minutes: Math.floor((diff / 1000 / 60) % 60),
-      seconds: Math.floor((diff / 1000) % 60),
-      isExpired: diff <= 0
-    };
+  // Standby Countdown Timer
+  const [standbyTimeLeft, setStandbyTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
   });
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const diff = Math.max(0, VOTING_DEADLINE_MS - Date.now());
-      setTimeLeft({
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / 1000 / 60) % 60),
-        seconds: Math.floor((diff / 1000) % 60),
-        isExpired: diff <= 0
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const isVotingClosed = timeLeft.isExpired || adminManualClose;
-
-  // Admin Modal State
+  // Modal & Form States
   const [adminModalOpen, setAdminModalOpen] = useState(false);
   const [newTeam, setNewTeam] = useState({
     teamName: '',
     institution: '',
-    category: 'Wira Utama (SMA/SMK)',
+    category: 'Beasiswa Menwa',
     dantonName: '',
     motto: '',
-    photoUrl: ''
+    photoUrl: '',
+    targetDonation: 5000000
   });
 
   // Voting & QRIS Payment Modal States
@@ -173,7 +125,11 @@ export function GeranatVoting() {
   const [isQRISModalOpen, setIsQRISModalOpen] = useState(false);
   const [successModalData, setSuccessModalData] = useState(null);
   const [failedModalData, setFailedModalData] = useState(null);
-  const [voteSuccessBanner, setVoteSuccessBanner] = useState(null);
+  const [bannerMessage, setBannerMessage] = useState(null);
+
+  // Interactive Standby Mode "Ingatkan Saya"
+  const [reminderEmail, setReminderEmail] = useState('');
+  const [reminderSent, setReminderSent] = useState(false);
 
   // Sound Synthesizer via Web Audio API
   const playCheerSound = () => {
@@ -195,50 +151,65 @@ export function GeranatVoting() {
     }
   };
 
-  // Muat data tim dari Firestore
+  // Muat data tim dari Firestore (tanpa auto-seed dummy jika kosong)
   const fetchTeams = async () => {
     try {
       setIsRefreshing(true);
       const data = await getGeranatTeams();
-      if (data && data.length > 0) {
-        setTeams(data);
-      } else {
-        if (isAdmin) {
-          INITIAL_SEED_TEAMS.forEach(seed => saveGeranatTeam(seed).catch(() => {}));
-        }
-        setTeams(INITIAL_SEED_TEAMS);
-      }
+      setTeams(data || []);
     } catch (err) {
-      console.warn('Gagal memuat tim:', err);
-      setTeams(INITIAL_SEED_TEAMS);
+      console.warn('Gagal memuat tim/penerima charity:', err);
+      setTeams([]);
     } finally {
       setLoading(false);
       setIsRefreshing(false);
     }
   };
 
-  // Real-time onSnapshot listener untuk tim dan ticker suara masuk
+  // Subscribe ke konfigurasi charity voting & data tim
   useEffect(() => {
     fetchTeams();
-    const unsubTeams = subscribeToGeranatTeams((liveTeams) => {
-      if (liveTeams && liveTeams.length > 0) {
-        setTeams(liveTeams);
-        setLoading(false);
+
+    const unsubConfig = subscribeToCharityVotingConfig((liveConfig) => {
+      if (liveConfig) {
+        setVotingConfig(liveConfig);
       }
     });
+
+    const unsubTeams = subscribeToGeranatTeams((liveTeams) => {
+      setTeams(liveTeams || []);
+      setLoading(false);
+    });
+
     const unsubVotes = subscribeToRecentVotes((liveVotes) => {
-      if (liveVotes && liveVotes.length > 0) {
-        setRecentVotes(liveVotes);
-      }
+      setRecentVotes(liveVotes || []);
     }, 10);
 
     return () => {
+      unsubConfig();
       unsubTeams();
       unsubVotes();
     };
-  }, [isAdmin]);
+  }, []);
 
-  // Timer interval 15 detik auto-refresh
+  // Countdown timer untuk Standby Mode
+  useEffect(() => {
+    const targetMs = new Date(votingConfig.scheduledOpenAt || '2026-11-01T08:00:00+07:00').getTime();
+    const updateCountdown = () => {
+      const diff = Math.max(0, targetMs - Date.now());
+      setStandbyTimeLeft({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / 1000 / 60) % 60),
+        seconds: Math.floor((diff / 1000) % 60)
+      });
+    };
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, [votingConfig.scheduledOpenAt]);
+
+  // Interval auto-refresh 15 detik untuk leaderboard live
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -249,25 +220,79 @@ export function GeranatVoting() {
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
-  // Filter & Urutkan Tim berdasarkan perolehan suara terbanyak
+  // Toggle Pintu Voting oleh Super Admin
+  const handleToggleVotingStatus = async () => {
+    if (!isSuperAdmin) return;
+    const newStatus = !votingConfig.isVotingOpen;
+    try {
+      await setCharityVotingConfig({ isVotingOpen: newStatus });
+      setBannerMessage(newStatus 
+        ? 'Pintu Charity Vote BERHASIL DIBUKA untuk umum! Publik sekarang dapat berdonasi.' 
+        : 'Pintu Charity Vote BERHASIL DITUTUP (Kembali ke Mode Siaga).');
+      setTimeout(() => setBannerMessage(null), 5000);
+    } catch (err) {
+      console.warn('Gagal toggle status voting:', err);
+    }
+  };
+
+  // Reset Bersih Data Tim & Suara oleh Super Admin
+  const handleResetVotingData = async () => {
+    if (!isSuperAdmin) return;
+    const confirmed = window.confirm('Peringatan Komando: Apakah Anda yakin ingin MENGHAPUS SEMUA DATA TIM/PENERIMA di Charity Vote? Tindakan ini tidak dapat dibatalkan.');
+    if (!confirmed) return;
+    try {
+      await resetCharityVotingData();
+      setTeams([]);
+      setBannerMessage('Semua data tim & perolehan suara di Charity Vote telah BERHASIL DIHAPUS.');
+      setTimeout(() => setBannerMessage(null), 5000);
+    } catch (err) {
+      alert('Gagal membersihkan data tim: ' + (err?.message || err));
+    }
+  };
+
+  // Reset Bersih Gamifikasi Skor oleh Super Admin
+  const handleResetGamification = async () => {
+    if (!isSuperAdmin) return;
+    const confirmed = window.confirm('Peringatan Komando: Apakah Anda yakin ingin MERESET SEMUA SKOR GAMIFIKASI (EXP Taktis & Streak) seluruh pengguna menjadi 0?');
+    if (!confirmed) return;
+    try {
+      await resetGamificationLeaderboard();
+      setBannerMessage('Seluruh skor gamifikasi pengguna telah BERHASIL DIRESET ke 0.');
+      setTimeout(() => setBannerMessage(null), 5000);
+    } catch (err) {
+      alert('Gagal mereset skor gamifikasi: ' + (err?.message || err));
+    }
+  };
+
+  // Hapus satu tim oleh Super Admin
+  const handleDeleteTeam = async (teamId, teamName) => {
+    if (!isSuperAdmin) return;
+    const confirmed = window.confirm(`Hapus penerima "${teamName}"?`);
+    if (!confirmed) return;
+    try {
+      await deleteGeranatTeam(teamId);
+      setTeams(prev => prev.filter(t => t.teamId !== teamId && t.id !== teamId));
+    } catch (err) {
+      console.warn('Gagal menghapus tim:', err);
+    }
+  };
+
+  // Filter & Urutkan Tim
   const sortedTeams = useMemo(() => {
     let list = [...teams];
 
-    if (categoryFilter === 'wira') {
-      list = list.filter(t => t.category?.toLowerCase().includes('wira'));
-    } else if (categoryFilter === 'madya') {
-      list = list.filter(t => t.category?.toLowerCase().includes('madya'));
+    if (categoryFilter !== 'all') {
+      list = list.filter(t => (t.category || '').toLowerCase().includes(categoryFilter.toLowerCase()));
     }
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter(t => 
-        t.teamName.toLowerCase().includes(q) ||
-        t.institution.toLowerCase().includes(q) ||
+        (t.teamName || '').toLowerCase().includes(q) ||
+        (t.institution || '').toLowerCase().includes(q) ||
         (t.dantonName && t.dantonName.toLowerCase().includes(q))
       );
     }
@@ -276,16 +301,20 @@ export function GeranatVoting() {
   }, [teams, categoryFilter, searchQuery]);
 
   const totalAllVotes = teams.reduce((acc, t) => acc + (t.votesCount || 0), 0);
+  const totalDanaTerkumpul = totalAllVotes * 1000;
 
   // Buka Modal Pembayaran QRIS Statis
   const handleInitiateVote = (team, count = 1) => {
-    if (isVotingClosed) return;
+    if (!votingConfig.isVotingOpen) {
+      alert('Charity Vote saat ini berada dalam Mode Siaga (tertutup sementara). Tunggu pengumuman resmi pembukaan!');
+      return;
+    }
     setSelectedTeam(team);
     setVoteCount(count);
     setIsQRISModalOpen(true);
   };
 
-  // Callback saat pembayaran QRIS berhasil (Stage 1 -> Stage 4)
+  // Callback saat pembayaran QRIS berhasil
   const handlePaymentSuccess = async (receipt) => {
     if (!selectedTeam) return;
 
@@ -294,17 +323,16 @@ export function GeranatVoting() {
 
     try {
       await submitGeranatVote(
-        selectedTeam.teamId,
-        user?.uid || 'guest-voter',
-        profile?.displayName || user?.displayName || 'Pendukung Setia',
+        selectedTeam.teamId || selectedTeam.id,
+        user?.uid || 'guest-donor',
+        profile?.displayName || user?.displayName || 'Donatur Kemanusiaan',
         voteCount,
         voteCount * 1000,
         receipt?.txId || `VOTE-${Date.now()}`
       );
 
-      // Perbarui state lokal secara instan
       setTeams(prev => prev.map(t => {
-        if (t.teamId === selectedTeam.teamId) {
+        if (t.teamId === selectedTeam.teamId || t.id === selectedTeam.teamId) {
           return { ...t, votesCount: newTotalVotes };
         }
         return t;
@@ -313,7 +341,6 @@ export function GeranatVoting() {
       playCheerSound();
       setConfettiActive(true);
       
-      // Buka popup notifikasi "Pembayaran Berhasil! 🎉" dengan animasi count-up
       setSuccessModalData({
         teamName: selectedTeam.teamName,
         institution: selectedTeam.institution,
@@ -324,23 +351,14 @@ export function GeranatVoting() {
         txId: receipt?.txId || `TX-${Date.now().toString(36).toUpperCase()}`
       });
 
-      setVoteSuccessBanner(`Terima kasih! ${voteCount} suara (${formatRupiah(voteCount * 1000)}) berhasil ditambahkan untuk ${selectedTeam.teamName}!`);
-      setTimeout(() => setVoteSuccessBanner(null), 6000);
+      setBannerMessage(`Terima kasih! Donasi sebesar ${formatRupiah(voteCount * 1000)} (${voteCount} suara) berhasil dialokasikan untuk ${selectedTeam.teamName}!`);
+      setTimeout(() => setBannerMessage(null), 6000);
     } catch (err) {
       console.warn('Gagal rekam suara:', err);
     }
   };
 
-  // Callback saat countdown 15 menit habis (Timeout — TIDAK menambah suara)
-  const handlePaymentFailed = (failInfo) => {
-    setFailedModalData({
-      teamName: selectedTeam?.teamName || 'Tim Kontingen',
-      txId: failInfo?.txId || '',
-      message: failInfo?.message || 'Pembayaran Gagal — Waktu habis. Silakan ulangi voting.'
-    });
-  };
-
-  // Tambah Tim Baru oleh Admin
+  // Tambah Tim / Penerima Baru oleh Admin
   const handleCreateTeam = async (e) => {
     e.preventDefault();
     if (!newTeam.teamName || !newTeam.institution) return;
@@ -349,7 +367,9 @@ export function GeranatVoting() {
       const payload = {
         ...newTeam,
         teamId: `TEAM-${Date.now().toString(36).toUpperCase()}`,
-        votesCount: 0
+        votesCount: 0,
+        totalAmountReceived: 0,
+        createdAt: new Date().toISOString()
       };
       await saveGeranatTeam(payload);
       setTeams(prev => [...prev, payload]);
@@ -357,11 +377,14 @@ export function GeranatVoting() {
       setNewTeam({
         teamName: '',
         institution: '',
-        category: 'Wira Utama (SMA/SMK)',
+        category: 'Beasiswa Menwa',
         dantonName: '',
         motto: '',
-        photoUrl: ''
+        photoUrl: '',
+        targetDonation: 5000000
       });
+      setBannerMessage(`Berhasil menambahkan penerima baru "${payload.teamName}".`);
+      setTimeout(() => setBannerMessage(null), 4000);
     } catch (err) {
       console.warn('Gagal menambah tim:', err);
     }
@@ -374,429 +397,623 @@ export function GeranatVoting() {
   const progressPercent = Math.round(((AUTO_REFRESH_SECONDS - countdown) / AUTO_REFRESH_SECONDS) * 100);
 
   return (
-    <div className="bg-slate-950 min-h-screen text-slate-100 font-sans pb-36 relative selection:bg-[#006569] selection:text-[#FFDD00]">
+    <div className="bg-slate-50 min-h-screen text-slate-900 font-sans pb-36 relative selection:bg-[#006569] selection:text-[#FFDD00]">
       
-      {/* Particle Effect Triggered on Vote Success */}
+      {/* Particle Effect Triggered on Donation Success */}
       <TacticalConfetti trigger={confettiActive} onComplete={() => setConfettiActive(false)} />
 
-      {/* Floating Exit Button to Podium GERANAT */}
+      {/* Floating Exit Button to Podium */}
       <button
         type="button"
         onClick={() => navigate('/geranat')}
-        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs sm:text-sm px-5 py-3 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.6)] border-2 border-[#FFDD00]/40 flex items-center gap-2.5 transition-all hover:scale-105 active:scale-95 group cursor-pointer"
-        title="Kembali ke Podium Utama GERANAT"
+        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs sm:text-sm px-5 py-3 rounded-full shadow-[0_10px_30px_rgba(0,101,105,0.4)] border-2 border-[#FFDD00]/50 flex items-center gap-2.5 transition-all hover:scale-105 active:scale-95 group cursor-pointer"
+        title="Kembali ke Podium Charity"
       >
-        <ArrowLeft size={16} />
-        <span>Kembali ke Podium GERANAT</span>
+        <Trophy size={16} />
+        <span>Podium Donasi Terbanyak</span>
       </button>
 
-      {/* Hero Header E-Voting */}
-      <header className="relative overflow-hidden bg-gradient-to-b from-[#00383b] via-slate-900 to-slate-950 border-b border-white/10 pt-10 pb-12 px-4 sm:px-6">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent pointer-events-none" />
+      {/* SUPER ADMIN COMMAND CONTROL BAR */}
+      {isSuperAdmin && (
+        <aside aria-label="Panel Komando Super Admin" className="bg-gradient-to-r from-slate-900 via-[#004d50] to-slate-900 text-white px-4 py-3 border-b-2 border-[#FFDD00] sticky top-0 z-40 shadow-lg">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#FFDD00] animate-ping" />
+              <span className="font-mono uppercase font-black tracking-widest text-[#FFDD00]">
+                KOMANDO SUPER ADMIN
+              </span>
+              <span className="hidden sm:inline text-slate-300">({userEmail})</span>
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${votingConfig.isVotingOpen ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'}`}>
+                {votingConfig.isVotingOpen ? 'STATUS: DIBUKA' : 'STATUS: MODE SIAGA (TERTUTUP)'}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={handleToggleVotingStatus}
+                className={`px-3.5 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition shadow-sm cursor-pointer ${
+                  votingConfig.isVotingOpen 
+                    ? 'bg-amber-400 hover:bg-amber-300 text-slate-950' 
+                    : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                }`}
+              >
+                {votingConfig.isVotingOpen ? <Lock size={13} /> : <Unlock size={13} />}
+                <span>{votingConfig.isVotingOpen ? 'Tutup ke Mode Siaga' : 'Buka Charity Vote Sekarang'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAdminModalOpen(true)}
+                className="px-3 py-1.5 rounded-lg bg-[#006569] hover:bg-[#005255] text-[#FFDD00] border border-[#FFDD00]/30 font-bold flex items-center gap-1 transition cursor-pointer"
+              >
+                <Plus size={13} />
+                <span>+ Penerima Baru</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleResetVotingData}
+                className="px-3 py-1.5 rounded-lg bg-rose-950/80 hover:bg-rose-900 text-rose-200 border border-rose-500/40 font-bold flex items-center gap-1 transition cursor-pointer"
+                title="Hapus semua tim & data voting"
+              >
+                <Trash2 size={13} />
+                <span>Bersihkan Data Tim</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleResetGamification}
+                className="px-3 py-1.5 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-200 border border-purple-500/40 font-bold flex items-center gap-1 transition cursor-pointer"
+                title="Reset semua skor gamifikasi pengguna ke 0"
+              >
+                <Flame size={13} />
+                <span>Reset Skor Gamifikasi</span>
+              </button>
+            </div>
+          </div>
+        </aside>
+      )}
+
+      {/* BANNER NOTIFIKASI SEMENTARA */}
+      {bannerMessage && (
+        <aside aria-label="Notifikasi Sistem" className="bg-emerald-600 text-white px-4 py-3 text-center text-xs font-bold shadow-md animate-fade-in flex items-center justify-center gap-2">
+          <CheckCircle2 size={16} />
+          <span>{bannerMessage}</span>
+          <button type="button" onClick={() => setBannerMessage(null)} className="ml-2 hover:opacity-80">
+            <X size={14} />
+          </button>
+        </aside>
+      )}
+
+      {/* HEADER HERO (Palet Ceria Desain Google + Hijau Menwa) */}
+      <header className="relative overflow-hidden bg-gradient-to-b from-[#e8f5f1] via-sky-50/40 to-slate-50 border-b border-slate-200/80 pt-10 pb-12 px-4 sm:px-6">
+        {/* Dekorasi Aksen Lingkaran Warna Google */}
+        <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-[#4285F4]/10 blur-3xl pointer-events-none" />
+        <div className="absolute top-10 right-0 w-80 h-80 rounded-full bg-[#34A853]/15 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 left-1/3 w-96 h-96 rounded-full bg-[#FBBC05]/15 blur-3xl pointer-events-none" />
 
         <div className="max-w-6xl mx-auto relative z-10">
           
-          {/* Top Bar: Navigasi + Status Refresh 15 Detik */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          {/* Top Bar: Navigasi + Status Refresh */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <button
               type="button"
               onClick={() => navigate('/geranat')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition border border-white/10 w-fit cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold transition border border-slate-200 shadow-sm w-fit cursor-pointer"
             >
-              <ArrowLeft size={16} />
-              <span>🏆 Lihat Podium 3 Besar GERANAT</span>
+              <ArrowLeft size={16} className="text-[#006569]" />
+              <span>🏆 Lihat Klasemen Podium Charity</span>
             </button>
 
-            {/* Countdown Auto-Refresh 15 Detik */}
+            {/* Indikator Auto-Refresh 15 Detik */}
             <div className="flex items-center gap-3">
-              <div className="bg-slate-900/90 border border-teal-500/30 px-3.5 py-1.5 rounded-full flex items-center gap-2.5 shadow-md">
+              <div className="bg-white border border-slate-200 px-3.5 py-1.5 rounded-full flex items-center gap-2.5 shadow-sm">
                 <div className="relative w-5 h-5 flex items-center justify-center">
                   <svg className="w-5 h-5 transform -rotate-90">
-                    <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2" className="text-slate-700" fill="transparent" />
+                    <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2" className="text-slate-200" fill="transparent" />
                     <circle 
                       cx="10" 
                       cy="10" 
                       r="8" 
                       stroke="currentColor" 
                       strokeWidth="2" 
-                      className="text-[#FFDD00]" 
+                      className="text-[#34A853]" 
                       fill="transparent" 
                       strokeDasharray={50} 
                       strokeDashoffset={50 - (50 * progressPercent) / 100}
                     />
                   </svg>
-                  <span className="absolute text-[8px] font-mono font-bold text-white">
+                  <span className="absolute text-[8px] font-mono font-bold text-slate-700">
                     {countdown}
                   </span>
                 </div>
-                <span className="text-xs text-slate-300 font-medium">
-                  {isRefreshing ? 'Memperbarui...' : `Auto-refresh: ${countdown}s`}
+                <span className="text-xs text-slate-600 font-medium">
+                  {isRefreshing ? 'Memperbarui...' : `Live Sync: ${countdown}s`}
                 </span>
                 <button
                   onClick={fetchTeams}
                   disabled={isRefreshing}
-                  className="text-slate-400 hover:text-white transition"
+                  className="text-slate-400 hover:text-[#006569] transition cursor-pointer"
                   title="Segarkan Sekarang"
                 >
-                  <RefreshCw size={13} className={isRefreshing ? 'animate-spin text-[#FFDD00]' : ''} />
+                  <RefreshCw size={13} className={isRefreshing ? 'animate-spin text-[#006569]' : ''} />
                 </button>
               </div>
 
-              {/* Tombol Admin Tambah Tim & Toggle Kunci Voting */}
-              {isAdmin && (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setAdminManualClose(prev => !prev)}
-                    className="px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs transition border border-slate-700 flex items-center gap-1.5"
-                    title="Simulasikan Penutupan Voting"
-                  >
-                    {isVotingClosed ? <Lock size={12} className="text-red-400" /> : <Clock size={12} className="text-emerald-400" />}
-                    <span>Admin: {isVotingClosed ? 'Buka Kunci' : 'Kunci Voting'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setAdminModalOpen(true)}
-                    className="px-3.5 py-1.5 rounded-full bg-[#FFDD00] text-slate-950 font-black text-xs uppercase tracking-wider transition hover:bg-amber-400 shadow-md flex items-center gap-1.5"
-                  >
-                    <Plus size={14} /> Tambah Tim
-                  </button>
-                </div>
-              )}
+              {/* Status Badge */}
+              <div className={`px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 border shadow-sm ${
+                votingConfig.isVotingOpen 
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
+                  : 'bg-amber-50 text-amber-800 border-amber-300'
+              }`}>
+                <span className={`w-2 h-2 rounded-full ${votingConfig.isVotingOpen ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                <span>{votingConfig.isVotingOpen ? 'Sesi Dibuka' : 'Mode Siaga'}</span>
+              </div>
             </div>
           </div>
 
-          {/* Live Voting Ticker */}
-          {recentVotes.length > 0 && (
-            <div className="mb-6 rounded-2xl bg-slate-900/80 border border-teal-500/30 px-4 py-2.5 flex items-center gap-3 overflow-hidden">
-              <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[#FFDD00] text-slate-950 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
-                <Flame size={11} className="fill-slate-950" /> LIVE
+          {/* Judul & Hero Utama */}
+          <div className="text-center max-w-3xl mx-auto space-y-4">
+            
+            {/* Tagline Badge dengan 4 Aksen Google */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-xs font-black">
+              <span className="w-2 h-2 rounded-full bg-[#4285F4]" />
+              <span className="text-[#006569]">Charity Vote Resimen Mahasiswa UNJ</span>
+              <span className="text-slate-300">•</span>
+              <span className="text-[#EA4335] flex items-center gap-1">
+                <Heart size={12} className="fill-[#EA4335]" /> Berbagi Harapan
               </span>
-              <div className="flex-1 overflow-x-auto no-scrollbar whitespace-nowrap text-xs text-slate-300 flex items-center gap-6">
-                {recentVotes.map((v, i) => {
-                  const tName = teams.find(t => t.teamId === v.teamId)?.teamName || v.teamName || 'Tim Kontingen';
-                  return (
-                    <span key={v.id || i} className="inline-flex items-center gap-1.5">
-                      <span className="text-[#FFDD00] font-bold">🔥 Baru saja:</span>
-                      <strong className="text-white">{v.voterName || 'Pendukung'}</strong>
-                      <span>mendukung</span>
-                      <strong className="text-teal-300">{tName}</strong>
-                      <span className="text-emerald-400 font-mono font-bold">(+{v.votes || 1} suara)</span>
-                    </span>
-                  );
-                })}
-              </div>
             </div>
-          )}
 
-          {/* Judul E-Voting GERANAT */}
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFDD00] text-slate-950 text-xs font-black uppercase tracking-wider shadow-lg">
-              <Vote size={15} />
-              <span>Pilih & Dukung Kontingen • QRIS Statis (Batas 15 Menit)</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
-              Daftar Kontingen E-Voting GERANAT
+            <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+              Charity Vote: <span className="bg-gradient-to-r from-[#006569] via-[#4285F4] to-[#34A853] bg-clip-text text-transparent">Beasiswa Menwa & Bantuan Kemanusiaan</span>
             </h1>
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              Pilih tim paskibra favoritmu di bawah ini! Setiap <strong>1 dukungan suara = Rp1.000</strong> via QRIS Statis Resmi Mako dengan deteksi pembayaran otomatis.
+
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-medium">
+              Wujud nyata pengabdian Widya Castrena Dharma Siddha. Setiap 1 suara bernilai donasi Rp1.000 (QRIS Tanpa Potongan) untuk beasiswa kader bangsa, logistik pengungsian bencana, dan dukungan lapangan penanganan karhutla.
             </p>
 
-            {/* Total Suara Masuk */}
-            <div className="pt-2 flex items-center justify-center gap-6 text-xs text-slate-400 font-mono">
-              <span>Total Suara Terhimpun: <strong className="text-[#FFDD00] text-sm"><AnimatedVoteCounter value={totalAllVotes} /> Suara</strong></span>
-              <span>•</span>
-              <span>Total Dana: <strong className="text-emerald-400 text-sm">{formatRupiah(totalAllVotes * 1000)}</strong></span>
+            {/* Ringkasan Dana & Target */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 max-w-2xl mx-auto">
+              <div className="bg-white p-3.5 rounded-2xl border border-blue-100 shadow-sm text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#4285F4]">Total Suara</div>
+                <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono mt-0.5">
+                  <AnimatedVoteCounter value={totalAllVotes} />
+                </div>
+              </div>
+              <div className="bg-white p-3.5 rounded-2xl border border-emerald-100 shadow-sm text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#34A853]">Dana Terkumpul</div>
+                <div className="text-xl sm:text-2xl font-black text-[#006569] font-mono mt-0.5">
+                  {formatRupiah(totalDanaTerkumpul)}
+                </div>
+              </div>
+              <div className="bg-white p-3.5 rounded-2xl border border-amber-100 shadow-sm text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#FBBC05]">Target Dana</div>
+                <div className="text-xl sm:text-2xl font-black text-slate-800 font-mono mt-0.5">
+                  Rp25 Juta
+                </div>
+              </div>
+              <div className="bg-white p-3.5 rounded-2xl border border-rose-100 shadow-sm text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#EA4335]">Nominal / Suara</div>
+                <div className="text-xl sm:text-2xl font-black text-[#EA4335] font-mono mt-0.5">
+                  Rp1.000
+                </div>
+              </div>
             </div>
 
-            {/* Countdown Batas Waktu Voting Otomatis */}
-            {isVotingClosed ? (
-              <div className="mt-4 p-4 bg-amber-500/10 border-2 border-[#FFDD00] rounded-2xl max-w-xl mx-auto flex items-center justify-center gap-3 text-[#FFDD00] font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl animate-fade-in">
-                <Lock size={18} className="shrink-0" />
-                <span>Voting Resmi Ditutup • Podium Juara Terfavorit Terkunci</span>
-              </div>
-            ) : (
-              <div className="mt-4 max-w-md mx-auto bg-slate-900/90 border border-teal-500/40 rounded-2xl p-3 sm:p-4 shadow-lg">
-                <div className="text-[10px] uppercase font-black tracking-widest text-[#FFDD00] mb-2 flex items-center justify-center gap-1.5">
-                  <Clock size={13} /> Penutupan Voting GERANAT 2026 Dalam
-                </div>
-                <div className="grid grid-cols-4 gap-2 text-center font-mono">
-                  <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                    <span className="text-lg sm:text-2xl font-black text-white block">{timeLeft.days}</span>
-                    <span className="text-[9px] text-slate-400 uppercase font-sans">Hari</span>
-                  </div>
-                  <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                    <span className="text-lg sm:text-2xl font-black text-white block">{String(timeLeft.hours).padStart(2, '0')}</span>
-                    <span className="text-[9px] text-slate-400 uppercase font-sans">Jam</span>
-                  </div>
-                  <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                    <span className="text-lg sm:text-2xl font-black text-white block">{String(timeLeft.minutes).padStart(2, '0')}</span>
-                    <span className="text-[9px] text-slate-400 uppercase font-sans">Menit</span>
-                  </div>
-                  <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                    <span className="text-lg sm:text-2xl font-black text-[#FFDD00] block">{String(timeLeft.seconds).padStart(2, '0')}</span>
-                    <span className="text-[9px] text-slate-400 uppercase font-sans">Detik</span>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Banner Notifikasi Vote Berhasil */}
-          {voteSuccessBanner && (
-            <div className="mt-6 max-w-2xl mx-auto p-4 bg-emerald-950/90 border-2 border-emerald-500 rounded-2xl text-emerald-200 text-sm font-bold flex items-center gap-3 shadow-2xl animate-fade-in">
-              <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
-              <span>{voteSuccessBanner}</span>
-            </div>
-          )}
         </div>
       </header>
 
-      {/* Konten Utama: Daftar Kartu Tim dengan 3D Flip & Odometer Count-Up */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 space-y-8">
-        
-        {/* Filter & Kontrol Pencarian */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
-          <div className="inline-flex p-1 rounded-xl bg-slate-950 border border-white/10">
-            <button
-              onClick={() => setCategoryFilter('all')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
-                categoryFilter === 'all' ? 'bg-[#006569] text-[#FFDD00]' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Semua Kategori ({teams.length})
-            </button>
-            <button
-              onClick={() => setCategoryFilter('wira')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
-                categoryFilter === 'wira' ? 'bg-[#006569] text-[#FFDD00]' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Wira Utama (SMA/SMK)
-            </button>
-            <button
-              onClick={() => setCategoryFilter('madya')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
-                categoryFilter === 'madya' ? 'bg-[#006569] text-[#FFDD00]' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Madya (SMP/MTs)
-            </button>
-          </div>
+      {/* ========================================================
+          TAMPILAN MODE SIAGA INTERAKTIF (KETIKA VOTING DITUTUP)
+          ======================================================== */}
+      {!votingConfig.isVotingOpen ? (
+        <section aria-label="Mode Siaga Interaktif" className="max-w-5xl mx-auto px-4 sm:px-6 pt-10 pb-16 space-y-8 animate-fade-in">
+          
+          {/* Card Pengumuman Mode Siaga dengan Countdown */}
+          <div className="bg-white rounded-[2.5rem] p-6 sm:p-10 border-2 border-dashed border-[#006569]/30 shadow-xl relative overflow-hidden text-center space-y-6">
+            
+            <div className="w-16 h-16 rounded-3xl bg-amber-50 text-[#006569] border border-amber-200 flex items-center justify-center mx-auto shadow-inner">
+              <Clock size={32} className="text-[#006569]" />
+            </div>
 
-          <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Cari nama tim atau sekolah..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-1.5 text-xs bg-slate-950 border border-white/15 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-[#FFDD00] w-64"
-            />
-          </div>
-        </div>
+            <div className="max-w-xl mx-auto space-y-2">
+              <span className="inline-block px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-widest bg-amber-100 text-amber-900 border border-amber-300">
+                Pintu Donasi Sedang Disiapkan
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+                Pintu Charity Vote Segera Dibuka
+              </h2>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Saat ini panitia dan pengurus Mako Menwa UNJ sedang melakukan finalisasi verifikasi data calon penerima beasiswa dan posko logistik kemanusiaan.
+              </p>
+            </div>
 
-        {/* Daftar Seluruh Tim Kontingen GERANAT */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {sortedTeams.map((team, idx) => {
-            const rank = idx + 1;
-            const voteShare = totalAllVotes > 0 ? Math.round((team.votesCount / totalAllVotes) * 100) : 0;
-            const isFlipped = !!flippedCards[team.teamId];
-
-            return (
-              <div 
-                key={team.teamId}
-                className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col justify-between hover:border-teal-500/50 transition-all shadow-xl group"
-              >
-                {!isFlipped ? (
-                  <div>
-                    {/* Sisi Depan Kartu: Foto Pasukan + Odometer Suara */}
-                    <div className="w-full h-52 sm:h-60 rounded-2xl overflow-hidden bg-slate-950 border border-slate-700/80 mb-4 group-hover:border-[#FFDD00]/60 transition shadow-inner relative">
-                      <img 
-                        src={team.photoUrl || 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=800&q=80'} 
-                        alt={`Foto Pasukan Paskibra ${team.teamName}`}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=800&q=80';
-                        }}
-                      />
-                      
-                      {/* Badge Kategori & Peringkat di Atas Foto */}
-                      <div className="absolute top-3 left-3 flex items-center gap-2">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-[#00383b] bg-[#FFDD00] px-3 py-1 rounded-full shadow-md font-sans">
-                          {team.category}
-                        </span>
-                      </div>
-
-                      <div className={`absolute top-3 right-3 px-3 py-1 rounded-full font-mono font-black text-xs shadow-lg flex items-center gap-1 ${
-                        rank === 1 ? 'bg-[#FFDD00] text-slate-950' : rank === 2 ? 'bg-[#C0C0C0] text-slate-950' : rank === 3 ? 'bg-[#CD7F32] text-white' : 'bg-slate-900/90 text-slate-300 border border-slate-700'
-                      }`}>
-                        <span>#{rank}</span>
-                      </div>
-
-                      <div className="absolute bottom-3 left-3 right-3 bg-slate-950/90 backdrop-blur-md px-3.5 py-2 rounded-xl flex items-center justify-between border border-white/10">
-                        <button
-                          type="button"
-                          onClick={() => toggleFlipCard(team.teamId)}
-                          className="text-[11px] text-teal-300 hover:text-[#FFDD00] font-bold flex items-center gap-1 cursor-pointer"
-                        >
-                          <RotateCw size={12} /> Detail Pasukan
-                        </button>
-                        <span className="text-xs font-mono font-black text-[#FFDD00]">
-                          <AnimatedVoteCounter value={team.votesCount || 0} /> Suara
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Header & Identitas Tim */}
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div>
-                        <h4 className="font-black text-white text-lg group-hover:text-[#FFDD00] transition-colors leading-tight">
-                          {team.teamName}
-                        </h4>
-                        <p className="text-xs text-slate-400 font-semibold mt-0.5">
-                          {team.institution}
-                        </p>
-                      </div>
-
-                      <div className="text-right shrink-0">
-                        <span className="text-xs text-teal-400 font-mono font-bold block">
-                          {voteShare}%
-                        </span>
-                        <span className="text-[9px] text-slate-500 uppercase block">
-                          pangsa suara
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Progress Bar Persentase Suara */}
-                    <div className="h-2 rounded-full bg-slate-800 overflow-hidden mb-4">
-                      <div 
-                        className="h-full bg-gradient-to-r from-teal-500 via-[#006569] to-[#FFDD00] rounded-full transition-all duration-500" 
-                        style={{ width: `${voteShare}%` }}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  /* Sisi Belakang Kartu (Interactive 3D Flip Info) */
-                  <div className="bg-slate-950 border border-teal-500/40 rounded-2xl p-5 mb-4 space-y-4 min-h-[260px] flex flex-col justify-between animate-fade-in">
-                    <div>
-                      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-3">
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-[#FFDD00] font-bold">
-                          Profil Resmi Kontingen #{rank}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => toggleFlipCard(team.teamId)}
-                          className="text-xs text-slate-400 hover:text-white flex items-center gap-1 font-bold cursor-pointer"
-                        >
-                          <RotateCw size={12} /> Kembali ke Foto
-                        </button>
-                      </div>
-                      <h4 className="font-black text-lg text-white">{team.teamName}</h4>
-                      <p className="text-xs text-teal-400 font-bold">{team.institution}</p>
-
-                      <div className="mt-4 space-y-2 text-xs">
-                        <div className="flex justify-between py-1.5 border-b border-slate-900">
-                          <span className="text-slate-400">Komandan Pleton (Danton):</span>
-                          <strong className="text-white">{team.dantonName || 'Terdaftar di Mako'}</strong>
-                        </div>
-                        <div className="flex justify-between py-1.5 border-b border-slate-900">
-                          <span className="text-slate-400">Kategori Lomba:</span>
-                          <strong className="text-amber-300">{team.category}</strong>
-                        </div>
-                        <div className="flex justify-between py-1.5 border-b border-slate-900">
-                          <span className="text-slate-400">Total Suara Masuk:</span>
-                          <strong className="text-[#FFDD00] font-mono">{(team.votesCount || 0).toLocaleString('id-ID')} Suara</strong>
-                        </div>
-                      </div>
-                      {team.motto && (
-                        <p className="mt-3 text-xs italic text-slate-300 bg-slate-900 p-2.5 rounded-xl border border-slate-800">
-                          "{team.motto}"
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Tombol Beri Suara */}
-                {isVotingClosed ? (
-                  <div className="pt-2 border-t border-slate-800/80">
-                    <button
-                      type="button"
-                      disabled
-                      className="w-full py-2.5 px-3 bg-slate-900 border border-slate-800 text-slate-500 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-not-allowed"
-                    >
-                      <Lock size={12} className="text-slate-500" />
-                      <span>Voting Resmi Ditutup</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/80">
-                    <button
-                      type="button"
-                      onClick={() => handleInitiateVote(team, 1)}
-                      className="py-2.5 px-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition text-center cursor-pointer"
-                    >
-                      1 Suara (1k)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInitiateVote(team, 5)}
-                      className="py-2.5 px-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition text-center cursor-pointer"
-                    >
-                      5 Suara (5k)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleInitiateVote(team, 10)}
-                      className="py-2.5 px-2 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase tracking-wider rounded-xl transition text-center shadow-md flex items-center justify-center gap-1 cursor-pointer"
-                    >
-                      <Vote size={13} /> 10 Suara
-                    </button>
-                  </div>
-                )}
+            {/* Countdown Box dengan 4 Warna Google */}
+            <div className="grid grid-cols-4 gap-2 sm:gap-4 max-w-lg mx-auto pt-2">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100/60 border border-blue-200 rounded-2xl p-3 sm:p-4 text-center">
+                <div className="text-2xl sm:text-4xl font-black text-[#4285F4] font-mono">
+                  {standbyTimeLeft.days}
+                </div>
+                <div className="text-[10px] sm:text-xs font-bold uppercase text-slate-600 mt-1">Hari</div>
               </div>
-            );
-          })}
-        </div>
-      </main>
+              <div className="bg-gradient-to-br from-red-50 to-red-100/60 border border-red-200 rounded-2xl p-3 sm:p-4 text-center">
+                <div className="text-2xl sm:text-4xl font-black text-[#EA4335] font-mono">
+                  {String(standbyTimeLeft.hours).padStart(2, '0')}
+                </div>
+                <div className="text-[10px] sm:text-xs font-bold uppercase text-slate-600 mt-1">Jam</div>
+              </div>
+              <div className="bg-gradient-to-br from-yellow-50 to-yellow-100/60 border border-amber-200 rounded-2xl p-3 sm:p-4 text-center">
+                <div className="text-2xl sm:text-4xl font-black text-[#FBBC05] font-mono">
+                  {String(standbyTimeLeft.minutes).padStart(2, '0')}
+                </div>
+                <div className="text-[10px] sm:text-xs font-bold uppercase text-slate-600 mt-1">Menit</div>
+              </div>
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/60 border border-emerald-200 rounded-2xl p-3 sm:p-4 text-center">
+                <div className="text-2xl sm:text-4xl font-black text-[#34A853] font-mono">
+                  {String(standbyTimeLeft.seconds).padStart(2, '0')}
+                </div>
+                <div className="text-[10px] sm:text-xs font-bold uppercase text-slate-600 mt-1">Detik</div>
+              </div>
+            </div>
 
-      {/* Modal QRIS Statis + Countdown 15 Menit + Deteksi Pembayaran Otomatis */}
-      {selectedTeam && (
+            {/* Form Pengingat Pembukaan */}
+            <div className="max-w-md mx-auto pt-4">
+              {reminderSent ? (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-bold flex items-center justify-center gap-2">
+                  <CheckCircle2 size={16} />
+                  <span>Terima kasih! Notifikasi pembukaan akan dikirimkan ke email Anda.</span>
+                </div>
+              ) : (
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (reminderEmail.trim()) {
+                      setReminderSent(true);
+                    }
+                  }}
+                  className="flex gap-2"
+                >
+                  <input
+                    type="email"
+                    required
+                    placeholder="Masukkan email Anda untuk diingatkan..."
+                    value={reminderEmail}
+                    onChange={(e) => setReminderEmail(e.target.value)}
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-[#006569]"
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2.5 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] text-xs font-black uppercase rounded-xl transition shadow-md flex items-center gap-1.5 cursor-pointer shrink-0"
+                  >
+                    <Send size={13} />
+                    <span>Ingatkan Saya</span>
+                  </button>
+                </form>
+              )}
+            </div>
+
+          </div>
+
+          {/* 3 PILAR MISI CHARITY VOTE */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Pilar 1: Beasiswa Menwa (Google Blue) */}
+            <div className="bg-white rounded-3xl p-6 border-t-4 border-t-[#4285F4] border-x border-b border-slate-200 shadow-sm hover:shadow-md transition">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#4285F4] flex items-center justify-center mb-4">
+                <GraduationCap size={24} />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#4285F4] bg-blue-50 px-2.5 py-0.5 rounded-full">
+                Pendidikan Bangsa
+              </span>
+              <h3 className="text-lg font-black text-slate-900 mt-2 mb-2">
+                Menwa Scholarship
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Beasiswa pembinaan dan keringanan biaya SPP/UKT untuk mahasiswa aktif dan kader Menwa UNJ berprestasi dari latar belakang prasejahtera.
+              </p>
+            </div>
+
+            {/* Pilar 2: Bantuan Logistik (Google Red) */}
+            <div className="bg-white rounded-3xl p-6 border-t-4 border-t-[#EA4335] border-x border-b border-slate-200 shadow-sm hover:shadow-md transition">
+              <div className="w-12 h-12 rounded-2xl bg-red-50 text-[#EA4335] flex items-center justify-center mb-4">
+                <Heart size={24} />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#EA4335] bg-red-50 px-2.5 py-0.5 rounded-full">
+                Tanggap Darurat
+              </span>
+              <h3 className="text-lg font-black text-slate-900 mt-2 mb-2">
+                Bantuan Logistik Bencana
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Penyediaan paket sembako, selimut, obat-obatan, dan air bersih untuk disalurkan langsung oleh personel Menwa ke titik bencana alam.
+              </p>
+            </div>
+
+            {/* Pilar 3: Aksi Karhutla (Google Green) */}
+            <div className="bg-white rounded-3xl p-6 border-t-4 border-t-[#34A853] border-x border-b border-slate-200 shadow-sm hover:shadow-md transition">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#34A853] flex items-center justify-center mb-4">
+                <Flame size={24} />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#34A853] bg-emerald-50 px-2.5 py-0.5 rounded-full">
+                Pelestarian Lingkungan
+              </span>
+              <h3 className="text-lg font-black text-slate-900 mt-2 mb-2">
+                Aksi Cepat Karhutla
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Dukungan peralatan respirator perlindungan kabut asap, pompa apung pemadam, dan suplai tim gabungan penanganan kebakaran hutan dan lahan.
+              </p>
+            </div>
+
+          </div>
+
+          {/* Banner Ajakan Buka untuk Super Admin */}
+          {isSuperAdmin && (
+            <div className="bg-gradient-to-r from-[#006569] to-[#004d50] text-white p-6 rounded-3xl shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h4 className="font-black text-base text-[#FFDD00]">
+                  Siap Membuka Sesi Donasi untuk Publik?
+                </h4>
+                <p className="text-xs text-teal-100 mt-1">
+                  Klik tombol di samping untuk mengaktifkan pemungutan suara/donasi secara real-time.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleToggleVotingStatus}
+                className="px-6 py-3 rounded-2xl bg-[#FFDD00] hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-md transition flex items-center gap-2 cursor-pointer shrink-0"
+              >
+                <Unlock size={16} />
+                <span>Buka Charity Vote Sekarang</span>
+              </button>
+            </div>
+          )}
+
+        </section>
+      ) : (
+        /* ========================================================
+            TAMPILAN LIVE VOTING (KETIKA DIBUKA OLEH SUPER ADMIN)
+            ======================================================== */
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 space-y-8 animate-fade-in">
+          
+          {/* Filter & Toolbar Pencarian */}
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            {/* Filter Kategori */}
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+              {[
+                { id: 'all', label: 'Semua Inisiatif' },
+                { id: 'beasiswa', label: '🎓 Beasiswa Menwa' },
+                { id: 'logistik', label: '📦 Logistik Bencana' },
+                { id: 'karhutla', label: '🔥 Aksi Karhutla' }
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setCategoryFilter(cat.id)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    categoryFilter === cat.id
+                      ? 'bg-[#006569] text-[#FFDD00] shadow-sm'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Input Pencarian */}
+            <div className="relative w-full md:w-72">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari penerima / inisiatif..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#006569]"
+              />
+            </div>
+
+          </div>
+
+          {/* Grid Daftar Tim / Penerima Donasi */}
+          {loading ? (
+            <div className="text-center py-20 space-y-3">
+              <RefreshCw size={28} className="animate-spin text-[#006569] mx-auto" />
+              <p className="text-xs text-slate-500 font-bold">Memuat daftar penerima charity...</p>
+            </div>
+          ) : sortedTeams.length === 0 ? (
+            <div className="bg-white rounded-[2rem] p-12 text-center border border-slate-200 max-w-2xl mx-auto space-y-4 shadow-sm">
+              <div className="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                <Users size={32} />
+              </div>
+              <h3 className="text-xl font-black text-slate-900">
+                Belum Ada Penerima / Tim Terdaftar
+              </h3>
+              <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                Data lama telah dibersihkan sesuai arahan. Admin Mako dapat menambahkan calon penerima beasiswa atau posko logistik melalui tombol di bawah.
+              </p>
+              {isSuperAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setAdminModalOpen(true)}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase rounded-xl transition shadow-md cursor-pointer"
+                >
+                  <Plus size={16} />
+                  <span>Tambah Penerima Baru Sekarang</span>
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sortedTeams.map((team, idx) => {
+                const teamId = team.teamId || team.id;
+                const isFlipped = flippedCards[teamId];
+                const votesCount = team.votesCount || 0;
+                const danaTerkumpul = votesCount * 1000;
+                const targetDana = team.targetDonation || 5000000;
+                const percentAchieved = Math.min(100, Math.round((danaTerkumpul / targetDana) * 100));
+
+                return (
+                  <div 
+                    key={teamId}
+                    className="bg-white rounded-3xl border border-slate-200 hover:border-[#4285F4]/60 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group"
+                  >
+                    <div>
+                      {/* Foto Penerima / Inisiatif */}
+                      <div className="relative h-48 bg-slate-100 overflow-hidden">
+                        {team.photoUrl ? (
+                          <img 
+                            src={team.photoUrl} 
+                            alt={team.teamName} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=600&q=80';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#006569]/10 to-[#4285F4]/10 text-slate-400">
+                            <GraduationCap size={48} className="text-[#006569]/40" />
+                          </div>
+                        )}
+
+                        {/* Rank Badge */}
+                        <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-slate-900 font-black text-xs shadow-sm flex items-center gap-1.5 border border-slate-200">
+                          <span className="text-[#FBBC05]">#{idx + 1}</span>
+                          <span className="text-[10px] text-slate-500 uppercase font-mono">Peringkat</span>
+                        </div>
+
+                        {/* Category Pill */}
+                        <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-[#006569] text-[#FFDD00] font-black text-[10px] uppercase shadow-sm">
+                          {team.category || 'Beasiswa Menwa'}
+                        </div>
+
+                        {/* Delete Button for Super Admin */}
+                        {isSuperAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteTeam(teamId, team.teamName)}
+                            className="absolute bottom-3 right-3 p-2 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white shadow-md transition cursor-pointer"
+                            title="Hapus penerima ini"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Konten Card */}
+                      <div className="p-5 space-y-3">
+                        <div>
+                          <h4 className="text-base font-black text-slate-900 group-hover:text-[#006569] transition leading-snug">
+                            {team.teamName}
+                          </h4>
+                          <p className="text-xs font-semibold text-slate-500">
+                            {team.institution}
+                          </p>
+                        </div>
+
+                        {team.motto && (
+                          <p className="text-[11px] text-slate-600 italic bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                            "{team.motto}"
+                          </p>
+                        )}
+
+                        {/* Progress Bar Donasi */}
+                        <div className="space-y-1.5 pt-1">
+                          <div className="flex justify-between text-xs font-bold">
+                            <span className="text-slate-600">{formatRupiah(danaTerkumpul)}</span>
+                            <span className="text-[#34A853]">{percentAchieved}% Target</span>
+                          </div>
+                          <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-[#4285F4] to-[#34A853] transition-all duration-500"
+                              style={{ width: `${percentAchieved}%` }}
+                            />
+                          </div>
+                          <div className="text-[10px] text-slate-400 text-right">
+                            Target: {formatRupiah(targetDana)}
+                          </div>
+                        </div>
+
+                        {/* Akumulasi Suara Masuk */}
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                          <span className="text-xs font-bold text-slate-500">Dukungan:</span>
+                          <span className="text-sm font-black font-mono text-[#006569] flex items-center gap-1">
+                            <Vote size={15} />
+                            <AnimatedVoteCounter value={votesCount} /> Suara
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tombol Donasi / Vote Cepat */}
+                    <div className="p-5 pt-0 space-y-2">
+                      <div className="grid grid-cols-3 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleInitiateVote(team, 1)}
+                          className="py-2 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 hover:text-emerald-800 transition cursor-pointer"
+                        >
+                          +1 (Rp1rb)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInitiateVote(team, 5)}
+                          className="py-2 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 hover:text-emerald-800 transition cursor-pointer"
+                        >
+                          +5 (Rp5rb)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInitiateVote(team, 10)}
+                          className="py-2 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 hover:text-emerald-800 transition cursor-pointer"
+                        >
+                          +10 (Rp10rb)
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleInitiateVote(team, 25)}
+                        className="w-full py-3 bg-gradient-to-r from-[#006569] via-[#004d50] to-[#006569] hover:opacity-95 text-[#FFDD00] font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <Heart size={15} className="fill-[#FFDD00]" />
+                        <span>Beri Donasi Charity (QRIS)</span>
+                      </button>
+                    </div>
+
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+        </main>
+      )}
+
+      {/* MODAL PEMBAYARAN QRIS DINAMIS DENGAN COUNTDOWN 15 MENIT */}
+      {isQRISModalOpen && selectedTeam && (
         <DynamicQRISModal
           isOpen={isQRISModalOpen}
           onClose={() => setIsQRISModalOpen(false)}
-          amount={voteCount * 1000}
-          votes={voteCount}
-          teamId={selectedTeam.teamId}
+          teamId={selectedTeam.teamId || selectedTeam.id}
           teamName={selectedTeam.teamName}
-          voterUid={user?.uid || 'anonymous'}
-          voterName={profile?.displayName || user?.displayName || 'Pendukung Setia'}
-          title={`E-Voting: ${selectedTeam.teamName}`}
-          description={`${voteCount} Suara Dukungan Kontingen GERANAT 2026`}
-          invoiceId={`VOTE-${selectedTeam.teamId}-${Date.now().toString(36).toUpperCase()}`}
+          votes={voteCount}
+          amount={voteCount * 1000}
           onPaymentSuccess={handlePaymentSuccess}
-          onPaymentFailed={handlePaymentFailed}
         />
       )}
 
-      {/* Popup "Pembayaran Berhasil! 🎉" dengan Animasi Count-Up Real-Time (Bagian 1.C) */}
+      {/* POPUP NOTIFIKASI SUKSES PEMBAYARAN */}
       {successModalData && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in font-sans">
-          <div className="relative w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900 border border-slate-200 text-center">
+          <div className="relative w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900 border border-emerald-200 text-center">
             
-            <button
-              type="button"
-              onClick={() => setSuccessModalData(null)}
-              className="absolute top-4 right-4 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
-              aria-label="Tutup Notifikasi"
-            >
-              <X size={20} />
-            </button>
-
             <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3.5 shadow-sm scale-110 transition-transform">
               <CheckCircle2 size={38} />
             </div>
@@ -806,11 +1023,11 @@ export function GeranatVoting() {
             </span>
 
             <h3 className="text-xl sm:text-2xl font-black text-slate-900">
-              Pembayaran Berhasil! 🎉
+              Donasi Berhasil! 🎉
             </h3>
 
             <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-              Transfer sebesar <strong className="text-emerald-700 font-bold">{formatRupiah(successModalData.amount)}</strong> terdeteksi. Sebanyak <strong className="text-[#006569] font-black">+{successModalData.votesCount} Suara</strong> langsung ditambahkan secara real-time!
+              Donasi sebesar <strong className="text-emerald-700 font-bold">{formatRupiah(successModalData.amount)}</strong> terdeteksi lunas. Sebanyak <strong className="text-[#006569] font-black">+{successModalData.votesCount} Suara</strong> langsung ditambahkan secara real-time!
             </p>
 
             <div className="my-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center space-y-2">
@@ -829,82 +1046,31 @@ export function GeranatVoting() {
               </div>
             </div>
 
-            <div className="flex gap-2.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setSuccessModalData(null);
-                  navigate('/geranat');
-                }}
-                className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs uppercase tracking-wider rounded-xl transition cursor-pointer"
-              >
-                🏆 Lihat Podium
-              </button>
-              <button
-                type="button"
-                onClick={() => setSuccessModalData(null)}
-                className="flex-1 py-3 px-4 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase tracking-wider rounded-xl transition shadow-md cursor-pointer"
-              >
-                Selesai
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Popup "Pembayaran Gagal — Waktu habis" saat Countdown 15 Menit Mencapai 0:00 (Bagian 1.B) */}
-      {failedModalData && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in font-sans">
-          <div className="relative w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900 border border-rose-200 text-center">
             <button
               type="button"
-              onClick={() => setFailedModalData(null)}
-              className="absolute top-4 right-4 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+              onClick={() => setSuccessModalData(null)}
+              className="w-full py-3.5 px-4 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase tracking-wider rounded-xl transition shadow-md cursor-pointer"
             >
-              <X size={20} />
-            </button>
-
-            <div className="w-16 h-16 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3.5">
-              <AlertTriangle size={36} />
-            </div>
-
-            <span className="text-[10px] font-black uppercase tracking-widest text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1 rounded-full inline-block mb-2">
-              Timeout 15:00 Menit • Status: Batal
-            </span>
-
-            <h3 className="text-xl font-black text-slate-900">
-              {failedModalData.message}
-            </h3>
-
-            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-              Batas waktu pembayaran 15 menit untuk <strong>{failedModalData.teamName}</strong> telah berakhir dan transaksi otomatis dibatalkan tanpa penambahan suara.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setFailedModalData(null)}
-              className="mt-5 w-full py-3.5 px-5 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition shadow-md cursor-pointer"
-            >
-              Tutup & Ulangi Voting
+              Selesai & Tutup
             </button>
           </div>
         </div>
       )}
 
-      {/* Modal Admin Mako: Tambah Tim Baru */}
-      {adminModalOpen && isAdmin && (
+      {/* MODAL ADMIN MAKO: TAMBAH TIM / PENERIMA BARU */}
+      {adminModalOpen && isSuperAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in font-sans">
-          <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl text-white my-8">
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#FFDD00] text-slate-950 flex items-center justify-center font-bold">
+          <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900 my-8">
+            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#006569] text-[#FFDD00] flex items-center justify-center font-bold">
                   <Plus size={18} />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">
-                    Tambah Tim Kontingen GERANAT
+                  <h3 className="text-base font-black text-slate-900">
+                    Tambah Penerima / Posko Charity
                   </h3>
-                  <span className="text-[10px] text-teal-400 font-mono">
+                  <span className="text-[10px] text-teal-700 font-mono">
                     Khusus Admin: {userEmail}
                   </span>
                 </div>
@@ -912,7 +1078,7 @@ export function GeranatVoting() {
               <button 
                 type="button" 
                 onClick={() => setAdminModalOpen(false)} 
-                className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -920,87 +1086,99 @@ export function GeranatVoting() {
 
             <form onSubmit={handleCreateTeam} className="space-y-4 text-xs">
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Nama Tim / Pasukan *</label>
+                <label className="block text-slate-700 font-bold mb-1">Nama Inisiatif / Penerima *</label>
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: Pasukan Satria Jayakarta"
+                  placeholder="Contoh: Beasiswa Taruna Menwa - Farhan / Posko Sembako Karhutla"
                   value={newTeam.teamName}
                   onChange={(e) => setNewTeam({ ...newTeam, teamName: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#FFDD00]"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Asal Sekolah / Instansi *</label>
+                <label className="block text-slate-700 font-bold mb-1">Asal Lembaga / Lokasi Posko *</label>
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: SMA Negeri 1 Jakarta"
+                  placeholder="Contoh: Batalyon Jayakarta / Posko Lapangan Riau"
                   value={newTeam.institution}
                   onChange={(e) => setNewTeam({ ...newTeam, institution: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#FFDD00]"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Kategori Perlombaan</label>
+                <label className="block text-slate-700 font-bold mb-1">Kategori Inisiatif</label>
                 <select
                   value={newTeam.category}
                   onChange={(e) => setNewTeam({ ...newTeam, category: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#FFDD00]"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
                 >
-                  <option value="Wira Utama (SMA/SMK)">Wira Utama (SMA/SMK/MA)</option>
-                  <option value="Madya (SMP/MTs)">Madya (SMP/MTs)</option>
+                  <option value="Beasiswa Menwa">🎓 Beasiswa Menwa (Menwa Scholarship)</option>
+                  <option value="Logistik Bencana">📦 Bantuan Logistik Kemanusiaan</option>
+                  <option value="Aksi Karhutla">🔥 Aksi Cepat Tanggap Karhutla</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Nama Komandan Pleton (Danton)</label>
+                <label className="block text-slate-700 font-bold mb-1">Penanggung Jawab / Kontak</label>
                 <input
                   type="text"
-                  placeholder="Nama Danton"
+                  placeholder="Nama Penanggung Jawab"
                   value={newTeam.dantonName}
                   onChange={(e) => setNewTeam({ ...newTeam, dantonName: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#FFDD00]"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Motto Pasukan</label>
+                <label className="block text-slate-700 font-bold mb-1">Target Donasi (Rp)</label>
+                <input
+                  type="number"
+                  placeholder="Contoh: 5000000"
+                  value={newTeam.targetDonation}
+                  onChange={(e) => setNewTeam({ ...newTeam, targetDonation: Number(e.target.value) })}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Deskripsi / Motto Inisiatif</label>
                 <input
                   type="text"
-                  placeholder="Motto tim"
+                  placeholder="Keterangan singkat penyaluran donasi"
                   value={newTeam.motto}
                   onChange={(e) => setNewTeam({ ...newTeam, motto: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#FFDD00]"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1">URL Foto Pasukan Paskibra</label>
+                <label className="block text-slate-700 font-bold mb-1">URL Foto (Opsional)</label>
                 <input
                   type="url"
-                  placeholder="URL Foto Pasukan Paskibra (https://...)"
+                  placeholder="https://..."
                   value={newTeam.photoUrl}
                   onChange={(e) => setNewTeam({ ...newTeam, photoUrl: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#FFDD00]"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
                 />
               </div>
 
-              <div className="pt-4 flex justify-end gap-2.5 border-t border-slate-800">
+              <div className="pt-4 flex justify-end gap-2.5 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setAdminModalOpen(false)}
-                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold transition"
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-[#FFDD00] hover:bg-amber-400 text-slate-950 font-black rounded-xl uppercase tracking-wider transition shadow-md"
+                  className="px-6 py-2.5 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black rounded-xl uppercase tracking-wider transition shadow-md cursor-pointer"
                 >
-                  Simpan Tim
+                  Simpan Inisiatif
                 </button>
               </div>
             </form>
@@ -1011,4 +1189,5 @@ export function GeranatVoting() {
     </div>
   );
 }
+
 export default GeranatVoting;

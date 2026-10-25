@@ -1,99 +1,72 @@
-# Rencana Penguatan Keamanan Mako Ops, Reset Password, Hak Akses Canvas & Deteksi Penuh Foto Beranda
+# Rencana Implementasi: Rebranding Charity Vote, Penutupan Mode Siaga, Reset Data, Penghapusan Bypass QRIS, & Ekspor Spreadsheet
 
-Rencana ini menangani secara menyeluruh 5 kendala utama yang dihadapi: otentikasi Google domain Vercel, fitur Lupa Password otomatis via Gmail, pengetatan hak akses Canvas (publik hanya baca, Super Admin dapat mengubah), pengamanan gerbang Command Center (tanpa prefill kata sandi), dan pelacakan seluruh slot foto Beranda di Image Tracker.
-
----
-
-### User Review & Critical Decisions
-
-> [!IMPORTANT]
-> Berdasarkan konfirmasi yang Anda berikan:
-> 1. **Pintu Gerbang `/mako-ops`**: Input form dibuat bersih dan kosong tanpa ada pembocoran kata sandi bawaan di placeholder atau teks panduan.
-> 2. **Hak Akses Canvas**: Publik hanya mode baca (read-only). Tombol hapus/edit dinonaktifkan untuk publik dan hanya aktif jika Super Admin (`unjmenwa@gmail.com` atau `rafflysyahpoetra@gmail.com`) telah login.
-> 3. **Image Tracker Beranda**: Seluruh foto Sorotan Giat (carousel), Dokumentasi Kegiatan (5 kartu), Hero Banner, dan Logo Satuan didaftarkan secara lengkap sehingga admin dapat mengelola semua foto di beranda secara visual.
+Berdasarkan keputusan pengguna, berikut adalah rencana terstruktur untuk memperbarui sistem e-voting menjadi **Charity Vote: Beasiswa Menwa dan Bantuan Kemanusiaan**, menutup akses publik sementara dengan mode siaga interaktif, membersihkan data lama, menghapus tombol bypass QRIS yang tidak valid, menyediakan fitur ekspor spreadsheet konfidensial, serta menyegarkan palet visual dengan warna semangat khas Google dan hijau portal Menwa UNJ.
 
 ---
 
-### 1. Overview & Core Concept
-
-- **Apa yang Dibangun**:
-  - **Sistem Pemulihan Akun (Lupa Kata Sandi)**: Penambahan alur reset password mandiri via Firebase Auth yang mengirimkan link verifikasi dan reset langsung ke kotak masuk Gmail pengguna.
-  - **Proteksi Tingkat Tinggi Canvas & Content Registry**: Penguncian operasi mutasi (`deleteComponent`, `softRemoveRegistryItem`, `rollbackSnapshot`, `resetToDefaults`) sehingga hanya dieksekusi oleh Super Admin terverifikasi. Pengunjung umum tidak memiliki hak menghapus atau merusak tampilan web.
-  - **Gerbang Aman `/mako-ops`**: Form terminal otorisasi dibuat steril tanpa teks bocoran sandi, dengan validasi kredensial perwira mako atau sesi Google Super Admin.
-  - **Pelacakan Komprehensif Image Tracker Beranda**: Registrasi 15+ slot foto resmi di Beranda (8 kartu Sorotan Giat, 5 kartu Dokumentasi Kegiatan, Hero Banner, Logo & Lambang) ke dalam Content Registry dengan konversi format SVG otomatis.
-  - **Panduan & Penanganan Otentikasi Domain Vercel**: Instruksi terarah untuk mendaftarkan URL Vercel ke *Authorized Domains* Firebase Console guna menghentikan penolakan login Google "emi-1".
-
----
-
-### 2. User Experience & Visual Design
-
-- **Alur Lupa Kata Sandi**:
-  - Pada modal akun (tab *Masuk Akun*), terdapat tautan `Lupa Kata Sandi?` tepat di samping input kata sandi.
-  - Saat diklik, modal beralih ke formulir pemulihan yang elegan dengan input email, tombol `Kirim Tautan Reset ke Gmail`, dan status notifikasi instan.
-- **Tampilan Pintu Gerbang Command Center**:
-  - Input `Username` dan `Passcode` sepenuhnya kosong.
-  - Placeholder berupa teks bantuan netral (`contoh: admin_piket`, `••••••••••••`).
-  - Tidak ada lagi teks rahasia yang tertera di UI publik.
-  - Jika Super Admin sudah login di web, gerbang memberikan opsi satu-klik `Masuk sebagai Super Admin Terverifikasi`.
-- **Tampilan Canvas Publik vs Admin**:
-  - Publik: Toolbar editing dan tombol hapus/reset disembunyikan secara bersih.
-  - Super Admin: Muncul badge keamanan `Mode Komando Aktif` dengan tombol kontrol penuh.
-- **Panel Image Tracker**:
-  - Menampilkan katalog foto Beranda secara visual dalam bentuk grid kartu taktis.
-  - Masing-masing kartu menampilkan thumbnail, judul giat, kategori (Sorotan Giat / Dokumentasi), rasio dimensi, dan tombol `Ganti Foto / Upload SVG`.
+## 1. Penutupan Halaman & Mode Siaga Interaktif (Standby Mode)
+- **Status Publik**: Mengunci pemungutan suara publik pada rute `/geranat/voting` (dan alias `/charity/voting`) dalam status **Mode Siaga Interaktif**.
+- **Komponen Tampilan**:
+  - Banner status resmi: *"Pintu Charity Vote Sedang Disiapkan — Segera Dibuka"*.
+  - Countdown timer dinamis menuju jadwal pembukaan resmi.
+  - Informasi program beasiswa (*Menwa Scholarship*), bantuan logistik kemanusiaan, dan donasi tanggap darurat karhutla.
+- **Admin Control**:
+  - Tombol sakelar Buka / Tutup Gerbang Voting di Command Center Mako Ops (`/mako-ops`) khusus untuk Super Admin (`unjmenwa@gmail.com` dan `rafflysyahpoetra@gmail.com`).
+  - Pratinjau langsung untuk admin yang login tanpa terhalang gerbang siaga.
 
 ---
 
-### 3. Key Product Decisions & Trade-Offs
-
-- **Keputusan 1: Mekanisme Reset Password**:
-  - *Pendekatan*: Memanfaatkan fungsi resmi Firebase Auth `sendPasswordResetEmail(auth, email)` dengan template email bawaan Google yang mengirimkan link aman langsung ke Gmail pengguna.
-  - *Alasan*: Standar keamanan industri, tidak menyimpan password dalam bentuk teks, dan langsung terintegrasi dengan akun Google/Gmail pengguna.
-- **Keputusan 2: Pengetatan Role-Based Access Control (RBAC) pada Canvas**:
-  - *Pendekatan*: Mengintegrasikan `useAuth()` ke dalam `useCanvasStore()`. Jika `!isAdmin`, fungsi penghapusan dan pengubahan mengembalikan penolakan dan tidak merender kontrol edit di layar pengunjung.
-  - *Alasan*: Mencegah vandalisme atau penghapusan konten oleh pengunjung umum yang tidak memiliki wewenang.
-- **Keputusan 3: Registrasi Lengkap Foto Beranda**:
-  - *Pendekatan*: Menambahkan seluruh item array `KEGIATAN` dan `DokumentasiKegiatan` dari `siteData.js` ke dalam `INITIAL_CONTENT_REGISTRY` untuk tab `beranda`.
-  - *Alasan*: Memastikan admin memiliki kendali penuh atas setiap visual kartu yang tampil di halaman beranda tanpa ada foto yang terlewat.
+## 2. Penghapusan Tombol Bypass QRIS & Validasi Mutasi Jujur
+- **Pembersihan di `src/components/DynamicQRISModal.jsx`**:
+  - Hapus tombol *"Sudah Transfer? Klik untuk Deteksi Seketika →"* dan fungsi `handleTriggerVerifyNow` yang mensimulasikan status lunas otomatis.
+  - Menjaga sistem hanya membaca bukti mutasi yang tervalidasi secara riil via real-time listener Firestore (`/voting_transactions/{txId}`) dan polling resmi backend (`/api/verify-payment`).
+  - Memperbarui teks panduan: *"Sistem memantau mutasi secara otomatis setiap 5 detik. Suara akan bertambah seketika setelah pembayaran terkonfirmasi oleh sistem bank."*
 
 ---
 
-### 4. Technical Architecture & Data Strategy
+## 3. Pembersihan & Reset Data Tim E-Voting serta Skor Gamifikasi
+- **Reset Tim Charity Vote**:
+  - Menghapus bibit tim statis (`INITIAL_SEED_TEAMS`) sehingga daftar kontingen/penerima beasiswa mulai dari keadaan bersih (0 tim / kosong).
+  - Menyediakan utilitas admin di Mako Ops untuk mengosongkan koleksi `geranat_teams` dan transaksi lama di Firestore dengan satu kali konfirmasi aman.
+- **Reset Skor Gamifikasi & Leaderboard**:
+  - Mereset akumulasi poin `tacticalPoints`, `weeklyPoints`, `monthlyPoints`, dan `currentStreak` pengguna menjadi 0.
+  - Menghapus data kontestan statis (`SEED_COMPETITORS`) pada papan peringkat agar kompetisi gamifikasi mulai dari titik awal.
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                          PORTAL MENWA UNJ V8                            │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │
-         ┌───────────────────────────┼───────────────────────────┐
-         ▼                           ▼                           ▼
-┌──────────────────┐       ┌──────────────────┐        ┌──────────────────┐
-│  useAuth() Hook  │       │ useCanvasStore() │        │  Command Center  │
-│ - Reset Password │◄──────┤ - RBAC Guard     │◄───────┤ - Secure Gateway │
-│ - Google Login   │       │ - 15+ Foto Giat  │        │ - Image Tracker  │
-│ - Super Admin    │       │ - Read-Only Pub  │        │ - Clean Inputs   │
-└────────┬─────────┘       └─────────┬────────┘        └──────────────────┘
-         │                           │
-         ▼                           ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                Firebase Services (Project: admin-raffli)                │
-│  - Firebase Auth (Email/Pass & Google OAuth)                            │
-│  - Firestore: /content_registry/, /audit_logs/, /command_center_logs/   │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+---
 
-#### Komponen Utama yang Dikerjakan:
-1. **`src/firebase.js` & `src/hooks/useAuth.jsx`**:
-   - Ekspor fungsi `sendPasswordResetEmail` dari Firebase SDK.
-   - Tambahkan method `resetPassword(email)` ke dalam `useAuth`.
-2. **`src/components/UserAccountModal.jsx`**:
-   - Tambahkan state dan tampilan form "Lupa Kata Sandi".
-   - Integrasikan pengiriman link reset kata sandi ke Gmail.
-3. **`src/lib/canvasStore.jsx`**:
-   - Daftarkan seluruh item foto Beranda (Sorotan Giat: Oprec, KC VIII, Geranat VII, Pengabdian, KDS, Anjangsana, HUT RI, Studi Banding; Dokumentasi: KC VII, Geranat VI, Pengabdian 26/25, Rakomsat 25).
-   - Terapkan validasi `isAuthorized` untuk mutasi dan hapus komponen.
-4. **`src/components/CommandCenterPage.jsx`**:
-   - Hapus semua prefill default kredensial di gateway `/mako-ops`.
-   - Perbarui Image Tracker agar menyajikan filter dan slot gambar Sorotan Giat & Dokumentasi secara utuh.
-5. **Panduan Konfigurasi Domain Vercel**:
-   - Menyertakan dokumentasi penambahan domain Vercel ke Firebase Console untuk mengeliminasi error `auth/unauthorized-domain`.
+## 4. Ekspor Terstruktur Spreadsheet Konfidensial (Google Sheets & CSV)
+- **Pusat Rekapitulasi Data di Admin Mako Ops**:
+  - Menambahkan panel **"Pusat Data Konfidensial & Transparansi Donasi"** pada dashboard admin.
+  - Tiga jenis ekspor terpisah dengan satu klik (format `.CSV` UTF-8 dengan BOM, langsung kompatibel 100% untuk dibuka di Microsoft Excel atau diimpor ke Google Sheets):
+    1. **Data Transaksi Charity Vote & Donasi**: ID Transaksi, Tanggal/Waktu, Nama Donatur, Alamat Email, Tim/Penerima Donasi, Jumlah Suara, Nominal Donasi (Rp), Status Verifikasi, Metode QRIS.
+    2. **Rekapitulasi Tim / Kontingen Penerima**: ID Tim, Nama Tim/Program, Instansi, Kategori, Total Suara Terkumpul, Total Donasi Terkumpul (Rp), Tanggal Pendaftaran.
+    3. **Pemberkasan & Permohonan Administrasi**: ID Berkas, Nama Pemohon, Instansi, Layanan, Status, Tanggal Pengajuan, Link/Ukuran Dokumen.
+  - Tombol panduan & pintasan: *"Buka di Google Sheets"* yang mempermudah admin membagikan akses *view-only* secara selektif kepada pihak eksternal untuk transparansi.
+
+---
+
+## 5. Rebranding & Palet Desain Energik (Google Design + Hijau Portal)
+- **Rebranding Konsep**:
+  - Mengubah judul menjadi **"Charity Vote: Beasiswa Menwa & Bantuan Kemanusiaan"**.
+  - Subtitle: *"Satu Suara, Sejuta Kebaikan untuk Generasi Bangsa & Tanggap Darurat Bencana"*.
+  - Pilar kegiatan:
+    - 🎓 *Menwa Scholarship Program* (Beasiswa Pendidikan Kader Berprestasi).
+    - 📦 *Bantuan Logistik Kemanusiaan* (Penyaluran logistik untuk warga binaan & kaum dhuafa).
+    - 🌲 *Donasi Tanggap Darurat Karhutla* (Bantuan masker, logistik evakuasi, dan pemulihan lingkungan).
+- **Penyegaran Palet Warna**:
+  - Menggantikan nuansa hijau gelap yang monoton dengan kombinasi warna bersemangat dan modern:
+    - **Google Blue (`#4285F4`)**: Aksen modern, tombol aksi, dan lencana transparansi.
+    - **Google Green (`#34A853`)**: Indikator status aktif, donasi berhasil, dan keramahan sosial.
+    - **Google Yellow (`#FBBC05`)**: Peringatan waktu, lencana prestasi, dan ornamen beasiswa.
+    - **Google Red (`#EA4335`)**: Lencana darurat karhutla dan tombol tutup/batal.
+    - **Portal Signature Teal (`#006569`)**: Identitas inti kesatuan Menwa UNJ sebagai warna jangkar.
+  - Mengadopsi latar belakang putih cerah yang bersih, kartu modern berbayang halus (*soft elevation*), dan kontras tipografi yang ramah mata.
+
+---
+
+## 6. Verifikasi & Pengujian
+- Memastikan halaman Charity Vote terkunci untuk publik dan menampilkan mode siaga interaktif dengan countdown.
+- Menguji tombol buka/tutup gerbang di panel admin Mako Ops.
+- Memastikan tombol bayar instan palsu telah hilang sepenuhnya dari modal QRIS.
+- Menguji pengunduhan file spreadsheet CSV untuk ketiga dataset (Charity Vote, Tim, dan Berkas Administrasi).
+- Menjalankan `compile_applet` dan `lint_applet` untuk menjamin tidak ada regresi atau kesalahan sintaks.
