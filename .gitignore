@@ -1,9 +1,1 @@
 .vercel
-node_modules/
-dist/
-.env
-.env.*
-!.env.example
-.command-os/
-coverage/
-.vite-cache/

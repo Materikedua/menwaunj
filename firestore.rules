@@ -1,0 +1,158 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default Deny All Catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'unjmenwa@gmail.com' ||
+        request.auth.token.email == 'rafflysyahpoetra@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Koleksi Profil Pengguna & Leaderboard
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId) 
+        && request.resource.data.uid == userId;
+      allow update: if (
+        isOwner(userId) && request.resource.data.uid == resource.data.uid
+      ) || isAdmin();
+      allow delete: if isAdmin();
+
+      // Subkoleksi Sertifikat Kursus Pelatihan Pelatih
+      match /certificates/{certId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) || isAdmin();
+        allow update: if isOwner(userId) || isAdmin();
+        allow delete: if isAdmin();
+      }
+    }
+
+    // Koleksi Pengajuan Formulir Administrasi & Pendaftaran
+    match /forms_submissions/{submissionId} {
+      allow read: if isSignedIn() && (
+        resource.data.applicantUid == request.auth.uid || isAdmin()
+      );
+      allow create: if isSignedIn() 
+        && request.resource.data.applicantUid == request.auth.uid
+        && request.resource.data.submissionId is string
+        && request.resource.data.submissionId.size() <= 128
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() <= 120;
+      allow update: if isSignedIn() && (
+        isAdmin() || (
+          resource.data.applicantUid == request.auth.uid 
+          && request.resource.data.applicantUid == resource.data.applicantUid
+        )
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Koleksi Kontingen Tim GERANAT (E-Voting Juara Terfavorit)
+    match /geranat_teams/{teamId} {
+      // Membaca terbuka untuk auto-refresh 15 detik klasemen publik
+      allow read: if true;
+      allow create: if isAdmin();
+      // Update suara diperbolehkan untuk voting publik (menambah votesCount) atau admin
+      allow update: if request.resource.data.teamId == resource.data.teamId || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Koleksi Transaksi Voting Berbayar (Rp1.000) & Live Voting Ticker
+    // TODO: Implement Firestore rate limiting via Cloud Functions
+    match /voting_transactions/{txId} {
+      allow read: if true;
+      allow create: if request.resource.data.txId is string
+        && request.resource.data.txId.size() <= 128
+        && request.resource.data.amount is number
+        && request.resource.data.votes is number;
+      allow update: if isAdmin() || (
+        request.resource.data.txId == resource.data.txId
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Koleksi Portal Peserta Digital (Pemberkasan & Penilaian)
+    match /participant_portals/{token} {
+      // Membaca terbuka jika pemegang token atau pemilik akun
+      allow read: if true;
+      allow create: if isSignedIn() || isAdmin();
+      allow update: if isSignedIn() && (
+        isAdmin() || resource.data.applicantUid == request.auth.uid
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Koleksi Pengaturan Mako & Rekening Bank QRIS
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Koleksi PendingChanges (2-Step Verification Perubahan Rekening Bank)
+    match /PendingChanges/{changeId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // 1. Koleksi Audit Logs (Immutable — Transparansi & Keamanan Sistem)
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn() || isAdmin() || true;
+      allow update, delete: if false;
+    }
+
+    // 2. Koleksi Content Registry (Image Tracker Per Tab & SVG Assets)
+    match /content_registry/{contentId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 3. Koleksi Command Center Logs (Histori Perintah NLP & Eksekusi Admin)
+    match /command_center_logs/{logId} {
+      allow read, write: if isAdmin();
+    }
+
+    // 4. Koleksi Notifications (Notifikasi Real-time Admin & Pengguna)
+    match /notifications/{notifId} {
+      allow read: if isAdmin() || (isSignedIn() && (resource.data.recipientUid == request.auth.uid || resource.data.recipientRole == 'all'));
+      allow create: if true;
+      allow update: if isAdmin() || (isSignedIn() && resource.data.recipientUid == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // 5. Koleksi Scheduled Tasks (Antrean Operasi Terjadwal)
+    match /scheduled_tasks/{taskId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Koleksi Sesi Chat Gemini Pengguna (Fallback)
+    match /user_chats/{userId}/sessions/{sessionId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+
+      match /messages/{messageId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if false;
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

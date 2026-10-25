@@ -1,0 +1,126 @@
+/* LiveCanvasStudio.css — Styling for Live UI & Media Canvas Architect */
+
+.canvas-studio-trigger {
+  position: fixed;
+  bottom: 20px;
+  right: 170px;
+  z-index: 110;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #006569, #00383b);
+  border: 1px solid rgba(255, 221, 0, 0.45);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 10px 30px rgba(0, 56, 59, 0.5), 0 0 16px rgba(255, 221, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.canvas-studio-trigger:hover {
+  transform: translateY(-2px) scale(1.04);
+  border-color: #ffdd00;
+  box-shadow: 0 14px 36px rgba(0, 56, 59, 0.6), 0 0 24px rgba(255, 221, 0, 0.35);
+}
+
+.canvas-studio-trigger.is-locked {
+  background: linear-gradient(135deg, #0f172a, #030f14);
+  border-color: rgba(255, 221, 0, 0.35);
+}
+
+.canvas-studio-trigger.is-locked:hover {
+  border-color: #ffdd00;
+  box-shadow: 0 14px 36px rgba(0, 56, 59, 0.7), 0 0 20px rgba(255, 221, 0, 0.3);
+}
+
+.canvas-studio-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ffdd00;
+  color: #00383b;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+@media (max-width: 768px) {
+  .canvas-studio-trigger {
+    right: 16px;
+    bottom: 84px;
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+}
+
+.canvas-studio-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  background: rgba(2, 6, 23, 0.65);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.canvas-studio-drawer-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.canvas-studio-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  width: min(540px, 100vw);
+  background: #030f14;
+  border-left: 1px solid rgba(255, 221, 0, 0.3);
+  box-shadow: -15px 0 50px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.canvas-studio-drawer.is-open {
+  transform: translateX(0);
+}
+
+.canvas-json-block {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 11.5px;
+  line-height: 1.5;
+  background: #01080b;
+  border: 1px solid rgba(0, 101, 105, 0.4);
+  border-radius: 12px;
+  padding: 12px;
+  color: #a7f3d0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.canvas-dropzone {
+  border: 2px dashed rgba(255, 221, 0, 0.35);
+  border-radius: 16px;
+  background: rgba(0, 101, 105, 0.08);
+  transition: all 0.25s ease;
+}
+
+.canvas-dropzone:hover,
+.canvas-dropzone.is-dragging {
+  border-color: #ffdd00;
+  background: rgba(255, 221, 0, 0.12);
+  transform: scale(1.01);
+}

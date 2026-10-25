@@ -1,0 +1,113 @@
+import React, { useEffect, useRef } from 'react';
+
+/**
+ * TacticalConfetti — Efek ledakan partikel kanvas ringan (gold embers, stars, & confetti)
+ * Aktif saat kuis taktis selesai dan poin EXP diraih
+ */
+export function TacticalConfetti({ trigger = true, duration = 3500, onComplete }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!trigger) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let animationId = 0;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    // Palet warna taktis Menwa UNJ (Emas, Kuning Komando, Hijau Korps, Oranye Api, Perak)
+    const COLORS = [
+      '#FFDD00', '#FFB703', '#FB8500', '#006569', '#00A896', '#028090', '#FFFFFF', '#F4D06F'
+    ];
+
+    const PARTICLE_COUNT = 90;
+    const particles = [];
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 4 + Math.random() * 9;
+      particles.push({
+        x: width / 2,
+        y: height * 0.45,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 3,
+        size: 5 + Math.random() * 8,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 12,
+        opacity: 1,
+        shape: Math.random() > 0.4 ? 'rect' : 'circle',
+        decay: 0.005 + Math.random() * 0.008,
+        gravity: 0.18 + Math.random() * 0.1
+      });
+    }
+
+    const startTime = performance.now();
+
+    const render = (time) => {
+      ctx.clearRect(0, 0, width, height);
+
+      let activeCount = 0;
+      for (let p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.vx *= 0.985;
+        p.rotation += p.rotationSpeed;
+        p.opacity -= p.decay;
+
+        if (p.opacity > 0) {
+          activeCount++;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.globalAlpha = Math.max(0, p.opacity);
+          ctx.fillStyle = p.color;
+
+          if (p.shape === 'rect') {
+            ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+          } else {
+            // Star or circle
+            ctx.beginPath();
+            ctx.arc(0, 0, p.size / 2.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+      }
+
+      if (activeCount > 0 && time - startTime < duration) {
+        animationId = requestAnimationFrame(render);
+      } else {
+        ctx.clearRect(0, 0, width, height);
+        if (onComplete) onComplete();
+      }
+    };
+
+    animationId = requestAnimationFrame(render);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationId);
+    };
+  }, [trigger, duration, onComplete]);
+
+  if (!trigger) return null;
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 pointer-events-none z-[9999]"
+      aria-hidden="true"
+    />
+  );
+}

@@ -6,19 +6,21 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "lint": "npm run test:source && npm run test:jsx",
     "test:source": "node scripts/validate-source.mjs",
-    "test": "npm run test:source && npm run test:jsx && npm run test:events && npm run test:v7 && npm run test:api && npm run test:command && npm run build",
-    "test:command": "node scripts/validate-public-actions.mjs && node --test tests/command-service.test.mjs tests/command-private-paths.test.mjs tests/command-vite.test.mjs",
-    "command:user": "node scripts/command-admin.mjs",
+    "test": "npm run test:source && npm run test:jsx && npm run test:events && npm run test:v7 && npm run test:api && npm run build",
     "test:events": "node scripts/validate-events.mjs",
     "test:api": "node --check api/chat.js && node --check api/search.js && node scripts/validate-ai-search.mjs",
     "test:jsx": "node scripts/validate-jsx.mjs",
     "test:v7": "node scripts/validate-v7.mjs"
   },
   "dependencies": {
+    "firebase": "^13.1.0",
     "lucide-react": "^0.468.0",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",

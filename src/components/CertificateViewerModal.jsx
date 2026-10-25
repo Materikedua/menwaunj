@@ -1,0 +1,163 @@
+import React, { useRef } from 'react';
+import { 
+  X, 
+  Printer, 
+  Download, 
+  Award, 
+  ShieldCheck, 
+  CheckCircle, 
+  Copy, 
+  Calendar, 
+  ExternalLink 
+} from 'lucide-react';
+
+export function CertificateViewerModal({ certificate, isOpen, onClose }) {
+  const printAreaRef = useRef(null);
+
+  if (!isOpen || !certificate) return null;
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const copyCertId = () => {
+    if (certificate.certId) {
+      navigator.clipboard.writeText(certificate.certId);
+      alert('Nomor Sertifikat berhasil disalin: ' + certificate.certId);
+    }
+  };
+
+  const formattedDate = certificate.issuedAt 
+    ? new Date(certificate.issuedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '2026';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white">
+      <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden print:border-none print:shadow-none print:w-full print:max-w-none print:bg-white text-white print:text-black">
+        {/* Modal Action Bar (Hidden in Print) */}
+        <div className="flex items-center justify-between px-6 py-4 bg-slate-950 border-b border-slate-800 print:hidden">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <Award className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">Sertifikat Digital Resmi</h3>
+              <p className="text-xs text-slate-400">Terverifikasi Sistem Pelatihan Youth Spark Menwa UNJ</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={copyCertId}
+              className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center gap-1.5 transition-colors"
+              title="Salin Nomor Sertifikat"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Salin ID</span>
+            </button>
+            <button
+              onClick={handlePrint}
+              className="px-4 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-red-800 to-amber-700 hover:from-red-700 hover:to-amber-600 rounded-lg flex items-center gap-1.5 transition-all shadow-md"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Cetak / Unduh PDF</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Certificate Printable Canvas */}
+        <div 
+          ref={printAreaRef}
+          className="p-6 sm:p-12 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 print:bg-white print:text-slate-900"
+        >
+          {/* Certificate Inner Frame */}
+          <div className="relative border-4 border-double border-amber-500/40 print:border-amber-700/60 p-6 sm:p-10 rounded-xl bg-slate-900/60 print:bg-white text-center">
+            {/* Watermark Logo Accent */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+              <div className="w-72 h-72 rounded-full border-8 border-amber-500 flex items-center justify-center">
+                <Award className="w-48 h-48 text-amber-500" />
+              </div>
+            </div>
+
+            {/* Header Logos & Title */}
+            <div className="mb-6">
+              <div className="inline-flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 print:text-amber-700 text-xs font-semibold uppercase tracking-wider mb-3">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Resimen Mahasiswa Jayakarta · Batalyon UNJ</span>
+              </div>
+              <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-white print:text-slate-900 font-serif uppercase">
+                Sertifikat Kelulusan Pelatihan
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-400 print:text-slate-600 mt-1">
+                Program Kerja Youth Spark: Train the Trainer Academy
+              </p>
+              <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mt-4 print:via-amber-700" />
+            </div>
+
+            {/* Recipient */}
+            <div className="my-8">
+              <p className="text-xs uppercase tracking-widest text-slate-400 print:text-slate-500 mb-2">
+                Diberikan dengan bangga kepada:
+              </p>
+              <h2 className="text-2xl sm:text-4xl font-bold text-amber-400 print:text-red-900 font-serif tracking-tight">
+                {certificate.recipientName || 'Peserta Pelatihan'}
+              </h2>
+              <p className="text-xs text-slate-400 print:text-slate-600 mt-1 font-mono">
+                {certificate.recipientEmail || ''}
+              </p>
+            </div>
+
+            {/* Description */}
+            <div className="max-w-2xl mx-auto my-6 text-sm text-slate-300 print:text-slate-700 leading-relaxed">
+              <p>
+                Telah berhasil menyelesaikan seluruh kurikulum pembelajaran, evaluasi studi kasus, dan standar kompetensi instruktur pada program:
+              </p>
+              <p className="font-bold text-base sm:text-lg text-white print:text-slate-900 mt-2 text-amber-300 print:text-amber-800">
+                {certificate.courseTitle || 'Pelatihan Pelatih Youth Spark'}
+              </p>
+              <p className="text-xs text-slate-400 print:text-slate-500 mt-1">
+                Predikat: <span className="text-emerald-400 print:text-emerald-700 font-semibold">{certificate.grade || 'Sangat Baik (Distinction)'}</span>
+              </p>
+            </div>
+
+            {/* Signatures & Verification Info */}
+            <div className="pt-8 mt-8 border-t border-slate-800 print:border-slate-300 grid grid-cols-1 sm:grid-cols-3 gap-6 items-end text-xs">
+              <div>
+                <p className="text-slate-500 print:text-slate-500">Tanggal Terbit</p>
+                <p className="font-semibold text-slate-300 print:text-slate-800 mt-1">{formattedDate}</p>
+                <p className="text-[11px] text-slate-500 print:text-slate-500 mt-0.5">Jakarta, Indonesia</p>
+              </div>
+
+              <div>
+                <div className="w-12 h-12 mx-auto mb-2 rounded-full border border-amber-500/40 bg-amber-500/10 flex items-center justify-center text-amber-400 print:border-amber-700 print:text-amber-700">
+                  <CheckCircle className="w-6 h-6" />
+                </div>
+                <p className="font-mono text-[11px] text-amber-400 print:text-amber-800 font-semibold truncate">
+                  {certificate.certId}
+                </p>
+                <p className="text-[10px] text-slate-500 print:text-slate-500 mt-0.5">Verifikasi Digital Otentik</p>
+              </div>
+
+              <div>
+                <div className="h-8 flex items-center justify-center font-serif italic text-amber-300/80 print:text-slate-800 text-sm">
+                  Komandan Batalyon
+                </div>
+                <div className="w-32 h-px bg-slate-700 print:bg-slate-400 mx-auto mb-1" />
+                <p className="font-semibold text-slate-300 print:text-slate-800">Menwa UNJ & Tim Kurikulum</p>
+                <p className="text-[11px] text-slate-500 print:text-slate-500">Mako Menwa UNJ</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default CertificateViewerModal;

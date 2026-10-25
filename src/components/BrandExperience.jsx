@@ -4,8 +4,8 @@ import { Link, navigate } from '../lib/router.jsx';
 import { HeroStage, HeroLogo, Reveal } from './MenwaUI.jsx';
 import PortalIcon from './PortalIcon.jsx';
 import { resolvePortalPath } from '../lib/portalSearch.js';
-import { PROGRAMS, SITE } from '../data/siteData.js';
-import { usePublishedAction } from '../command/PublicActions.jsx';
+import { DynamicCanvasZone } from './DynamicCanvasZone.jsx';
+import { SITE } from '../data/siteData.js';
 import './BrandExperience.css';
 
 const primaryGuides = [
@@ -19,25 +19,12 @@ const primaryGuides = [
 
 export const informationIndex = [
   ...primaryGuides,
-  { actionId: 'kc-jersey-peserta', title: 'Jersey Peserta KC VIII', category: 'Formulir kegiatan', description: 'Pendataan jersey ATHLETE untuk peserta KC VIII.', href: 'https://forms.gle/voyPEgvxvhS8VrKf8', icon: ExternalLink },
-  { actionId: 'kc-jersey-official', title: 'Jersey Official KC VIII', category: 'Formulir kegiatan', description: 'Pre-order jersey OFFICIAL, harga Rp150.000.', href: 'https://forms.gle/RHoXRFTEVKWHQfFx9', icon: ExternalLink },
-  { actionId: 'kc-registration', title: 'Pendaftaran KC VIII', category: 'Pendaftaran kegiatan', description: 'Pendaftaran tim KC VIII melalui formulir panitia.', href: 'https://bit.ly/PendaftaranKCVIII', icon: ExternalLink },
-  { actionId: 'youth-spark-registration', title: 'Daftar Seminar Youth Spark', category: 'Pendaftaran kegiatan', description: 'Pendaftaran seminar nasional Youth Spark.', href: 'https://forms.gle/Xc3QsBLNueoXYLfDA', icon: ExternalLink },
+  { title: 'Jersey Peserta KC VIII', category: 'Formulir kegiatan', description: 'Pendataan jersey ATHLETE untuk peserta KC VIII.', href: 'https://forms.gle/voyPEgvxvhS8VrKf8', icon: ExternalLink },
+  { title: 'Jersey Official KC VIII', category: 'Formulir kegiatan', description: 'Pre-order jersey OFFICIAL, harga Rp150.000.', href: 'https://forms.gle/RHoXRFTEVKWHQfFx9', icon: ExternalLink },
+  { title: 'Pendaftaran KC VIII', category: 'Pendaftaran kegiatan', description: 'Pendaftaran tim KC VIII melalui formulir panitia.', href: 'https://bit.ly/PendaftaranKCVIII', icon: ExternalLink },
+  { title: 'Daftar Seminar Youth Spark', category: 'Pendaftaran kegiatan', description: 'Pendaftaran seminar nasional Youth Spark.', href: 'https://forms.gle/Xc3QsBLNueoXYLfDA', icon: ExternalLink },
   { title: 'Rundown Youth Spark (PDF)', category: 'Dokumen publik', description: 'Rundown resmi seminar pukul 08.00–12.00 WIB.', href: '/dokumen/youth-spark-rundown.pdf', icon: FileText },
 ];
-
-const actionFallbacks = Object.fromEntries(informationIndex.filter((item) => item.actionId).map((item) => [item.actionId, item.href]));
-
-export function usePublishedInformationIndex() {
-  const kc = usePublishedAction('kc-registration', actionFallbacks['kc-registration']);
-  const youth = usePublishedAction('youth-spark-registration', actionFallbacks['youth-spark-registration']);
-  const peserta = usePublishedAction('kc-jersey-peserta', actionFallbacks['kc-jersey-peserta']);
-  const official = usePublishedAction('kc-jersey-official', actionFallbacks['kc-jersey-official']);
-  return useMemo(() => {
-    const urls = { 'kc-registration': kc, 'youth-spark-registration': youth, 'kc-jersey-peserta': peserta, 'kc-jersey-official': official };
-    return informationIndex.map((item) => item.actionId ? { ...item, href: urls[item.actionId] } : item);
-  }, [kc, youth, peserta, official]);
-}
 
 const EventStoryCard = ({ to, image, eyebrow, title, meta, description, variant = '' }) => (
   <Link to={to} className={`brand-event-card ${variant}`}>
@@ -69,6 +56,7 @@ export function BrandHome({ onOpenSearch }) {
             <Link to="/informasi" className="brand-btn brand-btn--gold">Jelajahi Pusat Informasi <ArrowRight size={19} /></Link>
             <Link to="/garis-komando" className="brand-btn brand-btn--outline">Kenali Organisasi <ChevronRight size={19} /></Link>
           </div>
+          <DynamicCanvasZone containerId="hero_cta_slot" className="mt-4 max-w-md w-full" />
           <a className="brand-legacy-scroll" href="#sorotan-giat">Lihat sorotan kegiatan <ArrowDownRight size={18} /></a>
         </Reveal>
       </HeroStage>
@@ -110,7 +98,6 @@ export const BrandValues = () => (
 const FILTERS = ['Semua', 'Program unggulan', 'Seminar & pembinaan', 'Tentang organisasi', 'Pembinaan anggota', 'Lokasi & kontak', 'Layanan', 'Formulir kegiatan', 'Pendaftaran kegiatan', 'Dokumen publik'];
 
 export function InformationHub({ onOpenSearch }) {
-  const publishedInformationIndex = usePublishedInformationIndex();
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState('Semua');
   const [searching, setSearching] = useState(false);
@@ -125,11 +112,11 @@ export function InformationHub({ onOpenSearch }) {
       else setNoMatch(true);
     } finally { setSearching(false); }
   };
-  const items = useMemo(() => publishedInformationIndex.filter((item) => {
+  const items = useMemo(() => informationIndex.filter((item) => {
     if (filter !== 'Semua' && item.category !== filter) return false;
     const s = `${item.title} ${item.description} ${item.category}`.toLowerCase();
     return s.includes(q.toLowerCase().trim());
-  }), [q, filter, publishedInformationIndex]);
+  }), [q, filter]);
 
   return <div className="brand-hub">
     <header className="brand-hub-head">

@@ -222,7 +222,7 @@ export const MusicPlayer = () => {
       {/* Play / Pause cepat */}
       <button
         type="button" onClick={toggle} aria-label={a11yToggle} title={a11yToggle}
-        className="group relative hidden h-12 w-[68px] place-items-center overflow-visible rounded-2xl bg-transparent text-[#00383b] transition hover:scale-[1.03] sm:grid"
+        className="group relative hidden h-10 w-[56px] place-items-center overflow-visible rounded-2xl bg-transparent text-[#00383b] transition hover:scale-[1.03] sm:grid shrink-0"
       >
         {blocked && !playing && wantPlay.current && (
           <span className="pointer-events-none absolute inset-1 rounded-2xl border border-[#FFDD00]/60 animate-pulse" aria-hidden />

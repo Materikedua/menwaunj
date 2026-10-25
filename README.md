@@ -2,16 +2,6 @@
 
 Website organisasi dan pusat sumber informasi Menwa UNJ berbasis React + Vite.
 
-## Command OS — tahap 1 lokal
-
-Command Center tersedia di `/command-center` ketika menjalankan server pengembangan. Fondasi ini memakai **Node 24**, database SQLite persisten lokal, akun individual, serta peran editor/penyetuju/admin. Tidak ada akun bawaan. Buat akun pengurus dan penyetuju berbeda melalui `npm run command:user -- create-user --username nama --name "Nama Pengurus" --role editor`; kata sandi diminta secara tersembunyi. Lihat [panduan operasi](docs/command-os/operations.md) untuk akun penyetuju, lokasi database, backup dan alur lengkap.
-
-Lingkup yang bekerja secara lokal: perintah perubahan empat tautan pendaftaran → pratinjau → persetujuan pengurus lain → publikasi data → tombol portal lokal diperbarui → audit dan permintaan pemulihan. Parser terbatas bersifat deterministik; integrasi model eksekutor belum dibuat. Database berada di `.command-os/command.sqlite`, di luar direktori publik dan dikecualikan dari Git.
-
-**Produksi belum diaktifkan.** Build frontend tidak menyediakan backend SQLite produksi. API Command OS pada Vercel menolak operasi dengan status `503` sampai adapter database/auth terkelola diterapkan dan diverifikasi. Portal memakai tautan sumber jika registri tidak tersedia. Jangan mengunggah database lokal atau arsip rahasia ke `public/` maupun deployment.
-
-Dokumen pengembangan: [audit](docs/command-os/audit.md), [inventaris konten/aset](docs/command-os/content-inventory.md), [arsitektur, skema dan backlog](docs/command-os/architecture.md), [migrasi produksi](docs/command-os/migration.md), [bukti pengujian dan keterbatasan](docs/command-os/verification.md), serta [catatan perubahan](CHANGELOG.md).
-
 ## Jalankan
 
 ```bash
@@ -24,8 +14,6 @@ npm run dev
 ```bash
 npm run build
 ```
-
-Jalankan `npm run test:command` untuk acceptance tests registri dan `npm test` untuk seluruh validasi serta build. Pengujian layanan memakai database terisolasi.
 
 ## Dokumentasi
 

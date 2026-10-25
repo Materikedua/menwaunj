@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, 
   Menu, 
   Activity, 
   Send, 
   MessageCircle, 
-  Shield, 
+  Shield,
+  ShieldCheck, 
   User, 
   Lock, 
   LogIn, 
@@ -32,8 +33,25 @@ import {
   FileText,
   Trophy,
   Sparkles,
-  Flame, ArrowRight, Search as SearchIcon
+  Flame, ArrowRight, Search as SearchIcon,
+  MessageSquare, History, Plus, Trash2,
+  Building,
+  FileSpreadsheet,
+  Sun,
+  Moon
 } from 'lucide-react';
+import { useAuth } from './lib/authContext.jsx';
+import { UserAccountModal } from './components/UserAccountModal.jsx';
+import { AdministrationFormModal } from './components/AdministrationFormModal.jsx';
+import { RegistrationForm } from './components/RegistrationForm.jsx';
+import { GamificationHub } from './components/GamificationHub.jsx';
+import { GamesPage } from './components/GamesPage.jsx';
+import { GeranatVoting } from './components/GeranatVoting.jsx';
+import { ParticipantPortal } from './components/ParticipantPortal.jsx';
+import { MakoBankQRISSettings } from './components/MakoBankQRISSettings.jsx';
+import { BankApprovalBanner } from './components/BankApprovalBanner.jsx';
+import { AdminSubmissionsDashboard } from './components/AdminSubmissionsDashboard.jsx';
+import { TacticalConfetti } from './components/TacticalConfetti.jsx';
 import {
   MotionStyles, Reveal, ScrollProgress, CursorGlow, CursorFollower,
   HeroStage, HeroLogo, NavBar, TabSwitch
@@ -46,10 +64,10 @@ import { PlaneMotion, LaptopMotion } from './components/MotionAssets';
 import MenwaPet from './components/MenwaPet';
 import { BrandHome, BrandValues, InformationHub } from './components/BrandExperience.jsx';
 import { CommandPalette, PageWayfinder, BackToTop } from './components/PortalUtilities.jsx';
+import { CanvasProvider } from './lib/canvasStore.jsx';
+import { CommandCenterPage } from './components/CommandCenterPage.jsx';
+import { DynamicCanvasZone } from './components/DynamicCanvasZone.jsx';
 import { PROGRAMS, HERO_PHOTO } from './data/siteData';
-import { PublishedActionsProvider } from './command/PublicActions.jsx';
-
-const CommandCenter = lazy(() => import('./command/CommandCenter.jsx'));
 
 const handleImgError = (e, text, bgColor = '006569', textColor = 'FFDD00') => {
   e.target.onerror = null;
@@ -87,10 +105,39 @@ const Navigation = (props) => (
     navItems={NAV_ITEMS}
     MenuIcon={<Menu size={28} />}
     CloseIcon={<X size={28} />}
-    rightSlot={<div className="flex items-center gap-2">
-      <button type="button" onClick={props.onOpenSearch} className="portal-search-trigger" aria-label="Cari informasi portal, tekan Ctrl K atau Command K" title="Cari cepat • Ctrl/⌘ K"><SearchIcon size={17} /><span className="hidden sm:inline">Cari</span><kbd className="hidden xl:inline">⌘ K</kbd></button>
+    rightSlot={<div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <button type="button" onClick={props.onOpenSearch} className="portal-search-trigger shrink-0" aria-label="Cari informasi portal, tekan Ctrl K atau Command K" title="Cari cepat • Ctrl/⌘ K"><SearchIcon size={17} /><span className="hidden sm:inline">Cari</span><kbd className="hidden xl:inline">⌘ K</kbd></button>
       <MusicPlayer />
-      <HeaderClock />
+      <div className="flex items-center gap-1.5 sm:gap-2 pl-1 border-l border-slate-200/60 dark:border-white/10">
+        <button 
+          type="button" 
+          onClick={props.onOpenGamification}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black transition border border-amber-500/40 bg-slate-900/90 hover:bg-slate-800 text-amber-300 shadow-sm hover:scale-105"
+          title="Buka Subtab Games, Kuis Taktis & Papan Peringkat"
+        >
+          <Flame size={14} className="text-amber-400 fill-amber-400" />
+          <span className="font-mono text-amber-400">{props.profile?.tacticalPoints || 0}</span>
+          <span className="hidden md:inline text-[10px] text-slate-400 uppercase">EXP</span>
+        </button>
+        <button 
+          type="button" 
+          onClick={props.onOpenAccount}
+          className="portal-account-trigger inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black transition border border-[#006569]/25 bg-white/90 hover:bg-white text-slate-800 shadow-sm hover:scale-105"
+          title={props.user ? `Akun: ${props.profile?.displayName || props.user.email}` : "Masuk atau Kelola Akun Portal"}
+        >
+          <User size={15} className={props.user ? "text-[#006569]" : "text-slate-500"} />
+          <span className="hidden sm:inline max-w-[100px] truncate">
+            {props.user ? (props.profile?.displayName?.split(' ')[0] || props.user.email?.split('@')[0]) : "Akun"}
+          </span>
+          {props.profile?.isVerifiedMenwa ? (
+            <span title="Anggota Menwa Terverifikasi Resmi">
+              <ShieldCheck size={13} className="text-blue-500 shrink-0" />
+            </span>
+          ) : props.user ? (
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+          ) : null}
+        </button>
+      </div>
     </div>}
     onLogoError={(e) => handleImgError(e, 'MENWA UNJ', '006569', 'FFDD00')}
   />
@@ -106,7 +153,9 @@ const CHAT_DESTINATIONS = [
   { label: 'Youth Spark National', path: '/youth-spark', keywords: ['youth spark', 'youth spark national', 'dispora', 'umkm', 'seminar'] },
   { label: 'Seminar & Webinar Youth Spark', path: '/youth-spark/seminar-webinar', keywords: ['seminar webinar', 'seminar youth spark', 'webinar'] },
   { label: 'Kompetisi Youth Spark', path: '/youth-spark/kompetisi', keywords: ['kompetisi youth spark', 'kompetisi'] },
-  { label: 'Pelatihan Pelatih Youth Spark', path: '/youth-spark/pelatihan-pelatih', keywords: ['pelatihan pelatih', 'pelatih'] },
+  { label: 'Game Taktis & Papan Peringkat', path: '/games', keywords: ['game', 'games', 'kuis', 'leaderboard', 'peringkat', 'poin', 'exp', 'tantangan'] },
+  { label: 'E-Voting Juara Terfavorit GERANAT', path: '/geranat/voting', keywords: ['voting', 'vote', 'geranat voting', 'juara terfavorit', 'dukung tim', 'e-voting'] },
+  { label: 'Portal Peserta Digital', path: '/portal-peserta', keywords: ['portal peserta', 'peserta', 'kartu peserta', 'pemberkasan', 'rekap nilai', 'token'] },
 ];
 
 const localChatAnswer = (text) => {
@@ -127,7 +176,8 @@ const localChatAnswer = (text) => {
   };
 };
 
-const LiveChatWidget = () => {
+const LiveChatWidget = ({ onOpenAccount }) => {
+  const { user, profile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { id: 1, text: 'Komando! Saya Asisten Menwa UNJ. Tanyakan kegiatan, pendidikan, struktur, Mako, administrasi, atau pendaftaran.', sender: 'admin', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }
@@ -139,6 +189,13 @@ const LiveChatWidget = () => {
   const [petDragging, setPetDragging] = useState(false);
   const petStart = useRef(null);
   const petWasDragged = useRef(false);
+
+  const handleStartNewSession = () => {
+    setMessages([
+      { id: Date.now(), text: `Komando, ${profile?.displayName?.split(' ')[0] || 'Rekan'}! Sesi obrolan baru dimulai. Ada yang bisa saya bantu seputar kegiatan, administrasi, atau pelatihan Menwa UNJ?`, sender: 'admin', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+    ]);
+  };
+
   const beginPetDrag = (event) => {
     if (event.button !== undefined && event.button !== 0) return;
     petWasDragged.current = false;
@@ -167,27 +224,59 @@ const LiveChatWidget = () => {
   const ask = async (text) => {
     const q = text.trim();
     if (!q || loading) return;
-    setMessages((prev) => [...prev, { id: Date.now(), text: q, sender: 'user', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }]);
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    setMessages((prev) => [...prev, { id: Date.now(), text: q, sender: 'user', time: nowTime }]);
     setInputMessage('');
     setLoading(true);
+
     try {
       const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: q }) });
       if (!res.ok) throw new Error('AI unavailable');
       const data = await res.json();
-      setMessages((prev) => [...prev, { id: Date.now() + 1, text: data.text || localChatAnswer(q).text, sender: 'admin', suggestions: data.suggestions || localChatAnswer(q).suggestions, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }]);
+      const answerText = data.text || localChatAnswer(q).text;
+      const suggestions = data.suggestions || localChatAnswer(q).suggestions;
+      setMessages((prev) => [...prev, { id: Date.now() + 1, text: answerText, sender: 'admin', suggestions, time: nowTime }]);
     } catch {
       const fallback = localChatAnswer(q);
-      setMessages((prev) => [...prev, { id: Date.now() + 1, text: fallback.text, sender: 'admin', suggestions: fallback.suggestions, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }]);
+      setMessages((prev) => [...prev, { id: Date.now() + 1, text: fallback.text, sender: 'admin', suggestions: fallback.suggestions, time: nowTime }]);
     } finally { setLoading(false); }
   };
 
   return (
     <div className="fixed bottom-3 right-3 z-[100] flex flex-col items-end font-sans sm:bottom-4 sm:right-5">
-      <div className={`mb-1 overflow-hidden flex flex-col rounded-3xl border border-slate-200 bg-white shadow-2xl transition-all duration-500 origin-bottom-right ${isOpen ? 'scale-100 opacity-100 w-[min(380px,calc(100vw-2rem))] h-[min(560px,calc(100dvh-115px))]' : 'scale-0 opacity-0 w-0 h-0'}`}>
-        <div className="bg-gradient-to-r from-[#006569] via-[#004d50] to-[#00383b] p-4 flex justify-between items-center text-white">
-          <div className="flex items-center gap-3"><div className="w-10 h-10 bg-white rounded-full p-1"><img src="/logo-menwa-unj.png" className="w-full h-full object-contain" alt="Menwa UNJ" /></div><div><h4 className="font-black text-sm">Asisten Menwa UNJ</h4><p className="text-[10px] text-[#FFDD00] font-bold">AI Navigation Assistant</p></div></div>
-          <button onClick={() => setIsOpen(false)} className="p-2 rounded-full hover:bg-white/20"><X size={20} /></button>
+      <div className={`mb-1 overflow-hidden flex flex-col rounded-3xl border border-slate-200 bg-white shadow-2xl transition-all duration-500 origin-bottom-right relative ${isOpen ? 'scale-100 opacity-100 w-[min(400px,calc(100vw-2rem))] h-[min(580px,calc(100dvh-115px))]' : 'scale-0 opacity-0 w-0 h-0'}`}>
+        
+        {/* Header Widget */}
+        <div className="bg-gradient-to-r from-[#006569] via-[#004d50] to-[#00383b] p-3.5 sm:p-4 flex justify-between items-center text-white shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-white rounded-full p-1 shrink-0">
+              <img src="/logo-menwa-unj.png" className="w-full h-full object-contain" alt="Menwa UNJ" />
+            </div>
+            <div>
+              <h4 className="font-black text-xs sm:text-sm">Asisten Menwa UNJ</h4>
+              <p className="text-[10px] text-[#FFDD00] font-bold flex items-center gap-1">
+                <span>Gemini AI Fast Assistant</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button 
+              type="button"
+              onClick={handleStartNewSession} 
+              className="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 text-[11px] font-bold bg-white/10 hover:bg-white/20 text-white"
+              title="Mulai Percakapan Baru"
+            >
+              <Plus size={14} />
+              <span className="hidden sm:inline">Reset</span>
+            </button>
+            <button onClick={() => setIsOpen(false)} className="p-1.5 rounded-full hover:bg-white/20 text-white" aria-label="Tutup chat">
+              <X size={18} />
+            </button>
+          </div>
         </div>
+
+        {/* Chat Messages Body */}
         <div className="flex-1 min-h-0 bg-slate-50 p-4 overflow-y-auto flex flex-col gap-4">
           {messages.map((msg) => (
             <div key={msg.id} className={`flex flex-col max-w-[90%] ${msg.sender === 'user' ? 'self-end items-end' : 'self-start items-start'}`}>
@@ -196,14 +285,17 @@ const LiveChatWidget = () => {
               <span className="text-[10px] text-slate-400 mt-1 px-1">{msg.time}</span>
             </div>
           ))}
-          {loading && <div className="self-start rounded-2xl rounded-bl-none border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-500">Asisten sedang mencari arah yang tepat…</div>}
+          {loading && <div className="self-start rounded-2xl rounded-bl-none border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-500">Asisten sedang memproses respon…</div>}
           <div ref={messagesEndRef} />
         </div>
-        <form onSubmit={(e) => { e.preventDefault(); ask(inputMessage); }} className="p-3 bg-white border-t border-slate-100 flex gap-2 items-center">
-          <input value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} placeholder="Tanya Menwa UNJ…" className="flex-grow bg-slate-100 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#006569] focus:outline-none" />
-          <button type="submit" disabled={!inputMessage.trim() || loading} className="w-10 h-10 bg-[#006569] disabled:bg-slate-300 rounded-full flex items-center justify-center text-white"><Send size={18} className="ml-1" /></button>
+
+        {/* Input Field */}
+        <form onSubmit={(e) => { e.preventDefault(); ask(inputMessage); }} className="p-3 bg-white border-t border-slate-100 flex gap-2 items-center shrink-0">
+          <input value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} placeholder="Tanya Menwa UNJ…" className="flex-grow bg-slate-100 rounded-full px-4 py-2.5 text-xs sm:text-sm focus:ring-2 focus:ring-[#006569] focus:outline-none" />
+          <button type="submit" disabled={!inputMessage.trim() || loading} className="w-10 h-10 bg-[#006569] disabled:bg-slate-300 rounded-full flex items-center justify-center text-white shrink-0 shadow-sm"><Send size={18} className="ml-0.5" /></button>
         </form>
       </div>
+
       <div className="menwa-pet-drag-anchor" style={{ transform: `translate3d(${petOffset.x}px,${petOffset.y}px,0)` }}>
         <button type="button" onClick={clickPet} onPointerDown={beginPetDrag} onPointerMove={movePet} onPointerUp={endPetDrag} onPointerCancel={endPetDrag} onLostPointerCapture={endPetDrag}
           className={`menwa-pet-trigger ${petDragging ? 'is-dragging' : ''}`} aria-label={isOpen ? 'Tutup Asisten Menwa UNJ' : 'Buka Asisten Menwa UNJ, maskot dapat digeser'} aria-expanded={isOpen} title="Klik untuk chat • geser untuk memindahkan maskot">
@@ -349,6 +441,9 @@ const TabHero = ({ eyebrow, title, subtitle, icon }) => (
 const BerandaTab = ({ onOpenSearch }) => (
   <div className="flex-grow bg-slate-50 font-sans">
     <BrandHome onOpenSearch={onOpenSearch} />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <DynamicCanvasZone containerId="beranda_showcase_slot" title="Canvas Showcases & Galeri Dokumentasi" />
+    </div>
     <HomeSections />
     <BrandValues />
     <PrideSection />
@@ -1118,12 +1213,14 @@ const MakoTab = () => {
             <Link to="/administrasi" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#006569] px-6 py-4 text-sm font-black text-white shadow-lg transition hover:-translate-y-1 hover:bg-[#00474c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#006569]">Buka Administrasi Umum <ArrowRight size={18}/></Link>
           </div>
         </RevealOnScroll>
+        <DynamicCanvasZone containerId="mako_slot" title="Layanan & Kontak Tambahan" />
       </div>
     </div>
   );
 };
 
-const AdministrasiUmumTab = () => {
+const AdministrasiUmumTab = ({ onOpenAdminForm, onOpenAccountModal }) => {
+  const { user, profile, submissions, isAdmin } = useAuth();
   const [activeSubTab, setActiveSubTab] = useState('pendaftaran');
 
   const pendaftaranItems = [
@@ -1239,7 +1336,80 @@ const AdministrasiUmumTab = () => {
     <div className="bg-slate-50 min-h-screen pb-32 font-sans flex-grow">
       <TabHero title="Administrasi Umum" subtitle="Portal Resmi Pendaftaran, Permohonan Layanan Satuan, & Kerjasama Strategis" icon={<FileText size={15} />} eyebrow="Portal Layanan Terpadu" />
 
-      <div className="max-w-7xl mx-auto px-4 pt-12 md:pt-16 relative z-10 space-y-12">
+      <div className="max-w-7xl mx-auto px-4 pt-8 md:pt-12 relative z-10 space-y-8">
+        
+        {/* Banner Auto-Fill Profil Pengguna */}
+        {user ? (
+          <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-white border border-emerald-200/80 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-[#006569] text-[#FFDD00] flex items-center justify-center font-black text-lg shrink-0 shadow-md">
+                <User size={22} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white px-2.5 py-0.5 rounded-full">
+                    Auto-Fill Aktif
+                  </span>
+                  <span className="text-xs text-slate-500 font-mono">
+                    {user.email}
+                  </span>
+                </div>
+                <h4 className="text-base font-black text-slate-900 mt-1">
+                  {profile?.displayName || user.displayName || 'Anggota Pengguna'} 
+                  <span className="text-slate-500 font-normal text-xs ml-2">
+                    ({profile?.institution || 'Universitas Negeri Jakarta'} · {profile?.occupation || 'Mahasiswa'})
+                  </span>
+                </h4>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  Nama Lengkap, Asal Instansi, Pekerjaan, dan Tanggal Lahir otomatis terisi ke setiap formulir di bawah ini.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 shrink-0">
+              <button
+                type="button"
+                onClick={onOpenAccountModal}
+                className="px-4 py-2 bg-white border border-slate-300 hover:border-[#006569] text-slate-800 text-xs font-bold rounded-xl shadow-sm transition"
+              >
+                Edit Data Pokok
+              </button>
+              <button
+                type="button"
+                onClick={onOpenAccountModal}
+                className="px-4 py-2 bg-[#006569] text-[#FFDD00] text-xs font-black rounded-xl shadow-md hover:bg-[#00474c] transition flex items-center gap-1.5"
+              >
+                <FileText size={14} /> Berkas Saya ({submissions?.length || 0})
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#00474c] text-white rounded-3xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-700">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-[#FFDD00] text-slate-950 flex items-center justify-center font-black text-lg shrink-0 shadow-md">
+                <Sparkles size={24} />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#FFDD00]">
+                  Sistem Administrasi Otomatis & Terpadu
+                </span>
+                <h4 className="text-base font-black text-white mt-0.5">
+                  Isi Formulir Langsung di Web Tanpa Perlu Pindah Tab
+                </h4>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Masuk dengan Google atau Email agar data profil Anda otomatis terbaca di setiap permohonan dinas.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onOpenAccountModal}
+              className="px-5 py-2.5 bg-[#FFDD00] hover:bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg transition shrink-0 flex items-center justify-center gap-2"
+            >
+              <LogIn size={15} /> Masuk / Buat Akun
+            </button>
+          </div>
+        )}
+
         <div className="flex flex-wrap justify-center gap-3 bg-white/95 backdrop-blur-md p-2.5 rounded-full border border-slate-200 shadow-xl w-fit mx-auto">
           <button 
             onClick={() => setActiveSubTab('pendaftaran')} 
@@ -1265,6 +1435,38 @@ const AdministrasiUmumTab = () => {
           >
             <Users size={16} /> 3. Kerjasama
           </button>
+          <button 
+            onClick={() => setActiveSubTab('registrasi-mandiri')} 
+            className={`px-6 py-3.5 rounded-full font-black text-xs md:text-sm uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${
+              activeSubTab === 'registrasi-mandiri' ? 'bg-[#006569] text-[#FFDD00] shadow-lg shadow-[#006569]/40 scale-105' : 'text-slate-600 hover:text-[#006569]'
+            }`}
+          >
+            <FileText size={16} /> 4. Form Registrasi Mandiri
+          </button>
+          <button 
+            onClick={() => setActiveSubTab('portal-peserta')} 
+            className={`px-6 py-3.5 rounded-full font-black text-xs md:text-sm uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${
+              activeSubTab === 'portal-peserta' ? 'bg-[#006569] text-[#FFDD00] shadow-lg shadow-[#006569]/40 scale-105' : 'text-slate-600 hover:text-[#006569]'
+            }`}
+          >
+            <ShieldCheck size={16} /> 5. Portal Peserta Digital
+          </button>
+          <button 
+            onClick={() => setActiveSubTab('bank-qris-settings')} 
+            className={`px-6 py-3.5 rounded-full font-black text-xs md:text-sm uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${
+              activeSubTab === 'bank-qris-settings' ? 'bg-[#006569] text-[#FFDD00] shadow-lg shadow-[#006569]/40 scale-105' : 'text-slate-600 hover:text-[#006569]'
+            }`}
+          >
+            <Building size={16} /> 6. Pengaturan Bank & QRIS
+          </button>
+          <button 
+            onClick={() => setActiveSubTab('rekapitulasi-admin')} 
+            className={`px-6 py-3.5 rounded-full font-black text-xs md:text-sm uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${
+              activeSubTab === 'rekapitulasi-admin' ? 'bg-[#006569] text-[#FFDD00] shadow-lg shadow-[#006569]/40 scale-105' : 'text-slate-600 hover:text-[#006569]'
+            }`}
+          >
+            <FileSpreadsheet size={16} /> 7. Rekapitulasi Berkas {isAdmin && <span className="bg-[#FFDD00] text-slate-950 text-[10px] px-1.5 py-0.5 rounded-full font-black ml-1">Admin</span>}
+          </button>
         </div>
 
         <div className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-14 border border-slate-200">
@@ -1272,7 +1474,7 @@ const AdministrasiUmumTab = () => {
             <div className="space-y-6">
               <div className="text-center max-w-2xl mx-auto mb-10">
                 <h3 className="text-2xl md:text-3xl font-black text-slate-900">Formulir & Portal Pendaftaran</h3>
-                <p className="text-slate-500 font-medium text-sm mt-2">Pilih tautan pendaftaran di bawah ini untuk menuju ke portal formulir pendaftaran resmi.</p>
+                <p className="text-slate-500 font-medium text-sm mt-2">Pilih formulir di bawah ini untuk pengisian langsung secara in-app dengan auto-fill profil cloud.</p>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1295,13 +1497,36 @@ const AdministrasiUmumTab = () => {
                       </p>
                     </div>
 
-                    <Link
-                      to={item.url}
-                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                    >
-                      <span>{item.ctaText}</span>
-                      {/^https?:/.test(item.url) ? <ExternalLink size={14} /> : <ChevronRight size={14} />}
-                    </Link>
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => onOpenAdminForm?.(item)}
+                        className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                      >
+                        <FileText size={15} />
+                        <span>Isi Formulir Langsung</span>
+                      </button>
+
+                      {item.url.startsWith('/') ? (
+                        <Link
+                          to={item.url}
+                          className="w-full py-1.5 text-center text-[11px] font-bold text-slate-500 hover:text-[#006569] flex items-center justify-center gap-1 transition"
+                        >
+                          <span>Buka Halaman {item.title.split(' ')[2] || 'Informasi'}</span>
+                          <ChevronRight size={13} />
+                        </Link>
+                      ) : (
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-1.5 text-center text-[11px] font-bold text-slate-500 hover:text-[#006569] flex items-center justify-center gap-1 transition"
+                        >
+                          <span>Alternatif Link Bitly/Eksternal</span>
+                          <ExternalLink size={12} />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1312,7 +1537,7 @@ const AdministrasiUmumTab = () => {
             <div className="space-y-6">
               <div className="text-center max-w-2xl mx-auto mb-10">
                 <h3 className="text-2xl md:text-3xl font-black text-slate-900">Layanan Permohonan Satuan</h3>
-                <p className="text-slate-500 font-medium text-sm mt-2">Pilih jenis permohonan untuk langsung terhubung dengan layanan konfirmasi Piket Mako Menwa UNJ.</p>
+                <p className="text-slate-500 font-medium text-sm mt-2">Ajukan permohonan personel, sarpras, atau pemateri langsung di portal web tanpa perlu pindah tab.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1335,15 +1560,26 @@ const AdministrasiUmumTab = () => {
                       </p>
                     </div>
 
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                    >
-                      <span>{item.ctaText}</span>
-                      <ExternalLink size={14} />
-                    </a>
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => onOpenAdminForm?.(item)}
+                        className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                      >
+                        <FileText size={15} />
+                        <span>Isi Pengajuan In-App</span>
+                      </button>
+
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-1.5 text-center text-[11px] font-bold text-slate-500 hover:text-[#006569] flex items-center justify-center gap-1 transition"
+                      >
+                        <span>Hubungi WhatsApp Piket Mako</span>
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1354,7 +1590,7 @@ const AdministrasiUmumTab = () => {
             <div className="space-y-6">
               <div className="text-center max-w-2xl mx-auto mb-10">
                 <h3 className="text-2xl md:text-3xl font-black text-slate-900">Portal Kemitraan & Kerjasama</h3>
-                <p className="text-slate-500 font-medium text-sm mt-2">Pilih opsi kerjasama di bawah ini untuk mengakses pengajuan proposal & koordinasi resmi.</p>
+                <p className="text-slate-500 font-medium text-sm mt-2">Ajukan proposal kemitraan sponsorship, media partner, atau kolaborasi kegiatan secara digital terpadu.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -1377,19 +1613,54 @@ const AdministrasiUmumTab = () => {
                       </p>
                     </div>
 
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3.5 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                    >
-                      <span>{item.ctaText}</span>
-                      <ExternalLink size={14} />
-                    </a>
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => onOpenAdminForm?.(item)}
+                        className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3 px-3 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all hover:-translate-y-0.5"
+                      >
+                        <FileText size={14} />
+                        <span>Ajukan In-App</span>
+                      </button>
+
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-1 text-center text-[10px] font-bold text-slate-500 hover:text-[#006569] flex items-center justify-center gap-1 transition"
+                      >
+                        <span>Chat WhatsApp</span>
+                        <ExternalLink size={11} />
+                      </a>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+          )}
+
+          {activeSubTab === 'registrasi-mandiri' && (
+            <div className="max-w-3xl mx-auto space-y-6">
+              <div className="text-center max-w-2xl mx-auto mb-6">
+                <h3 className="text-2xl md:text-3xl font-black text-slate-900">Formulir Registrasi Mandiri</h3>
+                <p className="text-slate-500 font-medium text-sm mt-2">
+                  Data profil Anda (Nama Lengkap, Asal Instansi, Pekerjaan, Tanggal Lahir) terisi secara otomatis via useAuth dan tersimpan langsung ke database Firestore.
+                </p>
+              </div>
+              <RegistrationForm />
+            </div>
+          )}
+
+          {activeSubTab === 'portal-peserta' && (
+            <ParticipantPortal />
+          )}
+
+          {activeSubTab === 'bank-qris-settings' && (
+            <MakoBankQRISSettings />
+          )}
+
+          {activeSubTab === 'rekapitulasi-admin' && (
+            <AdminSubmissionsDashboard />
           )}
         </div>
       </div>
@@ -1406,12 +1677,34 @@ class AppErrorBoundary extends React.Component {
   render() {
     if (!this.state.error) return this.props.children;
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-6 py-16 text-center">
-        <div className="max-w-md">
-          <div className="mx-auto h-48 w-64"><LaptopMotion /></div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-6 py-16 text-center font-sans">
+        <div className="max-w-md bg-white p-8 rounded-3xl shadow-xl border border-slate-200">
+          <div className="mx-auto h-40 w-56"><LaptopMotion /></div>
           <h1 className="mt-4 text-2xl font-black text-slate-900">Halaman tidak dapat ditampilkan</h1>
-          <p className="mt-2 text-sm leading-relaxed text-slate-500">Ada kesalahan ketika menampilkan komponen halaman. Coba muat ulang; jika masih terjadi, hubungi pengelola website.</p>
-          <button type="button" onClick={() => window.location.reload()} className="mt-6 rounded-xl bg-[#006569] px-6 py-3 text-sm font-black text-[#FFDD00]">Muat Ulang</button>
+          <p className="mt-2 text-sm leading-relaxed text-slate-500">
+            Ada kendala sementara ketika memuat komponen halaman ini.
+          </p>
+          {this.state.error?.message && (
+            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl text-left text-xs font-mono text-red-700 break-words">
+              {this.state.error.message}
+            </div>
+          )}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <button 
+              type="button" 
+              onClick={() => { this.setState({ error: null }); window.location.href = '/'; }} 
+              className="rounded-xl border border-slate-300 hover:border-[#006569] px-5 py-2.5 text-xs font-black text-slate-700 transition"
+            >
+              Kembali ke Beranda
+            </button>
+            <button 
+              type="button" 
+              onClick={() => window.location.reload()} 
+              className="rounded-xl bg-[#006569] hover:bg-[#004d50] px-5 py-2.5 text-xs font-black text-[#FFDD00] transition shadow-md"
+            >
+              Muat Ulang
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -1434,25 +1727,110 @@ const BootLoader = ({ done }) => {
   );
 };
 
-function PublicPortal() {
+export default function App() {
   const path = useRoute();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [accountModalOpen, setAccountModalOpen] = useState(false);
+  const [gamificationModalOpen, setGamificationModalOpen] = useState(false);
+  const [adminFormModalOpen, setAdminFormModalOpen] = useState(false);
+  const [selectedAdminItem, setSelectedAdminItem] = useState(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    try {
+      return localStorage.getItem('menwa_dark_mode') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [konamiUnlocked, setKonamiUnlocked] = useState(false);
+  const { user, profile } = useAuth();
   const baseTitle = useRef(typeof document !== 'undefined' ? document.title : '');
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('menwa_dark_mode', String(darkMode));
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch {
+      // ignore
+    }
+  }, [darkMode]);
+
+  // Easter Egg Konami Code (↑↑↓↓←→←→BA) — Bagian 5.H
+  useEffect(() => {
+    const konamiSequence = [
+      'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+      'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
+      'b', 'a'
+    ];
+    let index = 0;
+    const onKeyDown = (e) => {
+      const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      if (key === konamiSequence[index]) {
+        index += 1;
+        if (index === konamiSequence.length) {
+          setKonamiUnlocked(true);
+          index = 0;
+        }
+      } else {
+        index = 0;
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   // /kc/, /geranat/, ... -> halaman program; selain itu tab biasa
   const youthSub = path.startsWith('/youth-spark/') ? path.split('/')[2] : null;
   const youthRoute = path === '/youth-spark' || !!youthSub;
   const program = youthRoute ? PROGRAMS.find((p) => p.slug === 'youth-spark') : PROGRAMS.find((p) => `/${p.slug}` === path);
-  const activeTab = path === '/informasi' ? 'informasi' : path === '/kc' ? 'kc' : youthRoute ? 'youth-spark' : program ? 'beranda' : (PATH_TABS[path] || 'beranda');
+  const activeTab =
+    path === '/informasi'
+      ? 'informasi'
+      : path === '/kc'
+      ? 'kc'
+      : path === '/geranat' || path === '/geranat/voting'
+      ? 'geranat'
+      : path === '/games'
+      ? 'games'
+      : youthRoute
+      ? 'youth-spark'
+      : program
+      ? 'beranda'
+      : PATH_TABS[path] || 'beranda';
 
   const handleQuickSearch = (tabId) => {
     setIsMobileMenuOpen(false);
-    navigate(({ informasi: '/informasi', kc: '/kc', 'youth-spark': '/youth-spark/seminar-webinar' })[tabId] || TAB_PATHS[tabId] || '/');
+    navigate(
+      {
+        informasi: '/informasi',
+        kc: '/kc',
+        geranat: '/geranat',
+        'youth-spark': '/youth-spark/seminar-webinar',
+        games: '/games',
+      }[tabId] ||
+        TAB_PATHS[tabId] ||
+        '/'
+    );
   };
 
   useEffect(() => {
-    const titles = { '/': 'Menwa UNJ — Portal Resmi Organisasi & Pusat Informasi', '/informasi': 'Pusat Informasi | Menwa UNJ', '/garis-komando': 'Garis Komando | Menwa UNJ', '/mako': 'Markas Komando | Menwa UNJ', '/pendidikan': 'Pendidikan dan Pelatihan | Menwa UNJ', '/administrasi': 'Administrasi Umum | Menwa UNJ' };
+    const titles = { 
+      '/': 'Menwa UNJ — Portal Resmi Organisasi & Pusat Informasi', 
+      '/informasi': 'Pusat Informasi | Menwa UNJ', 
+      '/garis-komando': 'Garis Komando | Menwa UNJ', 
+      '/mako': 'Markas Komando | Menwa UNJ', 
+      '/pendidikan': 'Pendidikan dan Pelatihan | Menwa UNJ', 
+      '/administrasi': 'Administrasi Umum | Menwa UNJ', 
+      '/mako-ops': 'Mako Command Center | Menwa UNJ',
+      '/games': 'Taktik Menwa, Papan Peringkat & Games | Menwa UNJ',
+      '/geranat': 'GERANAT 2026 & Podium Juara Terfavorit | Menwa UNJ',
+      '/geranat/voting': 'E-Voting Juara Terfavorit GERANAT 2026 | Menwa UNJ',
+      '/portal-peserta': 'Portal Peserta Digital & Pemberkasan | Menwa UNJ'
+    };
     document.title = program ? `${program.title}${youthSub ? ' — ' + youthSub.replaceAll('-', ' ') : ''} | Menwa UNJ` : (titles[path] || baseTitle.current);
   }, [path, program, youthSub]);
 
@@ -1465,58 +1843,152 @@ function PublicPortal() {
     return () => document.removeEventListener('keydown', keyboard);
   }, []);
 
-  return (
-    <AppErrorBoundary>
-      <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 selection:bg-[#006569] selection:text-[#FFDD00]">
-        <a href="#main-content" className="portal-skip-link">Langsung ke konten utama</a>
-        <MotionStyles />
-        <ScrollProgress />
-        <CursorGlow />
-        <CursorFollower />
-
-        <Navigation
-          onOpenSearch={() => setSearchOpen(true)}
-          activeTab={activeTab}
-          handleQuickSearch={handleQuickSearch}
-          isMobileMenuOpen={isMobileMenuOpen}
-          setIsMobileMenuOpen={setIsMobileMenuOpen}
-        />
-
-        <PageWayfinder path={path} />
-        <main className="flex-grow flex flex-col" id="main-content">
-          <TabSwitch tabKey={path}>
-            {program ? (
-              youthRoute ? <YouthSparkPage subSlug={youthSub} /> : <ProgramPage slug={program.slug} />
-            ) : path === '/informasi' ? (
-              <InformationHub onOpenSearch={() => setSearchOpen(true)} />
-            ) : (
-              <>
-                {activeTab === 'beranda' && <BerandaTab onOpenSearch={() => setSearchOpen(true)} />}
-                {activeTab === 'struktur' && <StrukturOrganisasiTab onNavigate={handleQuickSearch} />}
-                {activeTab === 'pendidikan' && <PendidikanTab />}
-                {activeTab === 'mako' && <MakoTab />}
-                {activeTab === 'administrasi' && <AdministrasiUmumTab />}
-              </>
-            )}
-          </TabSwitch>
-        </main>
-
-        <Footer onOpenLogin={() => navigate('/command-center')} />
-
-        <LiveChatWidget />
-        <BackToTop />
-        <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
-
-
-      </div>
-    </AppErrorBoundary>
-  );
-}
-
-export default function App() {
-  const path = useRoute();
-  if (path === '/command-center' || path.startsWith('/command-center/')) {
-    return <AppErrorBoundary><Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50" role="status">Memuat Command Center…</div>}><CommandCenter /></Suspense></AppErrorBoundary>;
+  if (path === '/mako-ops') {
+    return (
+      <CanvasProvider>
+        <AppErrorBoundary>
+          <div className="min-h-screen bg-[#02080c] font-sans selection:bg-[#006569] selection:text-[#FFDD00]">
+            <MotionStyles />
+            <ScrollProgress />
+            <CursorGlow />
+            <CursorFollower />
+            <CommandCenterPage />
+          </div>
+        </AppErrorBoundary>
+      </CanvasProvider>
+    );
   }
-  return <PublishedActionsProvider><PublicPortal /></PublishedActionsProvider>;
+
+  return (
+    <CanvasProvider>
+      <AppErrorBoundary>
+        <div className={`min-h-screen flex flex-col font-sans selection:bg-[#006569] selection:text-[#FFDD00] transition-colors duration-300 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'}`}>
+          <a href="#main-content" className="portal-skip-link">Langsung ke konten utama</a>
+          <MotionStyles />
+          <ScrollProgress />
+          <CursorGlow />
+          <CursorFollower />
+
+          {/* Konami Code Easter Egg Confetti & Banner */}
+          <TacticalConfetti trigger={konamiUnlocked} onComplete={() => {}} />
+          {konamiUnlocked && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
+              <div className="relative max-w-md w-full bg-gradient-to-b from-[#00383b] to-slate-950 border-2 border-[#FFDD00] rounded-3xl p-8 text-center text-white shadow-[0_0_60px_rgba(255,221,0,0.3)] space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-[#FFDD00] text-slate-950 flex items-center justify-center mx-auto font-black shadow-lg">
+                  <Trophy size={32} />
+                </div>
+                <span className="inline-block rounded-full bg-amber-400/20 border border-[#FFDD00]/50 px-3 py-1 text-[10px] font-mono font-black uppercase tracking-widest text-[#FFDD00]">
+                  KONAMI CODE UNLOCKED
+                </span>
+                <h3 className="text-xl font-black text-white leading-snug">
+                  Widya Castrena Dharma Siddha 🎖️ — Kamu menemukan rahasia Mako!
+                </h3>
+                <p className="text-xs text-slate-300">
+                  Kode kehormatan ksatria berhasil diaktifkan. Semangat pengabdian ilmu pengetahuan dan olah keprajuritan Satuan Menwa UNJ!
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setKonamiUnlocked(false)}
+                  className="w-full py-3 rounded-xl bg-[#FFDD00] hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer"
+                >
+                  Komando! Tutup Pesan Rahasia
+                </button>
+              </div>
+            </div>
+          )}
+
+          <Navigation
+            onOpenSearch={() => setSearchOpen(true)}
+            onOpenAccount={() => setAccountModalOpen(true)}
+            onOpenGamification={() => navigate('/games')}
+            darkMode={darkMode}
+            onToggleDarkMode={() => setDarkMode((d) => !d)}
+            user={user}
+            profile={profile}
+            activeTab={activeTab}
+            handleQuickSearch={handleQuickSearch}
+            isMobileMenuOpen={isMobileMenuOpen}
+            setIsMobileMenuOpen={setIsMobileMenuOpen}
+          />
+
+          {/* Sticky In-App 2-Verification Alert Banner for Mako Admins */}
+          <BankApprovalBanner />
+
+          <PageWayfinder path={path} />
+          <main className="flex-grow flex flex-col" id="main-content">
+            <TabSwitch tabKey={path}>
+              {path === '/games' ? (
+                <GamesPage onOpenAuth={() => setAccountModalOpen(true)} />
+              ) : path === '/geranat/voting' ? (
+                <GeranatVoting onOpenAuth={() => setAccountModalOpen(true)} />
+              ) : path === '/portal-peserta' ? (
+                <div className="bg-slate-50 min-h-screen py-10 px-4 max-w-6xl mx-auto w-full">
+                  <ParticipantPortal />
+                </div>
+              ) : program ? (
+                youthRoute ? <YouthSparkPage subSlug={youthSub} /> : <ProgramPage slug={program.slug} />
+              ) : path === '/informasi' ? (
+                <InformationHub onOpenSearch={() => setSearchOpen(true)} />
+              ) : (
+                <>
+                  {activeTab === 'beranda' && <BerandaTab onOpenSearch={() => setSearchOpen(true)} />}
+                  {activeTab === 'struktur' && <StrukturOrganisasiTab onNavigate={handleQuickSearch} />}
+                  {activeTab === 'pendidikan' && <PendidikanTab />}
+                  {activeTab === 'mako' && <MakoTab />}
+                  {activeTab === 'administrasi' && (
+                    <AdministrasiUmumTab 
+                      onOpenAdminForm={(item) => {
+                        setSelectedAdminItem(item);
+                        setAdminFormModalOpen(true);
+                      }}
+                      onOpenAccountModal={() => setAccountModalOpen(true)}
+                    />
+                  )}
+                </>
+              )}
+            </TabSwitch>
+          </main>
+
+          <Footer />
+
+          <LiveChatWidget onOpenAccount={() => setAccountModalOpen(true)} />
+          <BackToTop />
+          <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
+          
+          <UserAccountModal 
+            isOpen={accountModalOpen} 
+            onClose={() => setAccountModalOpen(false)} 
+          />
+
+          {gamificationModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in">
+              <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl my-8 text-white">
+                <div className="flex justify-end mb-2">
+                  <button 
+                    onClick={() => setGamificationModalOpen(false)}
+                    className="p-2 text-slate-400 hover:text-white rounded-full bg-slate-800 hover:bg-slate-700 transition"
+                    aria-label="Tutup kuis gamifikasi"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <GamificationHub onOpenAuth={() => { setGamificationModalOpen(false); setAccountModalOpen(true); }} />
+              </div>
+            </div>
+          )}
+
+          <AdministrationFormModal
+            isOpen={adminFormModalOpen}
+            onClose={() => setAdminFormModalOpen(false)}
+            initialItem={selectedAdminItem}
+            onOpenAccountModal={() => {
+              setAdminFormModalOpen(false);
+              setAccountModalOpen(true);
+            }}
+          />
+
+        </div>
+      </AppErrorBoundary>
+    </CanvasProvider>
+  );
 }

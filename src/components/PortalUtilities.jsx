@@ -2,19 +2,18 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, ArrowUp, BookOpen, CalendarDays, CheckCircle2, ChevronDown, Command, ExternalLink, FileText, HelpCircle, Search, Sparkles, Trophy, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { Link, navigate } from '../lib/router.jsx';
-import { usePublishedInformationIndex } from './BrandExperience.jsx';
+import { informationIndex } from './BrandExperience.jsx';
 import { resolvePortalPath } from '../lib/portalSearch.js';
 import './PortalUtilities.css';
 
 export function CommandPalette({ open, onClose }) {
-  const publishedInformationIndex = usePublishedInformationIndex();
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const [thinking, setThinking] = useState(false);
   const [routeMissing, setRouteMissing] = useState(false);
   const inputRef = useRef(null);
   const returnFocus = useRef(null);
-  const matches = useMemo(() => publishedInformationIndex.filter((item) => `${item.title} ${item.description} ${item.category}`.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 10), [query, publishedInformationIndex]);
+  const matches = useMemo(() => informationIndex.filter((item) => `${item.title} ${item.description} ${item.category}`.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 10), [query]);
 
   useEffect(() => {
     if (!open) return;

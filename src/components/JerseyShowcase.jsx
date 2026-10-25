@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, ExternalLink, Maximize2, Shirt, X } from 'lucide-react';
 import { KC_JERSEYS } from '../data/siteData';
-import { usePublishedAction } from '../command/PublicActions.jsx';
 import './JerseyShowcase.css';
 
 export default function JerseyShowcase() {
@@ -11,7 +10,6 @@ export default function JerseyShowcase() {
   const returnFocus = useRef(null);
   const closeButtonRef = useRef(null);
   const current = KC_JERSEYS.find((x) => x.id === kind) || KC_JERSEYS[0];
-  const registrationUrl = usePublishedAction(`kc-jersey-${current.id}`, current.form);
 
   const openImage = (item) => {
     returnFocus.current = document.activeElement;
@@ -96,7 +94,7 @@ export default function JerseyShowcase() {
               </ul>
             </div>
             <div className="mt-9 space-y-3">
-              <a href={registrationUrl} target="_blank" rel="noopener noreferrer" className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#FFDD00] px-5 py-4 text-center text-sm font-black text-[#00383b] shadow-lg transition hover:bg-yellow-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFDD00]">{current.button} <ExternalLink size={18} /></a>
+              <a href={current.form} target="_blank" rel="noopener noreferrer" className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#FFDD00] px-5 py-4 text-center text-sm font-black text-[#00383b] shadow-lg transition hover:bg-yellow-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFDD00]">{current.button} <ExternalLink size={18} /></a>
             </div>
           </div>
         </div>

@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return res.status(200).json(fallback(message));
 
-  const model = process.env.GEMINI_MODEL || 'gemini-3.7-flash';
+  const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
   const system = `Kamu adalah Asisten Menwa UNJ untuk navigasi website. Jawab singkat dalam Bahasa Indonesia, ramah, faktual, dan jangan mengarang. Tugas utama: memahami pertanyaan pengunjung lalu mengarahkan mereka ke tab/subtab website. Destinasi: ${JSON.stringify(DESTINATIONS)}. Data Youth Spark National: Pembinaan Aktivitas Pemuda; Youth Spark National Seminar bertema Empowering Youth, Elevating UMKM, tanggal 24 Oktober 2026, Aula Latief Hendraningrat Universitas Negeri Jakarta, rundown 08.00–12.00 WIB, narasumber Dr. Tomi Ari Sudewo (Kepemudaan), Dr. Ir. Achmad Fachrodji (Industri Kreatif), Deputi Bidang Kewirausahaan (UMKM Naik Kelas), pendaftaran https://forms.gle/Xc3QsBLNueoXYLfDA. KC VIII 05–08 November 2026, pendaftaran Rp2.000.000/tim, jersey peserta ATHLETE gratis dengan form https://forms.gle/voyPEgvxvhS8VrKf8, jersey official Rp150.000 dengan form https://forms.gle/RHoXRFTEVKWHQfFx9. Jika pertanyaan cocok dengan destinasi, selalu berikan suggestions berisi 1-2 tombol navigasi. Balas JSON valid: {"text":"...","suggestions":[{"label":"...","path":"/..."}]}`;
   try {
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
