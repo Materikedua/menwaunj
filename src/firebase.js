@@ -5,6 +5,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
   updateProfile
@@ -59,6 +60,7 @@ export {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
   updateProfile,
@@ -75,6 +77,14 @@ export {
   serverTimestamp,
   getDocFromServer
 };
+
+// Kirim email reset kata sandi resmi via Firebase Auth / Gmail
+export async function resetUserPassword(email) {
+  if (!email || !email.trim()) {
+    throw new Error('Alamat email wajib diisi.');
+  }
+  return await sendPasswordResetEmail(auth, email.trim());
+}
 
 // Error handling helper
 export function handleFirestoreError(error, operationType, path) {

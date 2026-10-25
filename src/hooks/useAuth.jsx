@@ -19,7 +19,8 @@ import {
   getDocs,
   addTacticalPoints as fbAddTacticalPoints,
   saveCertificate as fbSaveCertificate,
-  getUserCertificates as fbGetUserCertificates
+  getUserCertificates as fbGetUserCertificates,
+  resetUserPassword as fbResetUserPassword
 } from '../firebase';
 
 export const AuthContext = createContext(null);
@@ -233,6 +234,19 @@ export function useProvideAuth() {
     }
   }, [loadSubmissions, loadCertificates]);
 
+  // Reset password via Gmail (Firebase Auth sendPasswordResetEmail)
+  const resetPassword = useCallback(async (emailToReset) => {
+    setError(null);
+    try {
+      await fbResetUserPassword(emailToReset);
+      return true;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+      throw err;
+    }
+  }, []);
+
   // Sign out / Logout
   const signOut = useCallback(async () => {
     setError(null);
@@ -343,6 +357,9 @@ export function useProvideAuth() {
     // Email Sign-In
     signInWithEmail,
     loginWithEmail: signInWithEmail,
+    // Password Reset via Gmail
+    resetPassword,
+    sendPasswordReset: resetPassword,
     // Sign-out
     signOut,
     logout: signOut,

@@ -41,10 +41,11 @@ export function UserAccountModal({ isOpen, onClose }) {
     certificatesLoading,
     refreshCertificates,
     isAdmin,
-    claimMenwaMembership
+    claimMenwaMembership,
+    resetPassword
   } = useAuth();
 
-  const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'register' | 'forgot'
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'submissions' | 'certificates' | 'admin'
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -120,7 +121,15 @@ export function UserAccountModal({ isOpen, onClose }) {
       setSuccess('Berhasil masuk dengan Akun Google!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError(err.message || 'Gagal masuk dengan Google. Coba lagi.');
+      if (err.code === 'auth/unauthorized-domain') {
+        setError('Domain preview ini belum terdaftar di Firebase Authorized Domains. Silakan masuk via Email & Kata Sandi di bawah, atau tambahkan domain ini di Firebase Console.');
+      } else if (err.code === 'auth/popup-blocked') {
+        setError('Pop-up Google diblokir oleh peramban/iframe. Izinkan pop-up di browser atau gunakan form Masuk via Email di bawah.');
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setError('Jendela masuk Google ditutup sebelum selesai. Silakan coba lagi atau gunakan form Email.');
+      } else {
+        setError(err.message || 'Gagal masuk dengan Google. Silakan gunakan form Masuk via Email di bawah.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -146,6 +155,29 @@ export function UserAccountModal({ isOpen, onClose }) {
         : err.code === 'auth/email-already-in-use'
         ? 'Email sudah terdaftar. Silakan pilih tab Masuk.'
         : err.message || 'Gagal memproses autentikasi.';
+      setError(msg);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handlePasswordReset = async (e) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      setError('Masukkan alamat email untuk menerima tautan pemulihan kata sandi.');
+      return;
+    }
+    setError('');
+    setSubmitting(true);
+    try {
+      await resetPassword(email.trim());
+      setSuccess(`Tautan reset kata sandi berhasil dikirim ke ${email.trim()}! Silakan buka Gmail/email Anda dan ikuti instruksi.`);
+    } catch (err) {
+      const msg = err.code === 'auth/user-not-found'
+        ? 'Alamat email ini belum terdaftar di portal.'
+        : err.code === 'auth/invalid-email'
+        ? 'Format alamat email tidak valid.'
+        : err.message || 'Gagal mengirim email reset kata sandi.';
       setError(msg);
     } finally {
       setSubmitting(false);
@@ -257,70 +289,195 @@ export function UserAccountModal({ isOpen, onClose }) {
                 </div>
 
                 {/* Toggle Login vs Register */}
-                <div className="flex bg-slate-100 p-1 rounded-2xl">
-                  <button
-                    type="button"
-                    onClick={() => { setAuthMode('login'); setError(''); }}
-                    className={`flex-1 py-2 text-xs font-black rounded-xl transition ${authMode === 'login' ? 'bg-white text-[#006569] shadow-sm' : 'text-slate-600'}`}
-                  >
-                    Masuk Akun
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setAuthMode('register'); setError(''); }}
-                    className={`flex-1 py-2 text-xs font-black rounded-xl transition ${authMode === 'register' ? 'bg-white text-[#006569] shadow-sm' : 'text-slate-600'}`}
-                  >
-                    Buat Akun Baru
-                  </button>
-                </div>
-
-                {/* Form Input Email/Password */}
-                <form onSubmit={handleEmailAuth} className="space-y-3.5">
-                  {authMode === 'register' && (
+                {authMode !== 'forgot' ? (
+                  <div className="flex bg-slate-100 p-1 rounded-2xl">
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('login'); setError(''); }}
+                      className={`flex-1 py-2 text-xs font-black rounded-xl transition ${authMode === 'login' ? 'bg-white text-[#006569] shadow-sm' : 'text-slate-600'}`}
+                    >
+                      Masuk Akun
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('register'); setError(''); }}
+                      className={`flex-1 py-2 text-xs font-black rounded-xl transition ${authMode === 'register' ? 'bg-white text-[#006569] shadow-sm' : 'text-slate-600'}`}
+                    >
+                      Buat Akun Baru
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap</label>
+                      <h4 className="text-sm font-black text-slate-900">Pemulihan Kata Sandi</h4>
+                      <p className="text-[11px] text-slate-500">Tautan reset resmi akan dikirim langsung ke Gmail Anda.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('login'); setError(''); }}
+                      className="text-xs font-bold text-[#006569] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      ← Kembali
+                    </button>
+                  </div>
+                )}
+
+                {/* Form Forgot Password */}
+                {authMode === 'forgot' ? (
+                  <form onSubmit={handlePasswordReset} className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-bold text-slate-700">Alamat Email Terdaftar</label>
+                        <span className="text-[10px] text-slate-400">Contoh: unjmenwa@gmail.com</span>
+                      </div>
                       <input 
-                        type="text" 
+                        type="email" 
                         required
-                        placeholder="Contoh: Muhammad Farhan"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="nama@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#006569]"
+                      />
+                      {/* Pintasan Email Admin */}
+                      <div className="mt-2 flex flex-wrap gap-1.5 items-center">
+                        <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
+                          <Shield size={10} className="text-[#006569]" /> Pintasan:
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setEmail('unjmenwa@gmail.com')}
+                          className="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200 transition"
+                        >
+                          unjmenwa@gmail.com
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEmail('rafflysyahpoetra@gmail.com')}
+                          className="text-[10px] px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold border border-amber-200 transition"
+                        >
+                          rafflysyahpoetra@gmail.com
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="w-full py-3 bg-[#006569] text-[#FFDD00] font-black text-xs uppercase tracking-wider rounded-xl shadow-md hover:bg-[#00474c] transition mt-2 cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <Mail size={15} />
+                      {submitting ? 'Mengirim Tautan...' : 'Kirim Tautan Reset ke Gmail'}
+                    </button>
+
+                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-600 leading-relaxed">
+                      <p className="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                        <CheckCircle2 size={13} className="text-emerald-600" />
+                        Panduan Reset:
+                      </p>
+                      <p>
+                        Setelah tombol ditekan, periksa kotak masuk atau folder spam di akun Gmail Anda. Klik tautan dari Firebase untuk membuat kata sandi baru, lalu kembali ke sini untuk masuk.
+                      </p>
+                    </div>
+                  </form>
+                ) : (
+                  /* Form Input Email/Password Normal */
+                  <form onSubmit={handleEmailAuth} className="space-y-3.5">
+                    {authMode === 'register' && (
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap</label>
+                        <input 
+                          type="text" 
+                          required
+                          placeholder="Contoh: Muhammad Farhan"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#006569]"
+                        />
+                      </div>
+                    )}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-bold text-slate-700">Alamat Email</label>
+                        <span className="text-[10px] text-slate-400">Gunakan email aktif atau dinas</span>
+                      </div>
+                      <input 
+                        type="email" 
+                        required
+                        placeholder="nama@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#006569]"
+                      />
+                      {/* Pintasan Email Admin */}
+                      <div className="mt-2 flex flex-wrap gap-1.5 items-center">
+                        <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
+                          <Shield size={10} className="text-[#006569]" /> Akses Cepat Admin:
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEmail('unjmenwa@gmail.com');
+                            if (authMode === 'register' && !fullName) setFullName('Admin Komandan Menwa UNJ');
+                          }}
+                          className="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200 transition"
+                        >
+                          unjmenwa@gmail.com
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEmail('rafflysyahpoetra@gmail.com');
+                            if (authMode === 'register' && !fullName) setFullName('Raffly Syahpoetra (Admin)');
+                          }}
+                          className="text-[10px] px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold border border-amber-200 transition"
+                        >
+                          rafflysyahpoetra@gmail.com
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-bold text-slate-700">Kata Sandi</label>
+                        {authMode === 'login' && (
+                          <button
+                            type="button"
+                            onClick={() => { setAuthMode('forgot'); setError(''); setSuccess(''); }}
+                            className="text-[11px] font-bold text-[#006569] hover:underline cursor-pointer"
+                          >
+                            Lupa Kata Sandi?
+                          </button>
+                        )}
+                      </div>
+                      <input 
+                        type="password" 
+                        required
+                        minLength={6}
+                        placeholder="Minimal 6 karakter"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                         className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#006569]"
                       />
                     </div>
-                  )}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Alamat Email</label>
-                    <input 
-                      type="email" 
-                      required
-                      placeholder="nama@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#006569]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Kata Sandi</label>
-                    <input 
-                      type="password" 
-                      required
-                      minLength={6}
-                      placeholder="Minimal 6 karakter"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#006569]"
-                    />
-                  </div>
 
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full py-3 bg-[#006569] text-[#FFDD00] font-black text-xs uppercase tracking-wider rounded-xl shadow-md hover:bg-[#00474c] transition mt-2"
-                  >
-                    {submitting ? 'Memproses...' : (authMode === 'login' ? 'Masuk ke Akun' : 'Daftar & Buat Profil')}
-                  </button>
-                </form>
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="w-full py-3 bg-[#006569] text-[#FFDD00] font-black text-xs uppercase tracking-wider rounded-xl shadow-md hover:bg-[#00474c] transition mt-2 cursor-pointer"
+                    >
+                      {submitting ? 'Memproses...' : (authMode === 'login' ? 'Masuk ke Akun' : 'Daftar & Buat Profil')}
+                    </button>
+
+                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-600 leading-relaxed">
+                      <p className="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                        <ShieldCheck size={14} className="text-[#006569]" />
+                        Tips Akses Pengurus & Admin Komando:
+                      </p>
+                      <p>
+                        Jika pop-up Google terblokir di peramban, Anda cukup mendaftar sekali di tab <strong>Buat Akun Baru</strong> dengan email <code>unjmenwa@gmail.com</code> atau <code>rafflysyahpoetra@gmail.com</code>, lalu gunakan <strong>Masuk Akun</strong> kapan saja. Sistem otomatis mengenali status Super Admin tanpa memerlukan pop-up!
+                      </p>
+                    </div>
+                  </form>
+                )}
               </div>
             ) : (
               /* KONDISI 2: Sudah Login */

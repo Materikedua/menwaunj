@@ -45,6 +45,7 @@ import {
   createScheduledTask,
   getScheduledTasks
 } from '../firebase.js';
+import { useAuth } from '../hooks/useAuth.jsx';
 import { MakoBankQRISSettings } from './MakoBankQRISSettings.jsx';
 import { navigate } from '../lib/router.jsx';
 import { TacticalHoloGlobe3D } from './TacticalHoloGlobe3D.jsx';
@@ -71,6 +72,7 @@ const COMMAND_TABS = [
 ];
 
 export function CommandCenterPage() {
+  const { user, isSuperAdmin, isAdmin } = useAuth();
   const {
     authSession,
     loginWithGoogle,
@@ -98,9 +100,9 @@ export function CommandCenterPage() {
     generatePressRelease,
   } = useCanvasStore();
 
-  // Login form state
-  const [googleEmail, setGoogleEmail] = useState(AUTHORIZED_EMAIL);
-  const [username, setUsername] = useState('mako_admin');
+  // Login form state - bersih tanpa prefill kredensial rahasia
+  const [googleEmail, setGoogleEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [passcode, setPasscode] = useState('');
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
@@ -264,11 +266,18 @@ export function CommandCenterPage() {
     reader.readAsDataURL(file);
   };
 
+  const [berandaSectionFilter, setBerandaSectionFilter] = useState('all');
+
   const activeRegistryItems = useMemo(() => {
-    const list = contentRegistry.filter((item) => item.isActive !== false);
-    if (selectedTrackerTab === 'all') return list;
-    return list.filter((item) => item.tabId === selectedTrackerTab);
-  }, [contentRegistry, selectedTrackerTab]);
+    let list = contentRegistry.filter((item) => item.isActive !== false);
+    if (selectedTrackerTab !== 'all') {
+      list = list.filter((item) => item.tabId === selectedTrackerTab);
+    }
+    if (selectedTrackerTab === 'beranda' && berandaSectionFilter !== 'all') {
+      list = list.filter((item) => item.sectionId === berandaSectionFilter);
+    }
+    return list;
+  }, [contentRegistry, selectedTrackerTab, berandaSectionFilter]);
 
   const tabOverviewStats = useMemo(() => {
     return PORTAL_TABS_OVERVIEW.map((t) => {
@@ -342,27 +351,47 @@ export function CommandCenterPage() {
             </div>
           )}
 
+          {/* Sesi Super Admin Aktif - Otorisasi 1 Klik */}
+          {user && (user.email?.toLowerCase() === 'unjmenwa@gmail.com' || user.email?.toLowerCase() === 'rafflysyahpoetra@gmail.com') && (
+            <div className="p-4 rounded-2xl bg-[#006569]/30 border border-[#FFDD00]/50 space-y-2.5">
+              <div className="flex items-center gap-2 text-xs font-black text-[#FFDD00]">
+                <Shield size={16} />
+                <span>Sesi Super Admin Terverifikasi</span>
+              </div>
+              <p className="text-[11px] text-slate-300">
+                Akun Google <strong>{user.email}</strong> aktif di portal. Anda dapat langsung membuka panel komando.
+              </p>
+              <button
+                type="button"
+                onClick={() => loginWithGoogle(user.email)}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <CheckCircle2 size={14} /> Masuk dengan Sesi Super Admin
+              </button>
+            </div>
+          )}
+
           {authMethod === 'google' ? (
             <form onSubmit={handleGoogleLogin} className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-slate-300 block mb-1">
-                  Akun Google Admin Resmi:
+                  Alamat Email Admin:
                 </label>
                 <input
                   type="email"
                   value={googleEmail}
                   onChange={(e) => setGoogleEmail(e.target.value)}
-                  placeholder="unjmenwa@gmail.com"
+                  placeholder="unjmenwa@gmail.com atau rafflysyahpoetra@gmail.com"
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-[#FFDD00]"
                 />
                 <span className="text-[10px] text-slate-400 mt-1 block">
-                  Diizinkan: <strong className="text-[#FFDD00]">unjmenwa@gmail.com</strong> & <strong className="text-[#FFDD00]">rafflysyahpoetra@gmail.com</strong>
+                  Akses khusus pemegang otoritas komando Menwa UNJ.
                 </span>
               </div>
               <button
                 type="submit"
-                disabled={authLoading}
-                className="w-full py-3 px-4 rounded-xl bg-[#006569] hover:bg-[#004d50] text-white font-black text-xs uppercase tracking-wider transition shadow-lg"
+                disabled={authLoading || !googleEmail.trim()}
+                className="w-full py-3 px-4 rounded-xl bg-[#006569] hover:bg-[#004d50] text-white font-black text-xs uppercase tracking-wider transition shadow-lg cursor-pointer disabled:opacity-50"
               >
                 {authLoading ? 'Memverifikasi...' : 'Masuk ke Command Center'}
               </button>
@@ -375,23 +404,24 @@ export function CommandCenterPage() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Masukkan username staf..."
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-[#FFDD00]"
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">Passcode Otorisasi:</label>
+                <label className="text-xs font-bold text-slate-300 block mb-1">Passcode Rahasia:</label>
                 <input
                   type="password"
                   value={passcode}
                   onChange={(e) => setPasscode(e.target.value)}
-                  placeholder="MENWA-MAKO-2026"
+                  placeholder="••••••••••••"
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-[#FFDD00]"
                 />
               </div>
               <button
                 type="submit"
-                disabled={authLoading || !passcode}
-                className="w-full py-3 px-4 rounded-xl bg-[#006569] hover:bg-[#004d50] text-white font-black text-xs uppercase tracking-wider transition shadow-lg"
+                disabled={authLoading || !username.trim() || !passcode.trim()}
+                className="w-full py-3 px-4 rounded-xl bg-[#006569] hover:bg-[#004d50] text-white font-black text-xs uppercase tracking-wider transition shadow-lg cursor-pointer disabled:opacity-50"
               >
                 {authLoading ? 'Mengotentikasi...' : 'Otorisasi Kredensial Mako'}
               </button>
@@ -746,6 +776,70 @@ export function CommandCenterPage() {
                 </div>
               </div>
             </div>
+
+            {/* Sub-filter Khusus Bagian Beranda */}
+            {selectedTrackerTab === 'beranda' && (
+              <div className="flex flex-wrap items-center gap-2 p-3 bg-slate-900/80 border border-[#006569]/40 rounded-2xl text-xs">
+                <span className="font-bold text-slate-400 text-[11px] uppercase tracking-wider px-2">
+                  Filter Seksi Beranda:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setBerandaSectionFilter('all')}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${
+                    berandaSectionFilter === 'all'
+                      ? 'bg-[#006569] text-[#FFDD00]'
+                      : 'bg-slate-800 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Semua ({contentRegistry.filter((i) => i.tabId === 'beranda' && i.isActive !== false).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBerandaSectionFilter('sorotan_giat')}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${
+                    berandaSectionFilter === 'sorotan_giat'
+                      ? 'bg-[#006569] text-[#FFDD00]'
+                      : 'bg-slate-800 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Sorotan Giat / Carousel (8 Foto)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBerandaSectionFilter('dokumentasi_kegiatan')}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${
+                    berandaSectionFilter === 'dokumentasi_kegiatan'
+                      ? 'bg-[#006569] text-[#FFDD00]'
+                      : 'bg-slate-800 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Dokumentasi Kegiatan (5 Foto)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBerandaSectionFilter('hero_banner')}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${
+                    berandaSectionFilter === 'hero_banner'
+                      ? 'bg-[#006569] text-[#FFDD00]'
+                      : 'bg-slate-800 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Hero Banner Utama
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBerandaSectionFilter('identitas_satuan')}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${
+                    berandaSectionFilter === 'identitas_satuan'
+                      ? 'bg-[#006569] text-[#FFDD00]'
+                      : 'bg-slate-800 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Logo & Lambang Satuan
+                </button>
+              </div>
+            )}
 
             {/* Daftar Kartu Image Tracker per Tab */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import { ExternalLink, Trash2, Edit3, Image as ImageIcon, Sparkles, X, ChevronRight } from 'lucide-react';
 import { useCanvasStore } from '../lib/canvasStore.jsx';
+import { useAuth } from '../hooks/useAuth.jsx';
 import { navigate } from '../lib/router.jsx';
 
 export function DynamicCanvasZone({ containerId, className = '', title = null }) {
-  const { components, deleteComponent, setIsDrawerOpen, setActiveTab } = useCanvasStore();
+  const { components, deleteComponent, setIsDrawerOpen, setActiveTab, authSession } = useCanvasStore();
+  const { user, isAdmin, isSuperAdmin } = useAuth();
   const [lightboxImg, setLightboxImg] = useState(null);
+
+  // RBAC: Hanya Super Admin / Perwira Mako yang memiliki akses mutasi dan hapus canvas
+  const isMasterAdmin = isSuperAdmin || 
+    (user?.email && (user.email.toLowerCase() === 'unjmenwa@gmail.com' || user.email.toLowerCase() === 'rafflysyahpoetra@gmail.com')) || 
+    (authSession?.isAuthenticated && (authSession?.role === 'KOMANDAN' || authSession?.userEmail === 'unjmenwa@gmail.com' || authSession?.userEmail === 'rafflysyahpoetra@gmail.com'));
 
   const zoneComponents = components.filter((c) => c.container === containerId);
 
@@ -18,16 +25,18 @@ export function DynamicCanvasZone({ containerId, className = '', title = null })
           <span className="text-xs font-black uppercase tracking-wider text-[#FFDD00] flex items-center gap-1.5">
             <Sparkles size={14} /> {title}
           </span>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('components');
-              setIsDrawerOpen(true);
-            }}
-            className="text-[10px] text-slate-400 hover:text-white transition flex items-center gap-1 font-bold"
-          >
-            <Edit3 size={12} /> Kelola Canvas
-          </button>
+          {isMasterAdmin && (
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('components');
+                setIsDrawerOpen(true);
+              }}
+              className="text-[10px] text-slate-400 hover:text-white transition flex items-center gap-1 font-bold cursor-pointer"
+            >
+              <Edit3 size={12} /> Kelola Canvas
+            </button>
+          )}
         </div>
       )}
 
@@ -38,18 +47,20 @@ export function DynamicCanvasZone({ containerId, className = '', title = null })
 
         return (
           <div key={id} className="relative group/canvas-item transition-all duration-300">
-            {/* Quick delete / edit floating button on hover */}
-            <div className="absolute top-2 right-2 z-20 opacity-0 group-hover/canvas-item:opacity-100 transition-opacity duration-200 flex items-center gap-1 bg-slate-950/80 backdrop-blur-md p-1 rounded-lg border border-white/20 shadow-lg">
-              <span className="text-[10px] font-mono text-slate-300 px-1">{comp.id}</span>
-              <button
-                type="button"
-                title="Hapus elemen ini"
-                onClick={() => deleteComponent(id)}
-                className="p-1 rounded text-red-400 hover:text-red-200 hover:bg-red-950/50 transition"
-              >
-                <Trash2 size={13} />
-              </button>
-            </div>
+            {/* Quick delete / edit floating button on hover - HANYA untuk Super Admin */}
+            {isMasterAdmin && (
+              <div className="absolute top-2 right-2 z-20 opacity-0 group-hover/canvas-item:opacity-100 transition-opacity duration-200 flex items-center gap-1 bg-slate-950/80 backdrop-blur-md p-1 rounded-lg border border-white/20 shadow-lg">
+                <span className="text-[10px] font-mono text-slate-300 px-1">{comp.id}</span>
+                <button
+                  type="button"
+                  title="Hapus elemen ini (Khusus Admin)"
+                  onClick={() => deleteComponent(id)}
+                  className="p-1 rounded text-red-400 hover:text-red-200 hover:bg-red-950/50 transition cursor-pointer"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            )}
 
             {/* Render based on component_type */}
             {component_type === 'button' && (

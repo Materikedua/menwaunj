@@ -1,6 +1,6 @@
 {
-  "summary":  "Rencana implementasi integrasi GitHub Repository dan konfigurasi Vercel Deployment untuk portal MENWA UNJ:\n1. Menyiapkan konfigurasi `vercel.json` yang dioptimalkan untuk Vite SPA (rewrite routing SPA ke `index.html` dan proxy `/api/*`).\n2. Menyiapkan `.gitignore` dan inisialisasi Git repository lokal dengan branch `main`.\n3. Menyiapkan skrip pembantu `scripts/push-to-github.sh` untuk memudahkan proses remote linking, commit, dan push ke repository GitHub pengguna.\n4. Verifikasi `npm run build` dan `compile_applet` untuk menjamin proses build di platform Vercel berjalan lancar tanpa error.",
-  "updatedAt":  "2026-10-25T10:18:17.112678667Z",
+  "summary":  "Rencana komprehensif penguatan keamanan Command Center /mako-ops (tanpa prefill kredensial), proteksi edit/hapus canvas hanya untuk Super Admin, fitur Lupa Password otomatis via Gmail, pendaftaran seluruh foto Beranda (Sorotan Giat & Dokumentasi) di Image Tracker, serta panduan resolusi Google Sign-In domain Vercel.",
+  "updatedAt":  "2026-10-25T11:32:01.196277620Z",
   "requestFeedback":  true,
   "userFacing":  true
 }
