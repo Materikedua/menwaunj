@@ -1,1 +1,2 @@
-// Re-export useAuth and AuthProvider from standard hook location src/hooks/useAuth.jsx export * from '../hooks/useAuth.jsx'; export { default } from '../hooks/useAuth.jsx';
+export * from '../hooks/useAuth.jsx';
+export { default } from '../hooks/useAuth.jsx';

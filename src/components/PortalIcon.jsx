@@ -1,1 +1,30 @@
-import React from 'react'; import { Trophy, Shield, Users, BookOpen, GraduationCap, HeartHandshake, Flag, MapPin, FileText, ExternalLink, ClipboardList, CalendarDays, Medal, Sparkles } from 'lucide-react'; import './PortalIcon.css'; const iconData = { '/kc': [Trophy, 'gold'], 'kc': [Trophy, 'gold'], '/youth-spark': [Sparkles, 'gemini'], '/youth-spark/seminar-webinar': [Sparkles, 'gemini'], 'youth-spark': [Sparkles, 'gemini'], '/garis-komando': [Shield, 'emerald'], '/pendidikan': [BookOpen, 'blue'], '/mako': [MapPin, 'coral'], '/administrasi': [FileText, 'violet'], 'geranat': [Flag, 'coral'], 'pengabdian': [HeartHandshake, 'pink'], 'pam': [Shield, 'emerald'], 'diklat': [GraduationCap, 'blue'], 'Pendaftaran kegiatan': [ClipboardList, 'gold'], 'Formulir kegiatan': [FileText, 'violet'], 'Dokumen publik': [FileText, 'slate'], 'Lokasi & kontak': [MapPin, 'coral'], 'Layanan': [ClipboardList, 'violet'], }; /** Satu sistem ikon konsisten: warna merupakan aksen untuk membedakan peran tiap kegiatan. */ export default function PortalIcon({ kind, size = 26, className = '' }) { const [Icon, tone] = iconData[kind] || [Medal, 'teal']; const gradientId = React.useId(); if (tone === 'gemini') { return <svg className={`portal-icon portal-icon--gemini ${className}`} width={size} height={size} viewBox="0 0 64 64" fill="none" role="img" aria-label="Ikon cahaya Youth Spark"> <defs> <linearGradient id={gradientId} x1="0" x2="64" y1="64" y2="0" gradientUnits="userSpaceOnUse"> <stop offset="0" stopColor="#4285F4"/><stop offset=".34" stopColor="#8E67E9"/><stop offset=".63" stopColor="#DB65A2"/><stop offset="1" stopColor="#F7C75F"/> </linearGradient> </defs> <path d="M32 3C35.1 19.8 44.2 28.9 61 32C44.2 35.1 35.1 44.2 32 61C28.9 44.2 19.8 35.1 3 32C19.8 28.9 28.9 19.8 32 3Z" fill={`url(#${gradientId})`} /> <path d="M49 5c1 5.4 4.6 9 10 10-5.4 1-9 4.6-10 10-1-5.4-4.6-9-10-10 5.4-1 9-4.6 10-10Z" fill="#79ACFF" opacity=".9" /> </svg>; } return <Icon size={size} strokeWidth={2.3} aria-hidden="true" className={`portal-icon portal-icon--${tone} ${className}`} />; }
+import React from 'react';
+import { Trophy, Shield, Users, BookOpen, GraduationCap, HeartHandshake, Flag, MapPin, FileText, ExternalLink, ClipboardList, CalendarDays, Medal, Sparkles } from 'lucide-react';
+import './PortalIcon.css';
+
+const iconData = {
+  '/kc': [Trophy, 'gold'], 'kc': [Trophy, 'gold'],
+  '/youth-spark': [Sparkles, 'gemini'], '/youth-spark/seminar-webinar': [Sparkles, 'gemini'], 'youth-spark': [Sparkles, 'gemini'],
+  '/garis-komando': [Shield, 'emerald'], '/pendidikan': [BookOpen, 'blue'], '/mako': [MapPin, 'coral'],
+  '/administrasi': [FileText, 'violet'], 'geranat': [Flag, 'coral'], 'pengabdian': [HeartHandshake, 'pink'], 'pam': [Shield, 'emerald'], 'diklat': [GraduationCap, 'blue'],
+  'Pendaftaran kegiatan': [ClipboardList, 'gold'], 'Formulir kegiatan': [FileText, 'violet'], 'Dokumen publik': [FileText, 'slate'],
+  'Lokasi & kontak': [MapPin, 'coral'], 'Layanan': [ClipboardList, 'violet'],
+};
+
+/** Satu sistem ikon konsisten: warna merupakan aksen untuk membedakan peran tiap kegiatan. */
+export default function PortalIcon({ kind, size = 26, className = '' }) {
+  const [Icon, tone] = iconData[kind] || [Medal, 'teal'];
+  const gradientId = React.useId();
+  if (tone === 'gemini') {
+    return <svg className={`portal-icon portal-icon--gemini ${className}`} width={size} height={size} viewBox="0 0 64 64" fill="none" role="img" aria-label="Ikon cahaya Youth Spark">
+      <defs>
+        <linearGradient id={gradientId} x1="0" x2="64" y1="64" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#4285F4"/><stop offset=".34" stopColor="#8E67E9"/><stop offset=".63" stopColor="#DB65A2"/><stop offset="1" stopColor="#F7C75F"/>
+        </linearGradient>
+      </defs>
+      <path d="M32 3C35.1 19.8 44.2 28.9 61 32C44.2 35.1 35.1 44.2 32 61C28.9 44.2 19.8 35.1 3 32C19.8 28.9 28.9 19.8 32 3Z" fill={`url(#${gradientId})`} />
+      <path d="M49 5c1 5.4 4.6 9 10 10-5.4 1-9 4.6-10 10-1-5.4-4.6-9-10-10 5.4-1 9-4.6 10-10Z" fill="#79ACFF" opacity=".9" />
+    </svg>;
+  }
+  return <Icon size={size} strokeWidth={2.3} aria-hidden="true" className={`portal-icon portal-icon--${tone} ${className}`} />;
+}

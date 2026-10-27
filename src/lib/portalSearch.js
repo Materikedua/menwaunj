@@ -1,1 +1,34 @@
-const VALID = new Set([ '/', '/informasi', '/kc', '/youth-spark', '/youth-spark/seminar-webinar', '/youth-spark/kompetisi', '/youth-spark/pelatihan-pelatih', '/garis-komando', '/pendidikan', '/mako', '/administrasi', '/geranat', '/pengabdian', '/pam', '/diklat' ]); function localFallback(query) { const q = query.toLowerCase(); if (/jersey|kaos|athlete|official|pre.?order|cendekia|\bkc\b|thor|renang|esai|menembak/.test(q)) return '/kc'; if (/youth|spark|seminar|rundown|pembicara|narasumber|materi|umkm|doorprize/.test(q)) return '/youth-spark/seminar-webinar'; if (/komandan|anggota|struktur|pimpinan|organisasi|pengurus/.test(q)) return '/garis-komando'; if (/markas|mako|alamat|lokasi|kontak|nomor|telepon|whatsapp/.test(q)) return '/mako'; if (/administrasi|surat|izin|permohonan/.test(q)) return '/administrasi'; if (/pendidikan|diklat|diksarmil|pelatihan/.test(q)) return '/pendidikan'; if (/geranat|paskibra/.test(q)) return '/geranat'; if (/pengabdian|bakti sosial/.test(q)) return '/pengabdian'; if (/informasi|direktori|daftar|formulir|panduan|dokumen/.test(q)) return '/informasi'; if (/beranda|home|utama/.test(q)) return '/'; return null; } /** Browser only sends text to same-origin backend; API key remains server-only. */ export async function resolvePortalPath(query) { const text = String(query||'').trim(); if (!text) return null; try { const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 10000); try { const response = await fetch('/api/search', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:text}),signal:controller.signal}); if (!response.ok) throw new Error('Pencarian tidak tersedia'); const payload = await response.json(); return VALID.has(payload.path) ? payload.path : localFallback(text); } finally { clearTimeout(timeout); } } catch { return localFallback(text); } }
+const VALID = new Set([
+ '/', '/informasi', '/kc', '/youth-spark', '/youth-spark/seminar-webinar',
+ '/youth-spark/kompetisi', '/youth-spark/pelatihan-pelatih', '/garis-komando',
+ '/pendidikan', '/mako', '/administrasi', '/geranat', '/pengabdian', '/pam', '/diklat'
+]);
+function localFallback(query) {
+ const q = query.toLowerCase();
+ if (/jersey|kaos|athlete|official|pre.?order|cendekia|\bkc\b|thor|renang|esai|menembak/.test(q)) return '/kc';
+ if (/youth|spark|seminar|rundown|pembicara|narasumber|materi|umkm|doorprize/.test(q)) return '/youth-spark/seminar-webinar';
+ if (/komandan|anggota|struktur|pimpinan|organisasi|pengurus/.test(q)) return '/garis-komando';
+ if (/markas|mako|alamat|lokasi|kontak|nomor|telepon|whatsapp/.test(q)) return '/mako';
+ if (/administrasi|surat|izin|permohonan/.test(q)) return '/administrasi';
+ if (/pendidikan|diklat|diksarmil|pelatihan/.test(q)) return '/pendidikan';
+ if (/geranat|paskibra/.test(q)) return '/geranat';
+ if (/pengabdian|bakti sosial/.test(q)) return '/pengabdian';
+ if (/informasi|direktori|daftar|formulir|panduan|dokumen/.test(q)) return '/informasi';
+ if (/beranda|home|utama/.test(q)) return '/';
+ return null;
+}
+/** Browser only sends text to same-origin backend; API key remains server-only. */
+export async function resolvePortalPath(query) {
+ const text = String(query||'').trim();
+ if (!text) return null;
+ try {
+   const controller = new AbortController();
+   const timeout = setTimeout(() => controller.abort(), 10000);
+   try {
+     const response = await fetch('/api/search', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:text}),signal:controller.signal});
+     if (!response.ok) throw new Error('Pencarian tidak tersedia');
+     const payload = await response.json();
+     return VALID.has(payload.path) ? payload.path : localFallback(text);
+   } finally { clearTimeout(timeout); }
+ } catch { return localFallback(text); }
+}
