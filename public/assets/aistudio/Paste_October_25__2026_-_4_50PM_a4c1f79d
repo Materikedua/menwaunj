@@ -1,0 +1,554 @@
+Kamu adalah arsitek software senior fullstack yang mengerjakan proyek "MENWA UNJ Portal V8" — sebuah website organisasi militer kemahasiswaan berbasis React 18 + Vite 5 + Tailwind CSS v4 + Firebase (Firestore + Auth + Storage). Website ini sudah berjalan di Vercel. Kamu sedang mengerjakan overhaul besar-besaran V8.
+
+═══════════════════════════════════════════════════════════════
+BAGIAN 0: KONTEKS CODEBASE LENGKAP (JANGAN SKIP, BACA SEMUA)
+═══════════════════════════════════════════════════════════════
+
+TECH STACK:
+- React 18.3 (JSX, functional components, hooks)
+- Vite 5.4 (dev server + build)
+- Tailwind CSS v4.3 (via @tailwindcss/vite plugin — BUKAN postcss)
+- Firebase SDK 13.1 (Auth + Firestore)
+- Lucide React (ikon)
+- Three.js (3D globe dekoratif)
+- Vercel (hosting, serverless API routes)
+- Custom mini router (history mode, tanpa react-router)
+
+FILE STRUCTURE:
+```
+/
+├── api/
+│   ├── chat.js              # Vercel serverless — Gemini chat endpoint
+│   └── search.js             # Vercel serverless — Gemini search endpoint
+├── public/
+│   ├── kegiatan/             # Foto kegiatan (.jpg)
+│   ├── struktur/             # Foto anggota (.svg)
+│   ├── header/               # Header art (.svg)
+│   ├── mitra/                # Logo mitra (.png)
+│   ├── dokumen/              # PDF juknis (KONFIDENSIAL)
+│   └── foto-kampus-unj.jpg   # Hero photo
+├── src/
+│   ├── App.jsx               # Root app (102KB) — routing, nav, semua tab
+│   ├── main.jsx              # Entry point
+│   ├── firebase.js           # Firebase init + semua CRUD functions (755 lines)
+│   ├── index.css / styles.css
+│   ├── data/
+│   │   └── siteData.js       # SEMUA konten statis (program, kegiatan, struktur org, dsb)
+│   ├── hooks/
+│   │   └── useAuth.jsx       # Auth hook (streak, gamification, profile)
+│   ├── lib/
+│   │   ├── authContext.jsx    # React context wrapper
+│   │   ├── canvasStore.jsx    # Command Center state management (840 lines)
+│   │   ├── chatStore.js       # Gemini chat state
+│   │   ├── firebase.js        # Duplicate firebase re-export
+│   │   ├── foto.js            # Foto utility
+│   │   ├── portalSearch.js    # Portal fuzzy search
+│   │   ├── qris.js            # QRIS EMVCo generator (248 lines)
+│   │   └── router.jsx         # Mini SPA router
+│   └── components/
+│       ├── GeranatVoting.jsx           # E-Voting GERANAT (1020 lines)
+│       ├── DynamicQRISModal.jsx        # Modal pembayaran QRIS (243 lines)
+│       ├── CommandCenterPage.jsx       # Admin command center (1001 lines)
+│       ├── AdministrationFormModal.jsx # Form administrasi (581 lines)
+│       ├── AdminSubmissionsDashboard.jsx
+│       ├── MakoBankQRISSettings.jsx    # Admin pengaturan rekening bank
+│       ├── Sections.jsx               # Halaman konten (72KB)
+│       ├── BrandExperience.jsx/.css    # Brand + home sections
+│       ├── MenwaUI.jsx                # UI primitives (navbar, hero, reveal)
+│       ├── UserAccountModal.jsx       # Profil & akun pengguna
+│       ├── RegistrationForm.jsx       # Form pendaftaran kegiatan
+│       ├── GamificationHub.jsx        # Hub gamifikasi
+│       ├── GamesPage.jsx / MiniGames.jsx
+│       ├── Leaderboard.jsx            # Papan peringkat
+│       ├── ParticipantPortal.jsx      # Portal peserta digital
+│       ├── LiveCanvasStudio.jsx/.css   # Live canvas editor
+│       ├── DynamicCanvasZone.jsx
+│       ├── TacticalHoloGlobe3D.jsx    # Three.js globe
+│       ├── YouthSparkTraining.jsx
+│       ├── JerseyShowcase.jsx/.css
+│       ├── MusicPlayer.jsx
+│       ├── StreakMilestones.jsx / StreakMilestoneModal.jsx
+│       ├── CertificateViewerModal.jsx
+│       ├── BankApprovalBanner.jsx
+│       ├── LottieAnimation.jsx
+│       ├── MenwaPet.jsx/.css
+│       ├── TacticalConfetti.jsx
+│       ├── MannequinFigure.jsx
+│       ├── PersonPhoto.jsx
+│       ├── PortalIcon.jsx/.css
+│       ├── PortalUtilities.jsx/.css
+│       └── MotionAssets.jsx
+```
+
+ROUTING (custom mini router, history mode):
+- / → Beranda
+- /garis-komando → Struktur Organisasi
+- /pendidikan → Pendidikan & Pelatihan
+- /mako → Kontak & Markas Komando
+- /administrasi → Administrasi
+- /mako-ops → Mako Operations
+- /games → Games & Kuis
+- /geranat/voting → E-Voting GERANAT
+- /portal-peserta → Portal Peserta Digital
+- /command-center → Command Center Admin (via canvasStore.jsx)
+
+NAV TABS:
+Beranda | Pusat Informasi | KC VIII | Youth Spark | Organisasi | Kontak & Markas
+(+ subtab: Geranat Voting, Portal Peserta, Games, Command Center — diakses via link/route)
+
+FIREBASE SCHEMA (Firestore collections):
+1. /users/{userId} — UserProfile (uid, email, displayName, institution, occupation, birthDate, phone, isMenwaMember, menwaNia, isVerifiedMenwa, tacticalPoints, weeklyPoints, monthlyPoints, currentStreak, longestStreak, lastStreakDate, streakMilestonesClaimed, streakFreezesCount, lastQuizDate, updatedAt)
+2. /users/{userId}/certificates/{certId} — Certificate (certId, courseId, courseTitle, recipientName, recipientEmail, issuedAt, grade)
+3. /forms_submissions/{submissionId} — FormSubmission (submissionId, serviceType, applicantUid, applicantEmail, fullName, institution, occupation, birthDate, phone, title, purpose, status[menunggu_konfirmasi|diproses|disetujui|ditolak|selesai], participantToken, createdAt)
+4. /geranat_teams/{teamId} — GeranatTeam (teamId, teamName, institution, category, dantonName, motto, votesCount, photoUrl, updatedAt)
+5. /voting_transactions/{txId} — VotingTransaction (txId, teamId, teamName, voterUid, voterName, votes, amount, paymentMethod, status[menunggu_pembayaran|lunas|batal], qrisPayload, createdAt)
+6. /participant_portals/{token} — ParticipantPortal (token, programSlug, programTitle, applicantUid, applicantName, teamName, institution, registrationNumber, paymentStatus, documents[], juryScores[], createdAt, updatedAt)
+7. /settings/{settingId} — BankQRISConfig (bankName, accountNumber, accountHolder, merchantName, merchantCity, qrisPayload, nmid, updatedAt, updatedBy)
+8. /PendingChanges/{changeId} — 2-Step Verification perubahan rekening bank
+9. /user_chats/{userId}/sessions/{sessionId}/messages/{messageId} — Sesi chat Gemini
+
+FIRESTORE RULES: Admin = unjmenwa@gmail.com ATAU rafflysyahpoetra@gmail.com ATAU exists di /admins/{uid}. E-voting geranat_teams public read. Voting transactions bisa create tanpa auth (untuk pembayaran publik).
+
+QRIS SYSTEM (src/lib/qris.js):
+- generateDynamicQRIS(amount, invoiceId, note) — Generate QRIS dari template
+- parseAndDynamicizeQRIS(rawQRISString, amount, invoiceId, note) — Convert static QRIS → dynamic
+- buildDynamicQRISFromBankConfig(bankConfig, amount, invoiceId, note) — Dari konfigurasi bank admin
+- EMVCo TLV format, CRC16-CCITT, Tag 54 (nominal terkunci), Tag 01='12' (dynamic)
+
+CURRENT QRIS MODAL (DynamicQRISModal.jsx):
+- Menampilkan QR code via api.qrserver.com (encode string bank transfer, BUKAN QRIS asli)
+- Auto-verify setelah 3.5 detik (SIMULASI, bukan deteksi pembayaran nyata)
+- Tidak ada countdown 15 menit
+- Tidak ada deteksi pembayaran real-time
+
+CURRENT E-VOTING (GeranatVoting.jsx):
+- 5 tim seed (hardcoded)
+- Auto-refresh 15 detik dari Firestore
+- Voting deadline: 08 Nov 2026 18:00 WIB
+- Memilih tim → pilih jumlah vote → buka QRIS modal → auto-verify 3.5s → update Firestore
+- Ada admin panel untuk tambah tim
+
+COMMAND CENTER (CommandCenterPage.jsx + canvasStore.jsx):
+- Login via Google (unjmenwa@gmail.com) atau Terminal (mako_admin / MENWA-MAKO-2026)
+- "Agent 1": Natural language prompt → generate/delete komponen UI (gallery, card, button)
+- "Agent 2": Generate naskah dinas (surat dispensasi, undangan, press release)
+- Containers: hero_cta_slot, beranda_showcase_slot, kc_action_slot, youth_spark_slot, mako_slot
+- Export/import schema JSON, snapshot & rollback
+- Belum ada: upload foto, convert format, image tracker per tab
+
+ADMINISTRATION FORM (AdministrationFormModal.jsx):
+- serviceType: pendaftaran_camen, permohonan_personel, peminjaman_sarpras, permohonan_instruktur, kerjasama
+- SEMUA tipe form WAJIB upload PDF (validasi di line 136-138)
+- Auto-fill dari profile pengguna
+
+═══════════════════════════════════════════════════════════════
+BAGIAN 1: SISTEM QRIS STATIS + COUNTDOWN 15 MENIT + DETEKSI PEMBAYARAN OTOMATIS
+═══════════════════════════════════════════════════════════════
+
+INSTRUKSI:
+Refactor total DynamicQRISModal.jsx dan GeranatVoting.jsx untuk sistem pembayaran e-voting yang realistis.
+
+A) GENERATE QRIS STATIS
+1. Gunakan QRIS statis (bukan dynamic) — artinya QR code yang TETAP, tidak berubah per transaksi. Nominal diinput oleh user berdasarkan jumlah vote × Rp1.000.
+2. Ambil QRIS payload dari /settings/bank_qris di Firestore (field: qrisPayload). Admin memasukkan string QRIS resmi dari bank merchant via MakoBankQRISSettings.
+3. Generate QR code image client-side menggunakan library `qrcode` (npm) atau canvas API — JANGAN pakai api.qrserver.com. Encode langsung dari payload string QRIS.
+4. Tampilkan nominal yang harus dibayar dengan jelas: "Rp{jumlah_vote × 1000}" dengan format Rupiah.
+
+B) COUNTDOWN TIMER 15 MENIT
+1. Saat modal QRIS dibuka, mulai countdown 15:00 menit.
+2. Tampilkan countdown besar dan jelas di atas QR code dengan format MM:SS.
+3. Progress bar visual yang berkurang seiring waktu (full → kosong).
+4. Warna berubah: hijau (>10 menit) → kuning (5-10 menit) → merah (<5 menit) → berkedip (<1 menit).
+5. Jika countdown habis (0:00):
+   - Tutup modal QRIS otomatis.
+   - Tampilkan pop-up "Pembayaran Gagal — Waktu habis. Silakan ulangi voting."
+   - Update status transaksi di Firestore: status → 'batal', cancelReason → 'timeout_15min'.
+   - JANGAN update votesCount di geranat_teams.
+
+C) DETEKSI PEMBAYARAN OTOMATIS (POLLING)
+Karena ini QRIS statis (tidak ada webhook dari payment gateway), gunakan mekanisme polling sebagai berikut:
+
+1. Buat Firestore listener (onSnapshot) pada dokumen /voting_transactions/{txId}.
+2. Flow: 
+   - User klik "Bayar & Dukung" → buat dokumen di /voting_transactions/ dengan status: 'menunggu_pembayaran'
+   - Modal QRIS terbuka dengan countdown 15 menit
+   - Admin (atau sistem backend) mengupdate status dokumen menjadi 'lunas' ketika pembayaran dikonfirmasi
+   - onSnapshot mendeteksi perubahan status → trigger sukses
+3. Alternatif (self-service model seperti restoran):
+   - Buat endpoint Vercel `/api/verify-payment.js` yang bisa dipanggil secara periodik (setiap 5 detik) untuk cek mutasi rekening.
+   - Endpoint ini menerima { txId, amount, bankAccount } dan merespons { verified: true/false }.
+   - Di sisi client, jalankan setInterval setiap 5 detik selama modal terbuka untuk polling endpoint ini.
+   - Jika verified=true: update Firestore status → 'lunas', increment votesCount, tutup modal, tampilkan sukses.
+   - Buat placeholder logic di endpoint karena integrasi mutasi bank nyata memerlukan API banking (Moota, Midtrans, Xendit). Tandai dengan komentar `// TODO: Replace with real bank mutation check API`.
+
+4. Ketika pembayaran terdeteksi berhasil:
+   - Tutup modal QRIS dengan animasi smooth.
+   - Tampilkan pop-up sukses bertahap:
+     ① Animasi confetti (TacticalConfetti.jsx sudah ada).
+     ② Ikon centang hijau besar dengan animasi scale-up.
+     ③ Teks "Pembayaran Berhasil! 🎉" dengan detail: nama tim, jumlah vote, total nominal.
+     ④ Animasi angka e-voting naik secara real-time (count-up animation dari nilai lama ke nilai baru).
+   - Update Firestore secara atomic: increment votesCount pada geranat_teams/{teamId} sebanyak jumlah vote yang dibeli.
+
+D) PODIUM PERINGKAT 1-3 DI TAB GERANAT UTAMA
+1. Saat ini, peringkat e-voting hanya terlihat di subtab e-voting (/geranat/voting). PINDAHKAN podium ke tab Geranat utama.
+2. Buat komponen `GeranatPodium` yang tampil langsung di halaman utama tab GERANAT (bukan di dalam GeranatVoting):
+   - Podium 3D-style CSS:
+     • Peringkat 1: Tengah, paling tinggi, mahkota emas (👑), border gold glow, ukuran foto besar.
+     • Peringkat 2: Kiri, sedang, medali perak, border silver.
+     • Peringkat 3: Kanan, pendek, medali perunggu, border bronze.
+   - Setiap podium menampilkan: Foto tim, nama tim, asal sekolah, jumlah vote (animasi count-up), badge peringkat.
+   - Data diambil real-time dari Firestore (onSnapshot pada geranat_teams, orderBy votesCount desc, limit 3).
+   - Auto-refresh setiap 15 detik.
+3. Di bawah podium, tambahkan DUA tombol:
+   - 🏆 "Lihat Peringkat Lengkap" → dropdown/collapse yang menampilkan SEMUA tim terurut berdasarkan votesCount (peringkat 4, 5, 6, dst). Format: nomor peringkat | foto kecil | nama tim | asal | jumlah vote. Bisa di-scroll.
+   - 🗳️ "Dukung Tim Favoritmu!" → navigasi ke /geranat/voting untuk melakukan e-voting.
+
+E) MODIFIKASI ROUTING/NAV:
+- Tab "Geranat" harus muncul di navigasi utama (NAV_ITEMS) jika belum ada. Icon: Trophy.
+- Route /geranat menampilkan halaman GERANAT utama (podium + tombol).
+- Route /geranat/voting menampilkan halaman e-voting detail (pemilihan tim + pembayaran).
+
+═══════════════════════════════════════════════════════════════
+BAGIAN 2: BREAKDOWN & PENGEMBANGAN FIREBASE DATABASE
+═══════════════════════════════════════════════════════════════
+
+INSTRUKSI:
+Audit, dokumentasikan, dan KEMBANGKAN sistem Firebase yang sudah ada.
+
+A) AUDIT KOLEKSI YANG ADA — Untuk setiap koleksi, jelaskan:
+1. Akses (siapa bisa read/write berdasarkan firestore.rules)
+2. Fungsi utama
+3. Field yang sudah ada dan tipenya
+4. Potensi pengembangan
+
+B) KOLEKSI BARU YANG HARUS DITAMBAHKAN:
+
+1. /audit_logs/{logId}
+   - Tujuan: Mencatat SEMUA aktivitas admin dan sistem untuk transparansi dan keamanan.
+   - Fields: logId, action (string: 'vote_verified', 'team_added', 'bank_config_changed', 'form_approved', 'image_updated', dll), performedBy (uid), performedByEmail, targetCollection, targetDocId, previousData (object), newData (object), ipAddress (string), userAgent (string), timestamp (server timestamp)
+   - Rules: read → admin only, create → admin or system, update/delete → false (immutable log)
+
+2. /content_registry/{contentId}
+   - Tujuan: Registry semua gambar, caption, dan konten visual di seluruh tab — PENTING untuk Command Center image tracker (Bagian 4).
+   - Fields: contentId, tabId (string: 'beranda', 'kc', 'youth-spark', 'geranat', 'mako', dll), sectionId (string), imageUrl (string), imageSvgUrl (string — hasil konversi ke SVG jika bukan SVG), caption (string), altText (string), contentType ('image' | 'banner' | 'logo' | 'gallery_item'), displayOrder (number), isActive (boolean), uploadedBy (uid), uploadedAt (timestamp), lastModifiedBy (uid), lastModifiedAt (timestamp), originalFormat (string: 'png', 'jpg', 'svg', 'webp'), fileSizeKb (number)
+   - Rules: read → public (untuk render di website), write → admin only
+
+3. /command_center_logs/{logId}
+   - Tujuan: Histori semua perintah yang dieksekusi melalui Command Center.
+   - Fields: logId, commandType ('image_update' | 'caption_update' | 'tab_modify' | 'content_add' | 'content_remove'), rawPrompt (string — perintah natural language dari admin), executedAction (object), targetTab, targetSection, status ('pending_approval' | 'approved' | 'executed' | 'rejected'), requestedBy (uid), approvedBy (uid, nullable), requestedAt, executedAt
+   - Rules: read/write → admin only
+
+4. /notifications/{notifId}
+   - Tujuan: Sistem notifikasi real-time untuk admin dan user.
+   - Fields: notifId, recipientUid (string, nullable — null = broadcast), recipientRole ('admin' | 'user' | 'all'), type ('payment_success' | 'vote_milestone' | 'form_status_update' | 'content_change_request' | 'system_alert'), title (string), message (string), metadata (object — flexible data), isRead (boolean), createdAt
+   - Rules: read → owner uid or admin, create → system/admin, update → owner (mark read) or admin
+
+5. /scheduled_tasks/{taskId}
+   - Tujuan: Queue untuk operasi terjadwal (auto-close voting, periodic cleanup).
+   - Fields: taskId, taskType ('close_voting' | 'cleanup_expired_transactions' | 'generate_report'), scheduledAt (timestamp), status ('pending' | 'running' | 'completed' | 'failed'), payload (object), result (object, nullable), createdBy (uid)
+   - Rules: read/write → admin only
+
+C) PENGEMBANGAN EXISTING COLLECTIONS:
+
+1. /geranat_teams/{teamId} — TAMBAHKAN fields:
+   - supportersCount (number) — jumlah pendukung unik
+   - totalRevenue (number) — total uang masuk dari voting
+   - lastVoteAt (timestamp) — waktu vote terakhir
+   - rank (number) — peringkat saat ini (dihitung oleh cloud function atau client)
+   - socialMediaUrl (string) — link Instagram/medsos tim
+   - videoUrl (string) — link video profil tim
+
+2. /voting_transactions/{txId} — TAMBAHKAN fields:
+   - expiresAt (timestamp) — waktu countdown 15 menit habis
+   - cancelReason (string, nullable) — 'timeout_15min' | 'user_cancel' | 'admin_cancel'
+   - verifiedAt (timestamp, nullable) — waktu verifikasi pembayaran
+   - verifiedBy (string) — 'auto_system' | 'admin_manual' | uid
+   - voterDeviceInfo (string) — user agent untuk anti-fraud
+
+3. /users/{userId} — TAMBAHKAN fields:
+   - totalVotesGiven (number) — total vote yang pernah diberikan di semua event
+   - totalDonated (number) — total rupiah yang sudah didonasikan via voting
+   - favoriteTeamId (string, nullable) — tim yang paling banyak didukung
+   - achievements (array of string) — badge pencapaian ['first_vote', 'top_supporter', 'streak_7', dll]
+   - lastNotificationReadAt (timestamp)
+
+D) FIRESTORE RULES UPDATE:
+Update firestore.rules sesuai koleksi baru. Pastikan:
+- audit_logs: immutable (no update/delete), create by admin/system only
+- content_registry: public read, admin write
+- command_center_logs: admin only
+- notifications: read by recipient uid or admin, create by system
+- scheduled_tasks: admin only
+- Tambahkan rate limiting comment: `// TODO: Implement Firestore rate limiting via Cloud Functions`
+
+E) FIREBASE STORAGE INTEGRATION:
+Website saat ini BELUM menggunakan Firebase Storage (gambar di public/ folder). Implementasikan:
+1. Firebase Storage bucket untuk upload gambar dari Command Center.
+2. Storage rules: upload hanya admin, read public.
+3. Folder structure di Storage:
+   - /images/tabs/{tabId}/{contentId}.svg — Gambar tab (selalu SVG)
+   - /images/teams/{teamId}/photo.jpg — Foto tim GERANAT
+   - /images/uploads/{timestamp}_{originalName} — Upload sementara sebelum konversi
+   - /documents/{submissionId}/{filename}.pdf — PDF permohonan/pengajuan
+4. Generate download URL dan simpan di content_registry.
+
+═══════════════════════════════════════════════════════════════
+BAGIAN 3: ADMINISTRASI — PENDAFTARAN TANPA PDF, PERMOHONAN/PENGAJUAN WAJIB PDF
+═══════════════════════════════════════════════════════════════
+
+INSTRUKSI:
+Refactor AdministrationFormModal.jsx agar PDF HANYA wajib untuk tipe tertentu.
+
+A) KATEGORI SERVICE TYPE DAN ATURAN PDF:
+
+1. PENDAFTARAN (TANPA PDF):
+   - serviceType: 'pendaftaran_camen' (Pendaftaran Calon Anggota Menwa)
+   - serviceType: 'pendaftaran_kegiatan' (Pendaftaran Peserta Kegiatan)
+   - serviceType: 'pendaftaran_pelatihan' (Pendaftaran Pelatihan/Kursus)
+   → PDF upload section: DISEMBUNYIKAN total (bukan disabled, tapi tidak render sama sekali).
+   → Validasi: JANGAN cek pdfBase64. Hapus error "Wajib mengunggah dokumen" untuk tipe ini.
+   → Form hanya mengisi: Nama Lengkap, Instansi, Pekerjaan, Tanggal Lahir, No HP, Email, Perihal.
+
+2. PERMOHONAN (WAJIB PDF):
+   - serviceType: 'permohonan_personel' (Permohonan Bantuan Personel)
+   - serviceType: 'permohonan_instruktur' (Permohonan Pemateri/Instruktur)
+   - serviceType: 'permohonan_sarpras' (Permohonan Sarana Prasarana)
+   → PDF upload section: WAJIB ditampilkan.
+   → Label: "Unggah Surat Permohonan Resmi (PDF, maks 1 MB)"
+   → Validasi: pdfBase64 WAJIB ada. Tampilkan error jika kosong.
+
+3. PENGAJUAN (WAJIB PDF):
+   - serviceType: 'pengajuan_kerjasama' (Pengajuan Kerja Sama)
+   - serviceType: 'pengajuan_dispensasi' (Pengajuan Surat Dispensasi)
+   - serviceType: 'pengajuan_izin' (Pengajuan Izin Kegiatan)
+   → PDF upload section: WAJIB ditampilkan.
+   → Label: "Unggah Proposal/Dokumen Pengajuan (PDF, maks 1 MB)"
+   → Validasi: pdfBase64 WAJIB ada.
+
+B) IMPLEMENTASI TEKNIS:
+```jsx
+const REQUIRES_PDF = ['permohonan_personel', 'permohonan_instruktur', 'permohonan_sarpras', 'pengajuan_kerjasama', 'pengajuan_dispensasi', 'pengajuan_izin'];
+const requiresPdf = REQUIRES_PDF.includes(serviceType);
+
+// Di form JSX:
+{requiresPdf && (
+  <div className="...">
+    <label>Unggah Surat Resmi (PDF, maks 1 MB)</label>
+    <input type="file" accept=".pdf" onChange={handlePdfChange} />
+    {/* ... existing PDF preview ... */}
+  </div>
+)}
+
+// Di validasi submit:
+if (requiresPdf && !pdfBase64) {
+  setError('Wajib mengunggah dokumen surat/proposal dalam format PDF.');
+  return;
+}
+```
+
+C) UX ENHANCEMENT:
+- Dropdown serviceType dikelompokkan dengan optgroup: "Pendaftaran", "Permohonan", "Pengajuan".
+- Ketika user pilih tipe pendaftaran, tampilkan badge hijau "✓ Tanpa lampiran dokumen" di bawah dropdown.
+- Ketika user pilih tipe permohonan/pengajuan, tampilkan badge kuning "📎 Wajib lampirkan dokumen PDF".
+- Transisi smooth saat section PDF muncul/hilang (gunakan CSS transition max-height atau React conditional + animate).
+
+═══════════════════════════════════════════════════════════════
+BAGIAN 4: AI AGENT COMMAND CENTER — AUTO MAINTAIN, UPDATE GAMBAR, CAPTION, IMAGE TRACKER
+═══════════════════════════════════════════════════════════════
+
+INSTRUKSI:
+Overhaul total CommandCenterPage.jsx dan canvasStore.jsx. Bangun sistem command center yang powerful.
+
+A) IMAGE MANAGEMENT AGENT:
+
+1. UPLOAD & AUTO-CONVERT TO SVG:
+   - Admin bisa upload gambar (.png, .jpg, .jpeg, .webp) melalui drag-and-drop atau file picker.
+   - Jika format BUKAN .svg:
+     • Client-side: Baca file → Canvas API → trace/vectorize menggunakan library `potrace` (wasm) atau `image-tracer-js`.
+     • Alternatif pragmatis: Embed raster image dalam SVG wrapper:
+       ```xml
+       <svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}">
+         <image href="data:image/{format};base64,{base64data}" width="100%" height="100%"/>
+       </svg>
+       ```
+     • Simpan KEDUA versi: original (Firebase Storage) + SVG (Firebase Storage).
+     • Tandai dengan badge: "🔄 Auto-converted to SVG" vs "✅ Native SVG".
+   - Jika format SUDAH .svg: upload langsung tanpa konversi.
+   - Setelah upload, simpan metadata ke /content_registry/{contentId}.
+
+2. IMAGE TRACKER PER TAB (FULL VISIBILITY):
+   Buat panel baru di Command Center: "📸 Image Tracker"
+   - Tampilkan SEMUA tab website dalam bentuk daftar/grid:
+     ```
+     📂 Beranda (5 gambar)
+       ├── 🖼️ Hero Banner — foto-kampus-unj.jpg — "Apel Korps Menwa UNJ" — [Edit] [Replace]
+       ├── 🖼️ Galeri Slot 1 — kc-menwa-unj.jpg — "Pembukaan KC" — [Edit] [Replace]
+       ├── 🖼️ Galeri Slot 2 — poster-youthspark.png — "Youth Spark" — [Edit] [Replace]
+       └── ...
+     📂 KC VIII (3 gambar)
+       ├── 🖼️ Header — header-kc.svg — [Edit] [Replace]
+       └── ...
+     📂 Youth Spark (2 gambar)
+     📂 Geranat (1 gambar + foto tim)
+     📂 Mako (1 gambar)
+     📂 Organisasi / Garis Komando (foto anggota)
+     ```
+   - Setiap gambar menampilkan: thumbnail preview, nama file, caption saat ini, tab lokasi, section, terakhir diupdate.
+   - Tombol aksi per gambar:
+     • ✏️ "Edit Caption" → inline text editor.
+     • 🔄 "Replace Image" → upload gambar baru (auto-convert SVG jika perlu).
+     • 🗑️ "Remove" → hapus dengan konfirmasi (soft delete: isActive=false di content_registry).
+     • 👁️ "Preview" → modal preview full-size.
+   - Filter & search: filter by tab, search by caption/filename.
+
+3. TAB OVERVIEW DASHBOARD:
+   Di atas Image Tracker, tampilkan card grid:
+   ```
+   [Beranda: 5 🖼️] [KC VIII: 3 🖼️] [Youth Spark: 2 🖼️] [Geranat: 6 🖼️] [Mako: 1 🖼️] [Organisasi: 12 🖼️]
+   ```
+   Klik card → scroll/filter ke gambar tab tersebut.
+
+B) AI AGENT NATURAL LANGUAGE COMMANDS:
+   Tingkatkan sistem NLP yang sudah ada di canvasStore.jsx:
+
+1. Perintah yang harus didukung:
+   - "Update foto hero beranda dengan gambar yang baru saya upload"
+   - "Ganti caption galeri slot 2 menjadi 'Dokumentasi Diklat Menwa 2026'"
+   - "Tambah foto baru di tab KC VIII section header"
+   - "Hapus gambar ketiga di galeri beranda"
+   - "Tampilkan semua gambar di tab Youth Spark"
+   - "Resize galeri beranda menjadi 2 kolom"
+   - "Tambah tombol WhatsApp di hero"
+   - "Buat pengumuman pendaftaran di beranda"
+   - "Generate press release untuk kegiatan [nama]"
+
+2. Setiap perintah menghasilkan preview (action schema) yang HARUS disetujui admin sebelum dieksekusi:
+   ```
+   ┌─────────────────────────────────┐
+   │ 🤖 AI Agent Proposal            │
+   │                                 │
+   │ Action: UPDATE_IMAGE            │
+   │ Target: Beranda > Hero Banner   │
+   │ Old: foto-kampus-unj.jpg        │
+   │ New: [preview thumbnail]        │
+   │ Caption: "Apel Korps 2026"      │
+   │                                 │
+   │ [✅ Approve & Execute] [❌ Reject] │
+   └─────────────────────────────────┘
+   ```
+
+3. Setelah approve → eksekusi → simpan log ke /command_center_logs/ dan /audit_logs/.
+
+C) COMMAND CENTER LAYOUT REDESIGN:
+   Reorganisasi menjadi tab-based layout:
+   1. 🤖 AI Agent (prompt NLP + action preview + approval)
+   2. 📸 Image Tracker (semua gambar per tab)
+   3. 📝 Content Editor (edit konten teks, judul, deskripsi per section)
+   4. 📄 Document Generator (naskah dinas, press release — existing)
+   5. 📊 Analytics Dashboard (jumlah visitor, vote terbanyak, form submissions)
+   6. ⚙️ Settings (bank QRIS, deadline voting, toggle fitur)
+   7. 📜 Activity Log (histori semua perubahan)
+
+═══════════════════════════════════════════════════════════════
+BAGIAN 5: IDE KREATIF — BUAT WEBSITE INI HIDUP, DINAMIS, DAN UNFORGETTABLE
+═══════════════════════════════════════════════════════════════
+
+INSTRUKSI:
+Website ini terlalu statis dan membosankan. Inject elemen-elemen berikut untuk membuatnya WOW.
+
+A) PARALLAX STORYTELLING HERO:
+- Hero section beranda menjadi immersive parallax multi-layer:
+  Layer 1 (paling belakang): Gradient mesh animated background (warna Menwa: teal #006569, gold #FFDD00, slate).
+  Layer 2: Partikel floating (seperti debu emas yang melayang pelan).
+  Layer 3: Foto hero dengan efek Ken Burns (slow zoom + pan).
+  Layer 4: Logo Menwa dengan glow pulse.
+  Layer 5 (depan): Teks judul + motto dengan reveal animation (typewriter + fade-up).
+- Scroll indicator animated (chevron bouncing + "Gulir untuk menjelajah").
+
+B) MICRO-INTERACTIONS & TRANSITIONS:
+1. Page transition: Saat berpindah tab, konten lama fade-out ke atas + konten baru slide-in dari bawah (200ms, ease-out).
+2. Card hover: Setiap kartu (kegiatan, program) memiliki tilt 3D subtle (CSS perspective + transform) + shadow elevation.
+3. Button ripple: Material Design ripple effect di semua tombol.
+4. Scroll reveal: Setiap section muncul dengan staggered animation (elemen muncul satu per satu dari bawah, delay 50ms antar elemen).
+5. Loading skeleton: Shimmer skeleton placeholder saat data loading (bukan spinner polos).
+6. Number counter: Semua angka statistik (anggota, kegiatan, tahun berdiri) animasi count-up saat pertama kali visible.
+7. Cursor glow: Custom cursor glow yang sudah ada di MenwaUI — PERTAHANKAN dan enhance dengan warna yang mengikuti section (teal di beranda, gold di KC, dll).
+
+C) GLASSMORPHISM NAVIGATION:
+- Navbar transparan (backdrop-blur + bg-white/70) yang berubah solid saat scroll > 100px.
+- Active tab indicator: pill slide animation (bukan jump, tapi animate translateX smooth).
+- Mobile nav: full-screen overlay dengan animasi radial expand dari hamburger icon.
+
+D) LIVE VOTING TICKER:
+- Di halaman Geranat, tampilkan ticker horizontal yang auto-scroll:
+  "🗳️ [Nama] baru saja memberikan 5 vote untuk Tim Satria Pandawa • 🗳️ [Nama] mendukung Tim Garda Mandiri dengan 3 vote • ..."
+- Data dari Firestore onSnapshot pada voting_transactions (orderBy createdAt desc, limit 10).
+- Ticker berjalan continuous dari kanan ke kiri (CSS marquee atau JS animation).
+
+E) INTERACTIVE TEAM CARDS (E-VOTING):
+- Kartu tim di e-voting memiliki:
+  1. Hover: foto zoom-in + overlay gradient + tombol "Dukung" muncul.
+  2. Flip animation: klik "Detail" → kartu flip 3D menampilkan info detail (motto, danton, statistik).
+  3. Vote counter live: angka vote berubah real-time dengan animasi odometer/slot machine digit flip.
+  4. Rank badge animated: 🥇🥈🥉 badge bounce masuk saat data load.
+  5. Progress bar: setiap tim punya bar yang menunjukkan persentase vote relatif terhadap total.
+
+F) DARK MODE:
+- Toggle dark/light mode di navbar (ikon sun/moon).
+- Warna dark: bg-slate-950, text-slate-100, card: bg-slate-900/80.
+- Simpan preferensi di localStorage.
+- Transisi smooth (transition: colors 300ms).
+- Semua komponen harus responsive terhadap dark mode.
+
+G) AMBIENT SOUND & HAPTICS:
+- Sound effect halus (sudah ada playCheerSound) → extend:
+  • Saat berhasil vote: efek "ting!" lembut.
+  • Saat countdown pembayaran < 1 menit: subtle tick-tock.
+  • Toggle suara on/off (default: off, hanya aktif jika user klik toggle).
+- Haptic feedback pada mobile (navigator.vibrate) untuk aksi penting.
+
+H) EASTER EGG — KONAMI CODE:
+- Input ↑↑↓↓←→←→BA → tampilkan animasi spesial:
+  • Rain of golden Menwa logos.
+  • Pesan: "Widya Castrena Dharma Siddha 🎖️ — Kamu menemukan rahasia Mako!"
+  • Unlock tema spesial sementara (gold & teal neon).
+
+I) PROGRESSIVE LOADING:
+- Lazy load semua komponen berat (GeranatVoting, CommandCenter, Games, dll) dengan React.lazy() + Suspense.
+- Image lazy loading dengan blur-up placeholder (tiny base64 thumbnail → full image).
+- Route-based code splitting.
+
+J) CONFETTI CELEBRATION SYSTEM:
+- Extend TacticalConfetti.jsx:
+  • Voting berhasil: confetti burst.
+  • Tim mencapai milestone (1000, 5000, 10000 votes): BIG confetti explosion + popup "🎉 Tim [Nama] mencapai [N] dukungan!".
+  • Form submission berhasil: subtle confetti rain.
+  • Streak milestone: confetti + lencana animation.
+
+═══════════════════════════════════════════════════════════════
+BAGIAN 6: ATURAN TEKNIS & OUTPUT FORMAT
+═══════════════════════════════════════════════════════════════
+
+1. JANGAN buat file baru yang tidak perlu. Modifikasi file yang sudah ada sebisa mungkin.
+2. Jika harus buat file baru, beri nama deskriptif dan taruh di folder yang sesuai (components/, lib/, data/).
+3. JANGAN hapus fitur yang sudah berjalan (chatbot, gamification, streak, music player, dll).
+4. Gunakan Tailwind CSS v4 classes. JANGAN pakai inline styles kecuali dynamic values.
+5. Semua teks UI dalam Bahasa Indonesia.
+6. Mobile-first responsive design. Test di 375px (iPhone SE) dan 1920px (desktop).
+7. Pertahankan warna brand: #006569 (teal), #FFDD00 (gold), slate palette.
+8. Semua Firestore operations harus wrapped dalam try-catch dengan error logging.
+9. Gunakan TypeScript-style JSDoc comments untuk fungsi utama.
+10. Performance: lazy load, code split, dan memoize komponen berat.
+
+OUTPUT YANG DIHARAPKAN:
+Untuk setiap bagian (1-5), berikan:
+1. Daftar file yang perlu dimodifikasi dan file baru yang perlu dibuat.
+2. Kode LENGKAP (bukan snippet) untuk setiap file baru.
+3. Untuk file yang dimodifikasi, berikan diff yang jelas (tunjukkan baris lama → baris baru).
+4. Urutan eksekusi yang benar (file mana dulu).
+5. Perintah npm install jika ada dependency baru.
+6. Update firestore.rules lengkap.
+7. Test instructions: apa yang harus dicek setelah implementasi.
+
+Mulai dari BAGIAN 1 (QRIS + Countdown + Deteksi Pembayaran + Podium), lalu lanjut ke BAGIAN 2, 3, 4, 5 secara berurutan. Jika konteks terlalu panjang untuk satu respons, beri tahu saya dan saya akan minta lanjutan per bagian.

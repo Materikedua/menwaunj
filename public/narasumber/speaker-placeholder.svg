@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 460" fill="none" aria-label="Siluet placeholder narasumber">
+  <!-- Transparent canvas: swap for real transparent half/three-quarter body portraits later -->
+  <defs>
+    <linearGradient id="coat" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#97B4B0"/><stop offset="1" stop-color="#3A6966"/></linearGradient>
+    <linearGradient id="head" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#C2D4CE"/><stop offset="1" stop-color="#829E97"/></linearGradient>
+  </defs>
+  <path d="M29 460c7-110 29-162 81-190l70-19 70 19c52 28 74 80 81 190Z" fill="url(#coat)"/>
+  <path d="m108 290 72 89 72-89-29-22-43 19-43-19Z" fill="#ECF3F0" opacity=".8"/>
+  <path d="m180 383-16 77h32Z" fill="#527A76" opacity=".5"/>
+  <path d="M114 149c0-78 28-124 66-124s66 46 66 124c0 73-29 119-66 119s-66-46-66-119Z" fill="url(#head)"/>
+  <path d="M105 127c-9-74 14-115 75-117 54-2 88 45 76 117-3-43-22-59-43-69-30 28-70 31-108 69Z" fill="#6B8D85"/>
+  <path d="M113 151C113 117 136 88 180 89c44-1 67 28 67 62" stroke="#668A82" stroke-width="4" stroke-linecap="round" opacity=".28"/>
+  <path d="m146 276 34 28 34-28" stroke="#4D746D" stroke-width="6" stroke-linecap="round"/>
+  <rect x="91" y="416" width="178" height="6" rx="3" fill="#E8F4EF" opacity=".15"/>
+</svg>

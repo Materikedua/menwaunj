@@ -1,0 +1,6 @@
+{
+  "summary":  "Revisi rencana implementasi mencakup: (1) Penggantian tab Kontak & Markas di header menjadi Adminu yang menggabungkan halaman Administrasi Umum di atas dan keterangan Markas Komando di bawahnya; (2) Penyederhanaan MusicPlayer di header menjadi satu tombol ikon musik ringkas yang membuka kontrol Play/Pause saat diklik; (3) Pengarahan tab Youth Spark ke /youth-spark dengan seksi Galeri Dokumentasi Seminar Youth Spark yang siap diinput gambar & caption-nya via Command Center; serta (4) Penyempurnaan subtab /gallery, pop-up Instagram viewport-fixed, penamaan GERANAT, animasi filter di atas galeri, dan deteksi foto sementara di Command Center.",
+  "updatedAt":  "2026-10-26T05:24:34.836733508Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

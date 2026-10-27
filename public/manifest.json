@@ -1,0 +1,56 @@
+{
+  "name": "Resimen Mahasiswa UNJ — Portal Komando & Informasi",
+  "short_name": "Menwa UNJ",
+  "description": "Portal resmi Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#020617",
+  "theme_color": "#006569",
+  "icons": [
+    {
+      "src": "/logo-menwa-unj.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-menwa-unj.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Beranda Portal",
+      "short_name": "Beranda",
+      "description": "Buka Beranda Portal Menwa UNJ",
+      "url": "/",
+      "icons": [{ "src": "/logo-menwa-unj.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Galeri Dokumentasi",
+      "short_name": "Galeri",
+      "description": "Lihat album foto dan dokumentasi kegiatan satuan",
+      "url": "/gallery",
+      "icons": [{ "src": "/logo-menwa-unj.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Administrasi Umum (Adminu)",
+      "short_name": "Adminu",
+      "description": "Akses formulir, permohonan, dan Markas Komando",
+      "url": "/administrasi",
+      "icons": [{ "src": "/logo-menwa-unj.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ksatria Cendekia (KC) VIII",
+      "short_name": "KC VIII",
+      "description": "Pendaftaran, juknis, dan jadwal lomba KC VIII",
+      "url": "/kc",
+      "icons": [{ "src": "/logo-menwa-unj.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["education", "government", "utilities"]
+}

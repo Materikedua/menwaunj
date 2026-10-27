@@ -1,0 +1,1 @@
+{ "firestore": { "databaseId": "ai-studio-menwaunj-f9c5c6d2-e98a-43ef-96bd-8c9b8400f335", "rules": "firestore.rules", "edition": "ENTERPRISE", "dataAccessMode": "FIRESTORE_NATIVE" } }
