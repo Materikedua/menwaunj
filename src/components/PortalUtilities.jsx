@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, ArrowUp, BookOpen, CalendarDays, CheckCircle2, ChevronDown, Command, ExternalLink, FileText, HelpCircle, Search, Sparkles, Trophy, X } from 'lucide-react';
+import { ArrowRight, ArrowUp, BookOpen, CalendarDays, CheckCircle2, ChevronDown, Command, ExternalLink, FileText, HelpCircle, IdCard, Search, Sparkles, Trophy, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { Link, navigate } from '../lib/router.jsx';
 import { informationIndex } from './BrandExperience.jsx';
@@ -82,6 +82,14 @@ const KC_SECTIONS = [
   { id:'ketentuan-program', label:'Ketentuan', icon:FileText },
   { id:'faq-program', label:'FAQ', icon:HelpCircle },
 ];
+const GERANAT_SECTIONS = [
+  { id:'tentang-program', label:'Tentang', icon:BookOpen },
+  { id:'dokumen', label:'Dokumen', icon:FileText },
+  { id:'portal-official', label:'Official', icon:IdCard },
+  { id:'podium-geranat', label:'Klasemen', icon:Trophy },
+  { id:'alur', label:'Jadwal', icon:CalendarDays },
+  { id:'ketentuan-program', label:'Ketentuan', icon:FileText },
+];
 const YOUTH_SECTIONS = [
   { id:'narasumber-youth-spark', label:'Narasumber', icon:Sparkles },
   { id:'benefit-youth-spark', label:'Benefit', icon:CheckCircle2 },
@@ -90,7 +98,7 @@ const YOUTH_SECTIONS = [
 ];
 
 export function PageWayfinder({ path }) {
-  const sections = path === '/kc' ? KC_SECTIONS : path.startsWith('/youth-spark') && !path.endsWith('/kompetisi') && !path.endsWith('/pelatihan-pelatih') && path.includes('/seminar-webinar') ? YOUTH_SECTIONS : null;
+  const sections = path === '/kc' ? KC_SECTIONS : path === '/geranat' ? GERANAT_SECTIONS : path.startsWith('/youth-spark') && !path.endsWith('/kompetisi') && !path.endsWith('/pelatihan-pelatih') && path.includes('/seminar-webinar') ? YOUTH_SECTIONS : null;
   const [active, setActive] = useState('');
   useEffect(() => {
     if (!sections) return;

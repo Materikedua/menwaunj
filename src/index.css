@@ -58,6 +58,38 @@
     }
   }
 
+  /* Sinar laser BorderBeam */
+  @keyframes border-beam-slide {
+    from {
+      stroke-dashoffset: 0;
+    }
+    to {
+      stroke-dashoffset: -100;
+    }
+  }
+
+  /* Ombang-ambing mengambang halus untuk kartu podium */
+  @keyframes smoothFloatBob {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+
+  .animate-float-bob-1 {
+    animation: smoothFloatBob 3.8s ease-in-out infinite;
+  }
+
+  .animate-float-bob-2 {
+    animation: smoothFloatBob 4.4s ease-in-out infinite 0.6s;
+  }
+
+  .animate-float-bob-3 {
+    animation: smoothFloatBob 4.0s ease-in-out infinite 1.2s;
+  }
+
   .animate-border-spin {
     animation: borderSpin 4s linear infinite;
   }

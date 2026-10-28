@@ -12,19 +12,20 @@ import {
   ExternalLink,
   ChevronRight,
   Sparkles,
-  Users
+  Users,
+  IdCard
 } from 'lucide-react';
 import { normalizeWaNumber, getOfficialPortalByWhatsApp } from '../firebase.js';
 import { navigate } from '../lib/router.jsx';
+import BorderBeam from './ui/BorderBeam.jsx';
 
 /**
- * Section Portal Pelatih & Official Kontingen GERANAT
- * Sesuai referensi visual resmi:
- * - Badge Pill: PORTAL PELATIH EKSKLUSIF
- * - Judul: Manajemen Peserta & Nilai
- * - Card: Semua Kebutuhan Pelatih dalam Satu Pintu
- * - Ilustrasi 3D Document Squircle dengan Skeleton Bars
- * - Tombol: Masuk ke Portal Pelatih (membuka Slide-Over Drawer WhatsApp dengan Exit Gate Jelas)
+ * Section Portal Official Kontingen GERANAT
+ * Sesuai arahan:
+ * - Kata "Pelatih" diganti menjadi "Official"
+ * - Aksen warna biru diganti menjadi Kuning / Emas Menwa UNJ (#FBBC05 / #FFDD00)
+ * - Background div berwarna putih murni (bg-white)
+ * - Border dianimasikan menggunakan komponen BorderBeam.jsx
  */
 export function OfficialPortalQuickAccess({
   isOpen: controlledIsOpen,
@@ -65,14 +66,14 @@ export function OfficialPortalQuickAccess({
     try {
       const matched = await getOfficialPortalByWhatsApp(cleaned);
       if (!matched || !matched.schoolSlug) {
-        setLoginError('Nomor WhatsApp Anda tidak terdaftar sebagai Pelatih/Official Kontingen di event GERANAT.');
+        setLoginError('Nomor WhatsApp Anda tidak terdaftar sebagai Official Kontingen di event GERANAT.');
       } else {
         setLoginError('');
         setIsOpen(false);
         navigate(`/official/${matched.schoolSlug}`);
       }
     } catch (err) {
-      console.warn('Gagal login portal pelatih/official:', err);
+      console.warn('Gagal login portal official:', err);
       setLoginError('Terjadi gangguan saat memeriksa nomor WhatsApp. Silakan coba lagi.');
     } finally {
       setSearchingWa(false);
@@ -81,73 +82,83 @@ export function OfficialPortalQuickAccess({
 
   return (
     <>
-      {/* 1. SECTION REFERENSI RESMI: Manajemen Peserta & Nilai */}
+      {/* 1. SECTION REFERENSI RESMI: Manajemen Peserta & Nilai (Official) */}
       {showTriggerBanner && (
-        <section className={`w-full font-sans ${className}`}>
+        <section id="portal-official" className={`w-full font-sans scroll-mt-24 ${className}`}>
           
           {/* Header Section */}
           <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
-            {/* Pill Atas */}
-            <div className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-[#3b82f6] text-[11px] font-black uppercase tracking-wider mb-4 shadow-xs">
-              <span>PORTAL PELATIH EKSKLUSIF</span>
+            {/* Pill Atas (Kuning Emas) */}
+            <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-300 text-amber-900 text-[11px] font-black uppercase tracking-wider mb-4 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              <span>PORTAL OFFICIAL EKSKLUSIF</span>
             </div>
 
-            {/* Judul Besar Dua Warna */}
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
-              Manajemen <span className="text-[#3b82f6]">Peserta & Nilai</span>
+            {/* Judul Besar Dua Warna: Hitam & Kuning Emas */}
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
+              Manajemen <span className="text-amber-500">Peserta & Nilai</span>
             </h2>
 
             {/* Deskripsi Subtitle */}
-            <p className="mt-3.5 text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              Akses khusus bagi pelatih untuk mendaftarkan peserta, mengunggah dokumen administrasi, memantau riwayat evaluasi, dan melacak perkembangan performa tim di seluruh event yang terdaftar.
+            <p className="mt-3.5 text-xs sm:text-sm md:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              Akses khusus bagi official untuk mendaftarkan peserta, mengunggah dokumen administrasi, memantau riwayat evaluasi, dan melacak perkembangan performa tim di seluruh event yang terdaftar.
             </p>
           </div>
 
-          {/* Kartu Putih Utama (Bentuk Rounded Modern Sesuai Referensi) */}
-          <div className="relative rounded-[2.5rem] bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-[0_20px_60px_-15px_rgba(59,130,246,0.08)] p-8 sm:p-12 lg:p-14 overflow-hidden">
+          {/* Kartu Putih Utama dengan BorderBeam Kuning Emas */}
+          <div className="relative rounded-[2.5rem] bg-white border border-slate-200/90 shadow-[0_20px_60px_-15px_rgba(251,188,5,0.12)] p-8 sm:p-12 lg:p-14 overflow-hidden text-slate-900">
             
-            {/* Subtle Ambient Glow di background */}
-            <div className="pointer-events-none absolute -top-24 -right-24 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-24 -left-24 w-80 h-80 bg-indigo-500/5 rounded-full blur-3xl" />
+            {/* Animasi Berkas Sinar Laser BorderBeam (Kuning Emas) */}
+            <BorderBeam
+              duration={5.5}
+              borderWidth={2.5}
+              borderRadius={40}
+              colorFrom="#FFDD00"
+              colorTo="#F59E0B"
+            />
+
+            {/* Subtle Ambient Light Orbs Kuning */}
+            <div className="pointer-events-none absolute -top-24 -right-24 w-80 h-80 bg-amber-400/15 rounded-full blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -left-24 w-80 h-80 bg-yellow-400/10 rounded-full blur-3xl" />
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               
               {/* Kolom Kiri: Teks & Tombol Masuk */}
               <div className="lg:col-span-7 flex flex-col items-start text-left">
                 
-                {/* Badge Ikon Pelatih (User + Shield) */}
-                <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 text-[#3b82f6] flex items-center justify-center mb-6 shadow-xs">
+                {/* Badge Ikon Official (Users + Shield Kuning) */}
+                <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mb-6 shadow-xs">
                   <div className="relative">
-                    <Users size={22} className="stroke-[2.5]" />
-                    <Shield size={13} className="absolute -bottom-1 -right-1 text-[#2563eb] fill-[#3b82f6]" />
+                    <Users size={24} className="stroke-[2.5] text-amber-600" />
+                    <Shield size={13} className="absolute -bottom-1 -right-1 text-amber-700 fill-amber-400" />
                   </div>
                 </div>
 
-                {/* Headline: Semua Kebutuhan Pelatih dalam Satu Pintu */}
-                <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
-                  Semua Kebutuhan Pelatih dalam <span className="text-[#3b82f6]">Satu Pintu</span>
+                {/* Headline: Semua Kebutuhan Official dalam Satu Pintu */}
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 leading-tight tracking-tight">
+                  Semua Kebutuhan Official dalam <span className="text-amber-500">Satu Pintu</span>
                 </h3>
 
                 {/* Deskripsi Body */}
-                <p className="mt-4 text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg">
+                <p className="mt-4 text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-lg">
                   Mulai dari pendaftaran biodata peserta (Danton, Pasukan, dll), unggah dokumen persyaratan, hingga pantau riwayat evaluasi dan nilai tim Anda dari seluruh kompetisi.
                 </p>
 
-                {/* Tombol Aksi: Masuk ke Portal Pelatih */}
+                {/* Tombol Aksi Kuning Emas: Masuk ke Portal Official */}
                 <div className="mt-8 flex flex-wrap items-center gap-3 w-full sm:w-auto">
                   <button
                     type="button"
                     onClick={() => setIsOpen(true)}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-black text-xs sm:text-sm shadow-lg shadow-blue-600/30 hover:shadow-blue-600/40 hover:scale-[1.02] active:scale-[0.98] transition cursor-pointer"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-[#FBBC05] hover:bg-[#eab308] text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-[1.02] active:scale-[0.98] transition cursor-pointer"
                   >
                     <LogIn size={18} className="stroke-[2.5]" />
-                    <span>Masuk ke Portal Pelatih</span>
+                    <span>Masuk ke Portal Official</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => navigate('/official')}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-4 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition cursor-pointer"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer border border-slate-200"
                   >
                     <span>Jelajahi Portal</span>
                     <ExternalLink size={14} />
@@ -155,24 +166,24 @@ export function OfficialPortalQuickAccess({
                 </div>
               </div>
 
-              {/* Kolom Kanan: Ilustrasi Kartu 3D File Icon + Skeleton Lines Sesuai Referensi */}
+              {/* Kolom Kanan: Ilustrasi Kartu 3D File Icon Kuning Emas + Skeleton Lines */}
               <div className="lg:col-span-5 flex justify-center lg:justify-end">
-                <div className="w-full max-w-sm rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-gradient-to-b from-slate-50/90 to-slate-100/40 dark:from-slate-800/40 dark:to-slate-900/40 p-8 sm:p-12 flex flex-col items-center justify-center min-h-[260px] shadow-inner relative group transition-all duration-300 hover:shadow-md">
+                <div className="w-full max-w-sm rounded-[2rem] border border-amber-100 bg-gradient-to-b from-amber-50/60 to-white p-8 sm:p-12 flex flex-col items-center justify-center min-h-[260px] shadow-inner relative group transition-all duration-300 hover:shadow-md">
                   
-                  {/* Subtle Glowing Orb di Belakang Ikon */}
-                  <div className="absolute w-28 h-28 bg-blue-500/20 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-500" />
+                  {/* Subtle Glowing Orb Kuning di Belakang Ikon */}
+                  <div className="absolute w-28 h-28 bg-amber-400/25 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-500" />
 
-                  {/* Tile Ikon File Dokumen Biru Mengkilap Elevated */}
-                  <div className="relative z-10 w-20 h-20 rounded-2xl bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8] text-white flex items-center justify-center shadow-[0_16px_36px_-6px_rgba(37,99,235,0.5)] group-hover:scale-105 group-hover:-translate-y-1 transition-all duration-300">
-                    <FileText size={38} className="stroke-[2.2]" />
+                  {/* Tile Ikon File Dokumen Kuning Emas Elevated */}
+                  <div className="relative z-10 w-20 h-20 rounded-2xl bg-gradient-to-br from-[#FBBC05] via-[#F59E0B] to-[#D97706] text-slate-950 flex items-center justify-center shadow-[0_16px_36px_-6px_rgba(245,158,11,0.5)] group-hover:scale-105 group-hover:-translate-y-1 transition-all duration-300">
+                    <FileText size={38} className="stroke-[2.2] text-slate-950" />
                   </div>
 
-                  {/* Soft Under-glow Shadow Bar */}
-                  <div className="w-16 h-3 bg-blue-500/25 blur-sm rounded-full mt-2" />
+                  {/* Soft Under-glow Shadow Bar Kuning */}
+                  <div className="w-16 h-3 bg-amber-500/30 blur-sm rounded-full mt-2" />
 
                   {/* Skeleton Preview Indicator Lines */}
-                  <div className="w-32 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 mt-5 transition-all group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50" />
-                  <div className="w-24 h-2.5 rounded-full bg-slate-200/70 dark:bg-slate-700/60 mt-2.5 transition-all group-hover:bg-blue-100 dark:group-hover:bg-blue-950/60" />
+                  <div className="w-32 h-2.5 rounded-full bg-slate-200 mt-5 transition-all group-hover:bg-amber-200" />
+                  <div className="w-24 h-2.5 rounded-full bg-slate-200/70 mt-2.5 transition-all group-hover:bg-amber-100" />
                 </div>
               </div>
 
@@ -187,7 +198,7 @@ export function OfficialPortalQuickAccess({
           {/* Backdrop transparan (klik luar untuk tutup) */}
           <div
             onClick={() => setIsOpen(false)}
-            aria-label="Tutup popup portal pelatih"
+            aria-label="Tutup popup portal official"
             className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs transition-opacity animate-fade-in"
           />
 
@@ -196,17 +207,17 @@ export function OfficialPortalQuickAccess({
             className="relative z-10 w-full max-w-md h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="portal-pelatih-title"
+            aria-labelledby="portal-official-title"
           >
             {/* Header Drawer dengan EXIT GATE UTAMA */}
             <div className="sticky top-0 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 p-4 sm:p-5 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950 text-[#3b82f6] flex items-center justify-center font-bold">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center font-bold">
                   <UserCheck size={20} />
                 </div>
                 <div>
-                  <h4 id="portal-pelatih-title" className="text-sm font-black text-slate-900 dark:text-white">
-                    Login Portal Pelatih & Official
+                  <h4 id="portal-official-title" className="text-sm font-black text-slate-900 dark:text-white">
+                    Login Portal Official
                   </h4>
                   <span className="text-[10px] text-slate-500 font-semibold">
                     GERANAT Satuan Menwa UNJ
@@ -228,8 +239,8 @@ export function OfficialPortalQuickAccess({
 
             {/* Isi Form Login Nomor WhatsApp */}
             <div className="p-6 sm:p-8 flex-1 flex flex-col justify-center">
-              {/* Badge Icon */}
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8] text-white flex items-center justify-center mx-auto shadow-lg shadow-blue-500/30 mb-4">
+              {/* Badge Icon Kuning Emas */}
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FBBC05] to-[#F59E0B] text-slate-950 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/30 mb-4">
                 <Phone size={28} />
               </div>
 
@@ -238,7 +249,7 @@ export function OfficialPortalQuickAccess({
                   Akses Cepat WhatsApp
                 </h3>
                 <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs mx-auto">
-                  Masukkan nomor WhatsApp pelatih/official yang telah terdaftar untuk membuka data kontingen Anda.
+                  Masukkan nomor WhatsApp official kontingen yang terdaftar untuk membuka data kontingen Anda.
                 </p>
               </div>
 
@@ -261,8 +272,8 @@ export function OfficialPortalQuickAccess({
                   <label className="block text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-2">
                     NOMOR WHATSAPP TERDAFTAR
                   </label>
-                  <div className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3.5 focus-within:bg-white focus-within:border-[#3b82f6] focus-within:ring-4 focus-within:ring-blue-500/15 transition">
-                    <span className="text-[#3b82f6] font-black text-sm select-none">
+                  <div className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3.5 focus-within:bg-white focus-within:border-amber-500 focus-within:ring-4 focus-within:ring-amber-500/15 transition">
+                    <span className="text-amber-600 font-black text-sm select-none">
                       +62
                     </span>
                     <input
@@ -285,7 +296,7 @@ export function OfficialPortalQuickAccess({
                 <button
                   type="submit"
                   disabled={searchingWa}
-                  className="w-full py-4 px-6 rounded-2xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 cursor-pointer transition disabled:opacity-60 active:scale-95"
+                  className="w-full py-4 px-6 rounded-2xl bg-[#FBBC05] hover:bg-[#eab308] text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 cursor-pointer transition disabled:opacity-60 active:scale-95"
                 >
                   {searchingWa ? (
                     <>
@@ -302,10 +313,10 @@ export function OfficialPortalQuickAccess({
               </form>
 
               {/* Quick Info Box */}
-              <div className="mt-6 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700 p-4 text-[11px] text-slate-600 dark:text-slate-400 space-y-2">
+              <div className="mt-6 rounded-2xl bg-amber-50/60 dark:bg-slate-800/40 border border-amber-200/80 dark:border-slate-700 p-4 text-[11px] text-slate-700 dark:text-slate-300 space-y-2">
                 <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                  <Sparkles size={13} className="text-[#3b82f6]" />
-                  <span>Kebutuhan Pelatih dalam Satu Pintu:</span>
+                  <Sparkles size={13} className="text-amber-500" />
+                  <span>Kebutuhan Official dalam Satu Pintu:</span>
                 </div>
                 <ul className="list-disc list-inside space-y-1 text-[11px] leading-relaxed">
                   <li>Unduh Lembar Rekap Nilai Juri Resmi GERANAT</li>
