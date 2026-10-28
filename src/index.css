@@ -1,3 +1,77 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  /* Continuous looping border rotation */
+  @keyframes borderSpin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Elegant flame burning aura for Rank 1 Winner */
+  @keyframes flamePulse {
+    0%, 100% {
+      box-shadow: 0 0 35px rgba(245, 158, 11, 0.45), 0 0 70px rgba(239, 68, 68, 0.22), inset 0 0 15px rgba(251, 191, 36, 0.25);
+      border-color: rgba(245, 158, 11, 0.75);
+    }
+    50% {
+      box-shadow: 0 0 55px rgba(245, 158, 11, 0.7), 0 0 100px rgba(239, 68, 68, 0.38), inset 0 0 25px rgba(251, 191, 36, 0.45);
+      border-color: rgba(239, 68, 68, 0.9);
+    }
+  }
+
+  /* Floating ember sparks for Rank 1 Winner */
+  @keyframes emberFloat {
+    0% {
+      transform: translateY(0px) scale(0.7) rotate(0deg);
+      opacity: 0;
+    }
+    30% {
+      opacity: 0.9;
+    }
+    80% {
+      opacity: 0.7;
+    }
+    100% {
+      transform: translateY(-38px) scale(1.1) rotate(20deg);
+      opacity: 0;
+    }
+  }
+
+  /* Micro-interaction cheer reaction */
+  @keyframes cheerFloat {
+    0% {
+      transform: translateY(0) scale(0.6);
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.95;
+    }
+    100% {
+      transform: translateY(-60px) scale(1.2);
+      opacity: 0;
+    }
+  }
+
+  .animate-border-spin {
+    animation: borderSpin 4s linear infinite;
+  }
+
+  .animate-border-spin-slow {
+    animation: borderSpin 6s linear infinite;
+  }
+
+  .animate-border-spin-fast {
+    animation: borderSpin 2.8s linear infinite;
+  }
+
+  .animate-flame-pulse {
+    animation: flamePulse 3s ease-in-out infinite;
+  }
+}
+
