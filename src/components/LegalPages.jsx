@@ -58,9 +58,10 @@ export function PrivacyPolicyPage() {
           <div className="bg-slate-100 p-4 rounded-2xl text-xs space-y-1.5 border border-slate-200 font-medium">
             <p><strong>Nama Organisasi:</strong> Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta (Menwa UNJ)</p>
             <p><strong>Status Badan:</strong> Unit Kegiatan Mahasiswa Bidang Khusus Pertahanan & Ketahanan Bangsa (Bela Negara), Universitas Negeri Jakarta</p>
-            <p><strong>Alamat Sekretariat Mako:</strong> Gedung G Lantai 2, Kampus A Universitas Negeri Jakarta, Jl. Rawamangun Muka, RT.11/RW.14, Rawamangun, Pulo Gadung, Kota Jakarta Timur, DKI Jakarta 13220</p>
+            <p><strong>Alamat Sekretariat Mako:</strong> Markas Komando Jl. Rawamangun Muka Komplek UNJ Gedung G Lt. I R. 107, Jakarta Timur</p>
             <p><strong>Domain Resmi:</strong> https://menwaunj.or.id</p>
             <p><strong>Kontak Email Resmi:</strong> unjmenwa@gmail.com</p>
+            <p><strong>Telepon / Kontak Person (CP):</strong> 0815-2582-3503 (Raffli) / Telp: (081525823503)</p>
           </div>
         </section>
 
@@ -176,9 +177,9 @@ export function PrivacyPolicyPage() {
             Jika Anda memiliki pertanyaan, keberatan, atau membutuhkan informasi lebih lanjut mengenai Kebijakan Privasi ini, silakan hubungi tim kami:
           </p>
           <div className="text-xs space-y-1 text-slate-200 font-mono">
-            <p><strong>Alamat:</strong> Gedung G Lt. 2 Kampus A UNJ, Jl. Rawamangun Muka, Jakarta Timur</p>
+            <p><strong>Alamat:</strong> Markas Komando Jl. Rawamangun Muka Komplek UNJ Gedung G Lt. I R. 107, Jakarta Timur</p>
             <p><strong>Surel:</strong> unjmenwa@gmail.com / rafflysyahpoetra@gmail.com</p>
-            <p><strong>WhatsApp Piket Mako:</strong> +62 858-1324-4458</p>
+            <p><strong>Telepon / CP:</strong> 0815-2582-3503 (Raffli) / Telp: (081525823503)</p>
           </div>
         </section>
       </main>

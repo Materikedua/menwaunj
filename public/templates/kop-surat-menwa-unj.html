@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kop Surat Resmi — Menwa UNJ (Template Blank)</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 15mm 20mm 15mm 20mm;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      color: #000;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      line-height: 1.35;
+    }
+    .sheet-page {
+      background: #fff;
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 18mm 20mm;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .no-print-toolbar {
+      max-width: 210mm;
+      margin: 0 auto 15px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #006569;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .no-print-toolbar button {
+      background: #FFDD00;
+      color: #000;
+      font-weight: 800;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    /* Header Kop Surat */
+    .kop-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      text-align: center;
+      padding-bottom: 6px;
+    }
+    .kop-logo {
+      width: 82px;
+      height: 82px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+    .kop-text {
+      flex: 1;
+    }
+    .kop-title-1 {
+      font-size: 13.5pt;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+    .kop-title-2 {
+      font-size: 14.5pt;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin: 2px 0 0 0;
+      text-transform: uppercase;
+    }
+    .kop-title-3 {
+      font-size: 16pt;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      margin: 3px 0 4px 0;
+      text-transform: uppercase;
+    }
+    .kop-address {
+      font-size: 9.5pt;
+      font-weight: normal;
+      margin: 0;
+      line-height: 1.25;
+    }
+    /* Garis Pembatas Ganda Khas Kedinasan */
+    .kop-divider {
+      border: 0;
+      border-top: 3px solid #000;
+      border-bottom: 1px solid #000;
+      height: 2px;
+      margin: 4px 0 20px 0;
+    }
+    /* Area Metadata Surat */
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11pt;
+      margin-bottom: 20px;
+    }
+    .meta-table td {
+      padding: 2px 0;
+      vertical-align: top;
+    }
+    .meta-table .label-col {
+      width: 90px;
+    }
+    .meta-table .colon-col {
+      width: 15px;
+      text-align: center;
+    }
+    /* Area Isi Surat Kosong */
+    .letter-body {
+      min-height: 380px;
+      font-size: 12pt;
+      text-align: justify;
+      line-height: 1.5;
+    }
+    .letter-body-placeholder {
+      border: 1px dashed #cbd5e1;
+      background: #f8fafc;
+      padding: 60px 20px;
+      text-align: center;
+      color: #94a3b8;
+      font-style: italic;
+      font-size: 12pt;
+      border-radius: 8px;
+    }
+    /* Area Tanda Tangan */
+    .signature-section {
+      margin-top: 40px;
+      display: flex;
+      justify-content: flex-end;
+      text-align: center;
+      font-size: 11pt;
+    }
+    .signature-block {
+      width: 290px;
+    }
+    .signature-title {
+      font-weight: normal;
+      margin-bottom: 75px;
+      line-height: 1.35;
+    }
+    .signature-name {
+      font-weight: bold;
+      text-decoration: underline;
+      margin: 0;
+    }
+    .signature-nbp {
+      margin: 2px 0 0 0;
+    }
+    /* Tembusan & Contact Person Kiri Bawah */
+    .footer-notes {
+      margin-top: 25px;
+      font-size: 10pt;
+      line-height: 1.4;
+    }
+    .footer-notes strong {
+      display: block;
+      margin-bottom: 2px;
+    }
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .sheet-page {
+        box-shadow: none;
+        padding: 0;
+        width: 100%;
+        min-height: auto;
+      }
+      .no-print, .no-print-toolbar {
+        display: none !important;
+      }
+      .letter-body-placeholder {
+        border: none;
+        background: transparent;
+        color: transparent;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- TOOLBAR AKSI (Hanya tampil di layar, tidak ikut tercetak) -->
+  <div class="no-print-toolbar">
+    <div>
+      <strong>Template Resmi Kop Surat Menwa UNJ</strong>
+      <span style="font-size: 12px; opacity: 0.85; display: block;">Siap digunakan untuk cetak lembar kosong atau naskah dinas</span>
+    </div>
+    <button onclick="window.print()">🖨️ Cetak / Simpan ke PDF</button>
+  </div>
+
+  <div class="sheet-page">
+    <!-- KOP SURAT RESMI -->
+    <div class="kop-header">
+      <img src="/logo-unj.png" alt="Logo UNJ" class="kop-logo" />
+      <div class="kop-text">
+        <h1 class="kop-title-1">KOMANDO RESIMEN MAHASISWA JAKARTA RAYA</h1>
+        <h2 class="kop-title-2">JAYAKARTA</h2>
+        <h3 class="kop-title-3">SATUAN UNIVERSITAS NEGERI JAKARTA</h3>
+        <p class="kop-address">
+          Markas Komando Jl. Rawamangun Muka Komplek UNJ Gedung G Lt. I R. 107, Jakarta Timur, Telp (081525823503)
+        </p>
+      </div>
+      <img src="/Logo Menwa Jayakarta.png" alt="Logo Menwa Jayakarta" class="kop-logo" />
+    </div>
+
+    <!-- GARIS PEMBATAS GANDA (TEBAL - TIPIS) -->
+    <div class="kop-divider"></div>
+
+    <!-- METADATA SURAT -->
+    <table class="meta-table">
+      <tr>
+        <td class="label-col">Nomor</td>
+        <td class="colon-col">:</td>
+        <td>B-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/Sat-UNJ/&nbsp;&nbsp;&nbsp;&nbsp;/2026</td>
+      </tr>
+      <tr>
+        <td class="label-col">Lampiran</td>
+        <td class="colon-col">:</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td class="label-col">Perihal</td>
+        <td class="colon-col">:</td>
+        <td>&nbsp;</td>
+      </tr>
+    </table>
+
+    <!-- TUJUAN PENERIMA SURAT -->
+    <div style="font-size: 11pt; margin-bottom: 22px;">
+      Kepada Yth.<br>
+      <strong>&nbsp;</strong><br>
+      di tempat
+    </div>
+
+    <div style="font-size: 11pt; margin-bottom: 15px;">
+      Dengan hormat,
+    </div>
+
+    <!-- AREA ISI SURAT (BLANK/KOSONG UNTUK TEMPLATE) -->
+    <div class="letter-body">
+      <div class="letter-body-placeholder no-print">
+        [Area Isi Surat Kosong — Silakan salin template ini atau ketik naskah dinas di sini]
+      </div>
+    </div>
+
+    <!-- TANDA TANGAN KOMANDAN -->
+    <div class="signature-section">
+      <div class="signature-block">
+        <div>Jakarta, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2026</div>
+        <div class="signature-title">
+          Komandan Resimen Mahasiswa<br>
+          Universitas Negeri Jakarta
+        </div>
+        <div class="signature-name">Eben Haezer Sitorus, S.Si.</div>
+        <div class="signature-nbp">NBP 21020741491</div>
+      </div>
+    </div>
+
+    <!-- TEMBUSAN & CP -->
+    <div class="footer-notes">
+      <strong>Tembusan:</strong>
+      1. Arsip<br>
+      CP: 0815-2582-3503 (Raffli)
+    </div>
+  </div>
+</body>
+</html>
