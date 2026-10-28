@@ -9,8 +9,30 @@ export const normalize = (p) => {
   return x || '/';
 };
 
-const read = () =>
-  normalize(MODE === 'hash' ? window.location.hash.replace(/^#/, '') : window.location.pathname);
+export const getSubdomain = () => {
+  if (typeof window === 'undefined') return null;
+  const hostname = window.location.hostname.toLowerCase();
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(hostname) || hostname === 'localhost') return null;
+  const parts = hostname.split('.');
+  if (parts.length >= 3) {
+    const sub = parts[0];
+    if (sub !== 'www' && sub !== 'menwaunj') {
+      return sub;
+    }
+  }
+  return null;
+};
+
+const read = () => {
+  if (typeof window === 'undefined') return '/';
+  const path = normalize(MODE === 'hash' ? window.location.hash.replace(/^#/, '') : window.location.pathname);
+  if (path === '/') {
+    const sub = getSubdomain();
+    if (sub === 'official') return '/portal-peserta';
+    if (sub) return `/official/${sub}`;
+  }
+  return path;
+};
 
 export const hrefFor = (path) => {
   const p = normalize(path);

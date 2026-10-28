@@ -275,10 +275,10 @@ export function OfficialPortalQuickAccess({
               {/* Form Input WhatsApp */}
               <form onSubmit={handleWhatsAppLogin} className="space-y-4">
                 <div>
-                  <label className="block text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-2">
+                  <label className="block text-[11px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 mb-2">
                     NOMOR WHATSAPP TERDAFTAR
                   </label>
-                  <div className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3.5 focus-within:bg-white focus-within:border-amber-500 focus-within:ring-4 focus-within:ring-amber-500/15 transition">
+                  <div className="flex items-center gap-3 rounded-2xl border-2 border-slate-300 bg-white px-4 py-3.5 focus-within:border-amber-500 focus-within:ring-4 focus-within:ring-amber-500/20 shadow-sm transition">
                     <span className="text-amber-600 font-black text-sm select-none">
                       +62
                     </span>
@@ -291,11 +291,12 @@ export function OfficialPortalQuickAccess({
                       }}
                       placeholder="81234567890"
                       autoFocus
-                      className="w-full bg-transparent text-slate-900 dark:text-white placeholder-slate-400 font-bold text-sm sm:text-base focus:outline-none"
+                      className="w-full bg-white text-black placeholder:text-slate-400 font-black text-sm sm:text-base focus:outline-none focus:bg-white focus:text-black"
+                      style={{ color: '#000000', backgroundColor: '#ffffff' }}
                     />
                   </div>
                   <span className="mt-1.5 block text-[11px] text-slate-500">
-                    Tanpa angka 0 di depan. Contoh: <strong>81234567890</strong>
+                    Tanpa angka 0 di depan. Contoh: <strong className="text-amber-600 font-bold">81234567890</strong>
                   </span>
                 </div>
 
