@@ -84,5 +84,7 @@ export const TAB_PATHS = {
   geranat_voting: '/geranat/voting',
   charity_voting: '/charity/voting',
   portal_peserta: '/portal-peserta',
+  privacy: '/privacy',
+  terms: '/terms',
 };
 export const PATH_TABS = Object.fromEntries(Object.entries(TAB_PATHS).map(([k, v]) => [v, k]));
