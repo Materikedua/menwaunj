@@ -13,7 +13,9 @@ import {
   ChevronRight,
   Sparkles,
   Users,
-  IdCard
+  IdCard,
+  ShieldCheck,
+  Lock
 } from 'lucide-react';
 import { normalizeWaNumber, getOfficialPortalByWhatsApp } from '../firebase.js';
 import { navigate } from '../lib/router.jsx';
@@ -245,6 +247,10 @@ export function OfficialPortalQuickAccess({
               </div>
 
               <div className="text-center mb-6">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wider mb-2.5">
+                  <ShieldCheck size={12} className="text-emerald-600 dark:text-emerald-400" />
+                  <span>Dilindungi 6-Digit PIN Keamanan</span>
+                </div>
                 <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
                   Akses Cepat WhatsApp
                 </h3>
@@ -316,13 +322,13 @@ export function OfficialPortalQuickAccess({
               <div className="mt-6 rounded-2xl bg-amber-50/60 dark:bg-slate-800/40 border border-amber-200/80 dark:border-slate-700 p-4 text-[11px] text-slate-700 dark:text-slate-300 space-y-2">
                 <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                   <Sparkles size={13} className="text-amber-500" />
-                  <span>Kebutuhan Official dalam Satu Pintu:</span>
+                  <span>Fitur Baru Portal Official Terverifikasi:</span>
                 </div>
                 <ul className="list-disc list-inside space-y-1 text-[11px] leading-relaxed">
-                  <li>Unduh Lembar Rekap Nilai Juri Resmi GERANAT</li>
-                  <li>Cetak ID Card Pasukan & Official Siap Pakai</li>
-                  <li>Upload & Verifikasi Berkas Administrasi</li>
-                  <li>Pantau Riwayat Evaluasi & Nomor Urut Tampil</li>
+                  <li><strong>Proteksi PIN Rahasia:</strong> Mencegah manipulasi data kontingen dari pihak lain</li>
+                  <li><strong>Mode Tamu (Read-Only):</strong> Bagikan tautan ke suporter dengan aman tanpa izin edit</li>
+                  <li><strong>Cetak Buku Pasukan A4:</strong> Format rekap juknis resmi lengkap foto &amp; NISN</li>
+                  <li><strong>Undo &amp; Snapshot Cadangan:</strong> Pulihkan data jika terjadi salah hapus</li>
                 </ul>
               </div>
             </div>
