@@ -76,13 +76,20 @@ export const Reveal = ({ children, className = '', delay = 0, from = 'up', once 
   );
 };
 
-export const Stagger = ({ children, step = 90, from = 'up', className = '', itemClassName = '' }) => (
-  <div className={className}>
-    {React.Children.map(children, (child, i) => (
-      <Reveal delay={i * step} from={from} className={itemClassName}>{child}</Reveal>
-    ))}
-  </div>
-);
+export const Stagger = ({ children, step = 90, from = 'up', className = '', itemClassName = '' }) => {
+  const validChildren = React.Children.toArray(children).filter(
+    (c) => c !== null && c !== undefined && c !== false && (typeof c !== 'string' || c.trim().length > 0)
+  );
+  return (
+    <div className={className}>
+      {validChildren.map((child, i) => (
+        <Reveal key={child.key || i} delay={i * step} from={from} className={itemClassName}>
+          {child}
+        </Reveal>
+      ))}
+    </div>
+  );
+};
 
 /* ============================================================
    3. CursorGlow — cahaya lembut global yang mengikuti kursor
