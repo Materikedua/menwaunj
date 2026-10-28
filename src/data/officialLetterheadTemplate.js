@@ -4,8 +4,10 @@
  */
 
 export const OFFICIAL_MAKO_CONTACT = {
+  officialName: 'Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta (Menwa UNJ)',
   organization: 'KOMANDO RESIMEN MAHASISWA JAKARTA RAYA JAYAKARTA',
   unit: 'SATUAN UNIVERSITAS NEGERI JAKARTA',
+  statusBadan: 'Unit Kegiatan Mahasiswa, Organisasi Mahasiswa (Ormawa) Bidang Bela Negara Universitas Negeri Jakarta',
   address: 'Markas Komando Jl. Rawamangun Muka Komplek UNJ Gedung G Lt. I R. 107, Jakarta Timur',
   phone: '081525823503',
   phoneFormatted: '0815-2582-3503',

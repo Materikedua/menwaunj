@@ -28,7 +28,7 @@ export function PrivacyPolicyPage() {
             </div>
           </div>
           <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-2xl">
-            Portal Resmi Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta (<span className="text-[#FFDD00] font-mono">menwaunj.or.id</span>). Berlaku efektif sejak 28 Oktober 2026.
+            Portal Resmi Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta (Menwa UNJ) (<span className="text-[#FFDD00] font-mono">menwaunj.or.id</span>). Berlaku efektif sejak 28 Oktober 2026.
           </p>
         </div>
       </header>
@@ -42,7 +42,7 @@ export function PrivacyPolicyPage() {
             <span>Kepatuhan Transparansi Perlindungan Data Pribadi</span>
           </div>
           <p className="text-sm text-slate-700 leading-relaxed">
-            Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta (selanjutnya disebut <strong>"Menwa UNJ"</strong> atau <strong>"Kami"</strong>) berkomitmen penuh melindungi hak privasi setiap pengguna, peserta kegiatan, taruna, alumni, maupun masyarakat umum yang mengakses portal resmi <strong>https://menwaunj.or.id</strong> dan layanan digital turunannya. Kebijakan Privasi ini menjelaskan secara komprehensif bagaimana kami mengumpulkan, mengakses, menggunakan, menyimpan, dan menjaga kerahasiaan data pengguna, khususnya data yang diperoleh melalui Otentikasi Akun Google (Google Sign-In).
+            Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta (selanjutnya disebut <strong>"Menwa UNJ"</strong> atau <strong>"Kami"</strong>) berkomitmen penuh melindungi hak privasi setiap pengguna, peserta kegiatan, taruna, alumni, maupun masyarakat umum yang mengakses portal resmi <strong>https://menwaunj.or.id</strong> dan layanan digital turunannya. Kebijakan Privasi ini menjelaskan secara komprehensif bagaimana kami mengumpulkan, mengakses, menggunakan, menyimpan, dan menjaga kerahasiaan data pengguna, khususnya data yang diperoleh melalui Otentikasi Akun Google (Google Sign-In).
           </p>
         </section>
 
@@ -56,8 +56,8 @@ export function PrivacyPolicyPage() {
             Portal ini dikelola secara resmi dan sah oleh:
           </p>
           <div className="bg-slate-100 p-4 rounded-2xl text-xs space-y-1.5 border border-slate-200 font-medium">
-            <p><strong>Nama Organisasi:</strong> Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta (Menwa UNJ)</p>
-            <p><strong>Status Badan:</strong> Unit Kegiatan Mahasiswa Bidang Khusus Pertahanan & Ketahanan Bangsa (Bela Negara), Universitas Negeri Jakarta</p>
+            <p><strong>Nama Organisasi:</strong> Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta (Menwa UNJ)</p>
+            <p><strong>Status Badan:</strong> Unit Kegiatan Mahasiswa, Organisasi Mahasiswa (Ormawa) Bidang Bela Negara Universitas Negeri Jakarta</p>
             <p><strong>Alamat Sekretariat Mako:</strong> Markas Komando Jl. Rawamangun Muka Komplek UNJ Gedung G Lt. I R. 107, Jakarta Timur</p>
             <p><strong>Domain Resmi:</strong> https://menwaunj.or.id</p>
             <p><strong>Kontak Email Resmi:</strong> unjmenwa@gmail.com</p>
@@ -213,7 +213,7 @@ export function TermsOfServicePage() {
             </div>
           </div>
           <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-2xl">
-            Aturan penggunaan portal resmi Resimen Mahasiswa Satuan Universitas Negeri Jakarta (<span className="text-[#FFDD00] font-mono">menwaunj.or.id</span>).
+            Aturan penggunaan portal resmi Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta (Menwa UNJ) (<span className="text-[#FFDD00] font-mono">menwaunj.or.id</span>).
           </p>
         </div>
       </header>
