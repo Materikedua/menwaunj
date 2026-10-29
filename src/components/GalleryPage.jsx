@@ -10,7 +10,7 @@ export function GalleryPage({ onOpenAuth = null }) {
 
   return (
     <div className="min-h-screen bg-[#F5F8F6] font-sans selection:bg-[#006569] selection:text-[#FFDD00]">
-      {/* COMPACT HEADER BAR — Dirancang ringkas agar Radial Arc Wheel pas 1 layar laptop tanpa scroll */}
+      {/* COMPACT HEADER BAR — Dirancang ringkas dan elegan untuk kenyamanan visual */}
       <section className="relative overflow-hidden bg-[#092D32] py-4 sm:py-5 text-white border-b border-[#006569]/40">
         <div className="absolute inset-0 z-0 select-none pointer-events-none opacity-25">
           <img
@@ -42,12 +42,12 @@ export function GalleryPage({ onOpenAuth = null }) {
             <span aria-hidden="true">·</span>
             <span><strong className="text-white">24+</strong> Album Dokumentasi</span>
             <span aria-hidden="true">·</span>
-            <span><strong className="text-emerald-400">2025–2026</strong></span>
+            <span><strong className="text-emerald-400">2023–2026</strong></span>
           </div>
         </div>
       </section>
 
-      {/* PANGGUNG UTAMA DOKUMENTASI: RADIAL ARC WHEEL & CLASSIC GRID */}
+      {/* PANGGUNG UTAMA DOKUMENTASI: GRID KLASIK, DOSSIER SHOWCASE & GARIS WAKTU */}
       <DocumentationWall onOpenAuth={onOpenAuth} />
     </div>
   );

@@ -11,7 +11,6 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   ChevronDown,
   X,
   Check,
@@ -20,7 +19,6 @@ import {
   Send,
   Filter,
   ExternalLink,
-  Disc,
   LayoutGrid,
   Maximize2,
   Shield,
@@ -28,6 +26,12 @@ import {
   BookOpen,
   HeartHandshake,
   Calendar,
+  Clock,
+  ArrowRight,
+  Layers,
+  CalendarDays,
+  SlidersHorizontal,
+  FolderOpen,
 } from 'lucide-react';
 import {
   DEFAULT_DOCUMENTATION_DATA,
@@ -43,15 +47,15 @@ import {
 import { useCanvasStore } from '../lib/canvasStore.jsx';
 import { useAuth } from '../hooks/useAuth.jsx';
 
-const AVAILABLE_YEARS = ['Semua Tahun', '2026', '2025'];
+const AVAILABLE_YEARS = ['Semua Tahun', '2026', '2025', '2024', '2023'];
 
-const DIAL_CATEGORIES = [
+const GALLERY_CATEGORIES = [
   { id: 'ALL', label: 'Semua Giat', short: 'Semua', icon: LayoutGrid },
   { id: 'LKBB', label: 'LKBB & Paskibra', short: 'Paskibra', icon: Award, match: ['geranat', 'paskibra', 'lkbb'] },
   { id: 'DIKLAT', label: 'Diklat & Militer', short: 'Diklat', icon: Shield, match: ['pembaretan', 'cakrawala', 'kds', 'provos', 'diklat', 'latgabnas', 'binjas', 'olahraga'] },
   { id: 'BAKSOS', label: 'Baksos & Rohani', short: 'Baksos', icon: HeartHandshake, match: ['buka-bersama', 'santunan', 'baksos', 'pengabdian', 'kemanusiaan'] },
-  { id: 'SEMINAR', label: 'Seminar & Kompetisi', short: 'Seminar', icon: BookOpen, match: ['youth-spark', 'ksatria-cendekia', 'lempika', 'seminar', 'kompetisi'] },
-  { id: 'PROTOKOLER', label: 'Protokoler & Komando', short: 'Protokoler', icon: Sparkles, match: ['sertijab', 'pcab', 'rakomsat', 'pam-wisuda', 'upacara', 'kunjungan'] },
+  { id: 'SEMINAR', label: 'Seminar & Prestasi', short: 'Seminar', icon: BookOpen, match: ['youth-spark', 'ksatria-cendekia', 'lempika', 'seminar', 'kompetisi'] },
+  { id: 'PROTOKOLER', label: 'Protokoler & Upacara', short: 'Protokoler', icon: Sparkles, match: ['sertijab', 'pcab', 'rakomsat', 'pam-wisuda', 'upacara', 'kunjungan'] },
 ];
 
 export function parseCommentDate(comment) {
@@ -142,28 +146,22 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
     contentRegistry = [];
   }
 
-  // Mode Tampilan: 'dial' (Radial Arc Wheel - Default) | 'grid' (Classic Grid)
-  const [viewMode, setViewMode] = useState('dial');
+  // Mode Tampilan: 'grid' (Grid Klasik - Default!) | 'showcase' (Dossier Showcase) | 'timeline' (Garis Waktu)
+  const [viewMode, setViewMode] = useState('grid');
 
-  // Filter States
+  // Filter & Urutan
   const [selectedCategoryGroup, setSelectedCategoryGroup] = useState('ALL');
   const [selectedActivityId, setSelectedActivityId] = useState('ALL');
   const [selectedYear, setSelectedYear] = useState('Semua Tahun');
   const [searchQuery, setSearchQuery] = useState('');
-  const [onlyFeatured, setOnlyFeatured] = useState(false);
-
-  // State Indeks Album Aktif pada Radial Arc Wheel & Slide Foto di Panel Dossier Kanan
-  const [activeAlbumIndex, setActiveAlbumIndex] = useState(0);
-  const [activeDossierSlide, setActiveDossierSlide] = useState(0);
-
-  // Drag / Wheel Interaction State untuk Radial Dial
-  const dialContainerRef = useRef(null);
-  const dragStateRef = useRef({ active: false, startY: 0, accumulatedDelta: 0 });
-  const wheelCooldownRef = useRef(0);
-
-  // Dropdown Proker Lainnya
+  const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'likes' | 'comments'
   const [extraDropdownOpen, setExtraDropdownOpen] = useState(false);
   const extraDropdownRef = useRef(null);
+
+  // Showcase state
+  const [showcaseAlbumIndex, setShowcaseAlbumIndex] = useState(0);
+  const [showcaseSlideIndex, setShowcaseSlideIndex] = useState(0);
+  const filmstripReelRef = useRef(null);
 
   // Interaksi Pengguna (Likes, Bookmarks, Comments)
   const [firestorePostMap, setFirestorePostMap] = useState({});
@@ -207,7 +205,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
   const [activeModalPostId, setActiveModalPostId] = useState(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [commentText, setCommentText] = useState('');
-  const [dossierCommentText, setDossierCommentText] = useState('');
+  const [showcaseCommentText, setShowcaseCommentText] = useState('');
   const commentInputRef = useRef(null);
 
   // Langganan Real-time Firestore
@@ -228,17 +226,16 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
       const prokerId = e.detail?.prokerId;
       if (prokerId) {
         setSelectedCategoryGroup('ALL');
-        setSelectedActivityId(prokerId === 'gps-viii' ? 'geranat-viii' : prokerId);
-        setSelectedYear('Semua Tahun');
-        setOnlyFeatured(false);
-        setActiveAlbumIndex(0);
+        setSelectedActivityId(prokerId);
+        setShowcaseAlbumIndex(0);
+        setShowcaseSlideIndex(0);
       }
     };
-    window.addEventListener('menwa:filter-documentation', handleExternalFilter);
-    return () => window.removeEventListener('menwa:filter-documentation', handleExternalFilter);
+    window.addEventListener('menwa-filter-gallery', handleExternalFilter);
+    return () => window.removeEventListener('menwa-filter-gallery', handleExternalFilter);
   }, []);
 
-  // Tutup dropdown saat klik di luar
+  // Tutup dropdown proker saat klik di luar
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (extraDropdownRef.current && !extraDropdownRef.current.contains(e.target)) {
@@ -249,7 +246,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Gabungkan data album dengan Content Registry & Firestore
+  // Normalisasi & Sinkronisasi Daftar Posting
   const posts = useMemo(() => {
     const list = Array.isArray(rawPosts) ? rawPosts : DEFAULT_DOCUMENTATION_DATA;
     const registryMap = new Map(
@@ -263,10 +260,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
         .map((item) => [item.albumId, item])
     );
 
-    const allowedYears = [2025, 2026, '2025', '2026'];
-    const filteredList = list.filter((p) => !p.year || allowedYears.includes(p.year));
-
-    return filteredList.map((post) => {
+    return list.map((post) => {
       const normalizedProkerId = post.prokerId === 'gps-viii' ? 'geranat-viii' : post.prokerId;
       const normalizedProkerName =
         post.prokerName === 'GPS VIII'
@@ -350,11 +344,11 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
     bookmarkedPostIds,
   ]);
 
-  // Hasil penyaringan
+  // Hasil penyaringan dan pengurutan
   const filteredPosts = useMemo(() => {
-    return posts.filter((post) => {
+    let result = posts.filter((post) => {
       if (selectedCategoryGroup !== 'ALL') {
-        const catObj = DIAL_CATEGORIES.find((c) => c.id === selectedCategoryGroup);
+        const catObj = GALLERY_CATEGORIES.find((c) => c.id === selectedCategoryGroup);
         if (catObj && catObj.match) {
           const hay = `${post.prokerId} ${post.prokerName} ${post.category}`.toLowerCase();
           if (!catObj.match.some((kw) => hay.includes(kw))) return false;
@@ -366,9 +360,6 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
       if (selectedYear !== 'Semua Tahun' && String(post.year) !== selectedYear) {
         return false;
       }
-      if (onlyFeatured && !post.isFeatured) {
-        return false;
-      }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const haystack = `${post.prokerName} ${post.caption} ${post.location} ${post.year} ${post.category}`.toLowerCase();
@@ -376,27 +367,29 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
       }
       return true;
     });
-  }, [posts, selectedCategoryGroup, selectedActivityId, selectedYear, onlyFeatured, searchQuery]);
 
-  // Pastikan activeAlbumIndex selalu valid saat filter berubah
-  useEffect(() => {
-    if (activeAlbumIndex >= filteredPosts.length) {
-      setActiveAlbumIndex(0);
+    // Pengurutan
+    if (sortBy === 'likes') {
+      result.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+    } else if (sortBy === 'comments') {
+      result.sort((a, b) => (b.comments?.length || 0) - (a.comments?.length || 0));
+    } else {
+      // Default: 'newest' (Urut tahun terbaru, kemudian indeks bulan)
+      result.sort((a, b) => {
+        const yrDiff = Number(b.year || 0) - Number(a.year || 0);
+        if (yrDiff !== 0) return yrDiff;
+        return (b.monthIndex || 0) - (a.monthIndex || 0);
+      });
     }
-    setActiveDossierSlide(0);
-  }, [filteredPosts.length, selectedCategoryGroup, selectedActivityId, selectedYear]);
 
-  // Deep-Linking dari URL Query (?album=..., ?post=..., atau ?proker=...) agar Radial Arc otomatis berputar ke album tujuan
+    return result;
+  }, [posts, selectedCategoryGroup, selectedActivityId, selectedYear, searchQuery, sortBy]);
+
+  // Deep Link URL Sync (?album=id-album)
   useEffect(() => {
-    if (typeof window === 'undefined' || filteredPosts.length === 0) return;
     try {
       const params = new URLSearchParams(window.location.search);
-      const targetKey = (
-        params.get('album') ||
-        params.get('post') ||
-        params.get('proker') ||
-        ''
-      )
+      const targetKey = (params.get('album') || params.get('proker') || '')
         .trim()
         .toLowerCase();
       if (!targetKey) return;
@@ -408,117 +401,15 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
           String(p.prokerName || '').toLowerCase().includes(targetKey)
       );
       if (foundIdx >= 0) {
-        setActiveAlbumIndex(foundIdx);
-        setActiveDossierSlide(0);
+        setShowcaseAlbumIndex(foundIdx);
+        setShowcaseSlideIndex(0);
       }
     } catch {
       /* ignore */
     }
   }, [filteredPosts]);
 
-  const activeAlbum = filteredPosts[activeAlbumIndex] || filteredPosts[0] || null;
-
-  // Navigasi Putar Roda Dial
-  const stepDial = useCallback(
-    (delta) => {
-      if (filteredPosts.length <= 1) return;
-      setActiveAlbumIndex((prev) => {
-        const next = Math.max(0, Math.min(filteredPosts.length - 1, prev + delta));
-        if (next !== prev) {
-          setActiveDossierSlide(0);
-        }
-        return next;
-      });
-    },
-    [filteredPosts.length]
-  );
-
-  // Pasang non-passive wheel listener pada kontainer Dial Kiri agar putaran mouse wheel memutar busur tanpa men-scroll halaman
-  useEffect(() => {
-    const el = dialContainerRef.current;
-    if (!el || viewMode !== 'dial') return undefined;
-
-    const onWheel = (e) => {
-      if (filteredPosts.length <= 1) return;
-      e.preventDefault();
-      const now = Date.now();
-      if (now - wheelCooldownRef.current < 90) return;
-      if (Math.abs(e.deltaY) > 8) {
-        wheelCooldownRef.current = now;
-        stepDial(e.deltaY > 0 ? 1 : -1);
-      }
-    };
-
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
-  }, [viewMode, filteredPosts.length, stepDial]);
-
-  // Keyboard navigation (Panah Atas / Bawah untuk memutar Dial)
-  useEffect(() => {
-    if (viewMode !== 'dial' || activeModalPostId) return undefined;
-    const onKeyDown = (e) => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        stepDial(1);
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        stepDial(-1);
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [viewMode, activeModalPostId, stepDial]);
-
-  // Drag / Swipe Gesture Vertikal pada Roda Dial
-  const handleDialPointerDown = (e) => {
-    dragStateRef.current = {
-      active: true,
-      startY: e.clientY,
-      accumulatedDelta: 0,
-    };
-  };
-
-  const handleDialPointerMove = (e) => {
-    if (!dragStateRef.current.active) return;
-    const dy = e.clientY - dragStateRef.current.startY;
-    if (Math.abs(dy) >= 42) {
-      stepDial(dy < 0 ? 1 : -1);
-      dragStateRef.current.startY = e.clientY;
-    }
-  };
-
-  const handleDialPointerUp = () => {
-    dragStateRef.current.active = false;
-  };
-
-  const activeModalPost = useMemo(
-    () => posts.find((p) => p.id === activeModalPostId) || null,
-    [posts, activeModalPostId]
-  );
-
-  // Kunci scroll saat Lightbox Modal terbuka
-  useEffect(() => {
-    if (!activeModalPost) return undefined;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        setActiveModalPostId(null);
-      } else if (e.key === 'ArrowRight') {
-        setActiveSlideIndex((prev) => (prev + 1) % (activeModalPost.photos?.length || 1));
-      } else if (e.key === 'ArrowLeft') {
-        const len = activeModalPost.photos?.length || 1;
-        setActiveSlideIndex((prev) => (prev - 1 + len) % len);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [activeModalPost]);
+  const activeShowcaseAlbum = filteredPosts[showcaseAlbumIndex] || filteredPosts[0] || null;
 
   // Handler Like
   const handleToggleLike = useCallback(
@@ -556,6 +447,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
         setHeartBurstPostId(post.id);
         setTimeout(() => setHeartBurstPostId(null), 850);
       }
+
       await syncDocumentationLikeFirestore(post.id, nextLikesCount);
     },
     [likedPostIds, localLikesDelta]
@@ -564,6 +456,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
   // Handler Bookmark
   const handleToggleBookmark = useCallback(
     (postId) => {
+      if (!postId) return;
       const nextMap = {
         ...bookmarkedPostIds,
         [postId]: !bookmarkedPostIds[postId],
@@ -615,7 +508,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
     }
   }, []);
 
-  // Kirim Komentar (dari Dossier Panel maupun Lightbox Modal)
+  // Kirim Komentar (dari Dossier Showcase maupun Lightbox Modal)
   const submitPostComment = useCallback(
     async (targetPost, rawText, clearInputCallback) => {
       if (!targetPost || !rawText.trim()) return;
@@ -651,9 +544,10 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
     setSelectedActivityId('ALL');
     setSelectedYear('Semua Tahun');
     setSearchQuery('');
-    setOnlyFeatured(false);
+    setSortBy('newest');
     setExtraDropdownOpen(false);
-    setActiveAlbumIndex(0);
+    setShowcaseAlbumIndex(0);
+    setShowcaseSlideIndex(0);
   }, []);
 
   const isFiltered =
@@ -661,17 +555,62 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
     selectedActivityId !== 'ALL' ||
     selectedYear !== 'Semua Tahun' ||
     Boolean(searchQuery.trim()) ||
-    onlyFeatured;
+    sortBy !== 'newest';
+
+  const activeModalPost = useMemo(
+    () => posts.find((p) => p.id === activeModalPostId) || null,
+    [posts, activeModalPostId]
+  );
+
+  // Kunci scroll saat Lightbox Modal terbuka
+  useEffect(() => {
+    if (!activeModalPost) return undefined;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setActiveModalPostId(null);
+      } else if (e.key === 'ArrowRight') {
+        setActiveSlideIndex((prev) => (prev + 1) % (activeModalPost.photos?.length || 1));
+      } else if (e.key === 'ArrowLeft') {
+        const len = activeModalPost.photos?.length || 1;
+        setActiveSlideIndex((prev) => (prev - 1 + len) % len);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeModalPost]);
+
+  // Kelompokkan posting per tahun untuk Mode Timeline Garis Waktu
+  const postsByYear = useMemo(() => {
+    const map = {};
+    filteredPosts.forEach((p) => {
+      const yr = String(p.year || '2026');
+      if (!map[yr]) map[yr] = [];
+      map[yr].push(p);
+    });
+    // Urutkan tahun dari terbesar ke terkecil
+    return Object.keys(map)
+      .sort((a, b) => Number(b) - Number(a))
+      .map((year) => ({
+        year,
+        items: map[year],
+      }));
+  }, [filteredPosts]);
 
   return (
     <section
       id="dinding-dokumentasi"
       aria-labelledby="dinding-dokumentasi-title"
-      className="relative overflow-hidden bg-[#F5F8F6] py-4 sm:py-6 text-[#092D32]"
+      className="relative overflow-hidden bg-[#F5F8F6] py-5 sm:py-7 text-[#092D32]"
     >
       {/* Toast Notifikasi Salin Tautan */}
       {shareToast && (
-        <div className="fixed bottom-8 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-[#059669] bg-[#092D32] px-4 py-3 text-xs font-extrabold text-white shadow-2xl">
+        <div className="fixed bottom-8 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-[#059669] bg-[#092D32] px-4 py-3 text-xs font-extrabold text-white shadow-2xl animate-fade-in">
           <span className="grid h-5 w-5 place-items-center rounded-full bg-[#059669] text-white">
             <Check size={13} />
           </span>
@@ -679,43 +618,65 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
         </div>
       )}
 
-      <div className="mx-auto max-w-[1440px] px-3 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-3 sm:px-6 lg:px-8 space-y-5">
         {/* ====================================================================
-            TOP CONTROL & VIEW SWITCHER BAR (Compact 1-Row 3D Neumorphic)
+            BARIS ATAS: KONTROL TAMPILAN & FILTER PINTAR (3D TACTILE NEUMORPHIC)
             ==================================================================== */}
-        <div className="relative z-30 mb-4 rounded-3xl neu-card px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-          {/* Kiri: View Mode Switcher (Radial Dial vs Classic Grid) + Filter Kategori Cepat */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex rounded-2xl neu-inset p-1">
-              <button
-                type="button"
-                onClick={() => setViewMode('dial')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-black transition cursor-pointer whitespace-nowrap ${
-                  viewMode === 'dial'
-                    ? 'neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-950'
-                }`}
-              >
-                <Disc size={14} />
-                <span>Radial Arc Dial</span>
-              </button>
+        <div className="relative z-30 rounded-3xl neu-card p-3.5 sm:p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 shadow-md">
+          {/* Sisi Kiri: Switcher 3 Mode Tampilan Otentik (Grid Klasik | Showcase | Garis Waktu) */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="neu-pill-bar">
               <button
                 type="button"
                 onClick={() => setViewMode('grid')}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-black transition cursor-pointer whitespace-nowrap ${
+                className={
                   viewMode === 'grid'
-                    ? 'neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-950'
-                }`}
+                    ? 'neu-pill-tab-dark'
+                    : 'neu-pill-tab'
+                }
+                title="Tampilan Grid Foto Klasik"
               >
-                <LayoutGrid size={14} />
+                <LayoutGrid size={14} className={viewMode === 'grid' ? 'text-emerald-400' : 'text-emerald-600'} />
                 <span>Grid Klasik</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setViewMode('showcase');
+                  setShowcaseSlideIndex(0);
+                }}
+                className={
+                  viewMode === 'showcase'
+                    ? 'neu-pill-tab-dark'
+                    : 'neu-pill-tab'
+                }
+                title="Tampilan Dossier Eksebisi Split"
+              >
+                <Layers size={14} className={viewMode === 'showcase' ? 'text-amber-400' : 'text-amber-500'} />
+                <span>Dossier Showcase</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setViewMode('timeline')}
+                className={
+                  viewMode === 'timeline'
+                    ? 'neu-pill-tab-dark'
+                    : 'neu-pill-tab'
+                }
+                title="Tampilan Kronik Garis Waktu"
+              >
+                <CalendarDays size={14} className={viewMode === 'timeline' ? 'text-sky-400' : 'text-sky-600'} />
+                <span>Garis Waktu</span>
               </button>
             </div>
 
-            <div className="hidden xl:flex items-center gap-1.5 pl-2 border-l border-slate-200/80">
-              {DIAL_CATEGORIES.map((cat) => {
+            {/* Filter Kategori Singkat (Pills Ref: Image 1) */}
+            <div className="hidden xl:flex items-center gap-1.5 pl-2 border-l border-slate-200">
+              {GALLERY_CATEGORIES.map((cat) => {
                 const active = selectedCategoryGroup === cat.id && selectedActivityId === 'ALL';
+                const IconComponent = cat.icon;
                 return (
                   <button
                     key={cat.id}
@@ -723,29 +684,47 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                     onClick={() => {
                       setSelectedCategoryGroup(cat.id);
                       setSelectedActivityId('ALL');
-                      setActiveAlbumIndex(0);
+                      setShowcaseAlbumIndex(0);
                     }}
-                    className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+                    className={
                       active
-                        ? 'neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white shadow-xs'
-                        : 'neu-btn bg-white hover:bg-slate-50 text-slate-700 hover:text-[#006569] border border-slate-200/80'
-                    }`}
+                        ? 'neu-pill-tab-dark'
+                        : 'neu-pill-tab'
+                    }
                   >
-                    {cat.short}
+                    <IconComponent
+                      size={13}
+                      className={
+                        active
+                          ? 'text-[#FFDD00]'
+                          : cat.id === 'ALL'
+                          ? 'text-teal-600'
+                          : cat.id === 'LKBB'
+                          ? 'text-amber-500'
+                          : cat.id === 'DIKLAT'
+                          ? 'text-emerald-600'
+                          : cat.id === 'BAKSOS'
+                          ? 'text-rose-500'
+                          : cat.id === 'SEMINAR'
+                          ? 'text-blue-500'
+                          : 'text-purple-500'
+                      }
+                    />
+                    <span>{cat.short}</span>
                   </button>
                 );
               })}
             </div>
 
-            {/* Dropdown Pilih Proker Spesifik */}
+            {/* Dropdown Proker Tertentu */}
             <div className="relative" ref={extraDropdownRef}>
               <button
                 type="button"
                 onClick={() => setExtraDropdownOpen((prev) => !prev)}
-                className={`inline-flex items-center gap-1.5 rounded-2xl px-3.5 py-2 text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+                className={`neu-pill-tab ${
                   selectedActivityId !== 'ALL'
-                    ? 'neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white shadow-xs'
-                    : 'neu-btn bg-white hover:bg-slate-50 text-[#092D32] border border-slate-200/80'
+                    ? 'neu-pill-tab-dark'
+                    : ''
                 }`}
               >
                 <span>
@@ -759,7 +738,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
               </button>
 
               {extraDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-72 rounded-2xl neu-card p-2.5 z-50">
+                <div className="absolute top-full left-0 mt-2 w-72 rounded-2xl neu-card p-2.5 z-50 shadow-2xl">
                   <div className="max-h-60 space-y-1 overflow-y-auto pr-1">
                     <button
                       type="button"
@@ -783,7 +762,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                           setSelectedCategoryGroup('ALL');
                           setSelectedActivityId(proker.id);
                           setExtraDropdownOpen(false);
-                          setActiveAlbumIndex(0);
+                          setShowcaseAlbumIndex(0);
                         }}
                         className={`flex w-full items-center justify-between rounded-xl px-3 py-1.5 text-left text-xs font-bold transition ${
                           selectedActivityId === proker.id
@@ -803,7 +782,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                           setSelectedCategoryGroup('ALL');
                           setSelectedActivityId(act.id);
                           setExtraDropdownOpen(false);
-                          setActiveAlbumIndex(0);
+                          setShowcaseAlbumIndex(0);
                         }}
                         className={`flex w-full items-center justify-between rounded-xl px-3 py-1.5 text-left text-xs font-bold transition ${
                           selectedActivityId === act.id
@@ -820,20 +799,21 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
             </div>
           </div>
 
-          {/* Kanan: Pencarian, Tahun, & Reset */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex w-44 sm:w-52 items-center gap-2 rounded-2xl neu-inset px-3 py-2">
-              <Search size={13} className="text-[#006569] shrink-0" />
+          {/* Sisi Kanan: Pencarian, Tahun, Urutan, & Reset (Ref: Image 4 Warm Luminous Pill) */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Input Pencarian Backlit Warm Glow (Ref: Image 4) */}
+            <div className="neu-search-capsule flex-1 sm:flex-none sm:w-60 px-4 py-2">
+              <Search size={14} className="text-slate-800 shrink-0" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  setActiveAlbumIndex(0);
+                  setShowcaseAlbumIndex(0);
                 }}
-                style={{ color: '#020617' }}
+                style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
                 placeholder="Cari giat / lokasi..."
-                className="w-full bg-transparent text-xs font-bold text-slate-950 placeholder:text-slate-400 outline-none"
+                className="w-full bg-white text-black text-xs font-bold placeholder:text-slate-400 outline-none"
               />
               {searchQuery && (
                 <button
@@ -841,20 +821,21 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                   onClick={() => setSearchQuery('')}
                   className="text-slate-400 hover:text-slate-700 cursor-pointer"
                 >
-                  <X size={12} />
+                  <X size={13} />
                 </button>
               )}
             </div>
 
-            <div className="neu-inset rounded-2xl px-3 py-1.5">
+            {/* Filter Tahun Pill */}
+            <div className="neu-pill-tab px-3.5 py-1.5 bg-white">
               <select
                 value={selectedYear}
                 onChange={(e) => {
                   setSelectedYear(e.target.value);
-                  setActiveAlbumIndex(0);
+                  setShowcaseAlbumIndex(0);
                 }}
-                style={{ color: '#020617' }}
-                className="bg-transparent text-xs font-bold text-slate-950 outline-none cursor-pointer"
+                style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
+                className="bg-transparent text-black text-xs font-bold outline-none cursor-pointer"
               >
                 {AVAILABLE_YEARS.map((yr) => (
                   <option key={yr} value={yr}>
@@ -864,13 +845,29 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
               </select>
             </div>
 
+            {/* Urutkan Berdasarkan Pill */}
+            <div className="neu-pill-tab px-3.5 py-1.5 bg-white">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
+                className="bg-transparent text-black text-xs font-bold outline-none cursor-pointer"
+              >
+                <option value="newest">Terbaru</option>
+                <option value="likes">Terbanyak Disukai</option>
+                <option value="comments">Paling Ramai</option>
+              </select>
+            </div>
+
+            {/* Tombol Reset STRONG Red (Ref: Image 2) */}
             {isFiltered && (
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="inline-flex items-center gap-1 rounded-2xl neu-btn px-3 py-2 text-xs font-extrabold text-[#E11D48] cursor-pointer"
+                className="neu-btn-strong-red inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-xs font-black cursor-pointer shadow-sm"
+                title="Reset semua penyaringan"
               >
-                <RotateCcw size={12} />
+                <RotateCcw size={13} />
                 <span>Reset</span>
               </button>
             )}
@@ -878,76 +875,264 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
         </div>
 
         {/* ====================================================================
-            EMPTY STATE JIKA FILTER TIDAK MENEMUKAN ALBUM
+            KONDISI KOSONG (EMPTY STATE)
             ==================================================================== */}
         {filteredPosts.length === 0 ? (
-          <div className="mx-auto my-8 max-w-lg rounded-3xl neu-card p-10 text-center">
-            <Filter size={38} className="mx-auto text-[#006569]" />
-            <h3 className="mt-4 text-xl font-black text-[#092D32]">Belum Ada Album yang Cocok</h3>
-            <p className="mt-2 text-xs sm:text-sm text-[#64748B]">
-              Tidak ditemukan dokumentasi untuk kombinasi filter kegiatan dan tahun yang dipilih.
+          <div className="mx-auto my-12 max-w-lg rounded-3xl neu-card p-10 text-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl neu-inset mx-auto flex items-center justify-center text-[#006569]">
+              <Filter size={32} />
+            </div>
+            <h3 className="text-xl font-black text-[#092D32]">Tidak Ada Dokumentasi yang Cocok</h3>
+            <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
+              Tidak ditemukan arsip kegiatan untuk kata kunci atau kombinasi kategori yang dipilih.
             </p>
             <button
               type="button"
               onClick={handleResetFilters}
-              className="mt-5 inline-flex items-center gap-2 rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] px-5 py-2.5 text-xs font-black uppercase tracking-wider text-[#FFDD00] hover:text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-2xl neu-btn-primary px-5 py-2.5 text-xs font-black uppercase tracking-wider text-[#FFDD00] shadow-md cursor-pointer"
             >
-              <RotateCcw size={14} /> Reset Semua Filter
+              <RotateCcw size={14} /> Reset Penyaringan
             </button>
           </div>
-        ) : viewMode === 'dial' ? (
+        ) : viewMode === 'grid' ? (
           /* ====================================================================
-             MODE 1: RADIAL ARC WHEEL GALLERY ("LOSFERA DIAL VIEW")
-             Pas 1 Layar Laptop (lg:h-[80vh] lg:max-h-[660px]) tanpa window scrolling!
+             MODE 1: GRID FOTO KLASIK (DEFAULT & AUTHENTIC PHOTOGRAPHIC CARDS)
              ==================================================================== */
           <div className="space-y-4">
-            {/* MOBILE (< 1024px): Horizontal Snap Reel Carousel */}
-            <div className="lg:hidden space-y-3">
+            <div className="flex items-center justify-between px-2 text-xs font-bold text-slate-500">
+              <span>Menampilkan <strong className="text-[#092D32]">{filteredPosts.length}</strong> Album Dokumentasi</span>
+              <span className="font-mono text-[11px] text-[#006569]">{selectedYear} · {selectedCategoryGroup}</span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredPosts.map((post) => {
+                const coverPhoto = post.photos?.[0]?.url || '/foto-kampus-unj.jpg';
+                const photoCount = post.photos?.length || 1;
+                return (
+                  <article
+                    key={post.id}
+                    className="group relative flex flex-col justify-between overflow-hidden rounded-3xl neu-card transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+                  >
+                    <div>
+                      {/* Kartu Header Info */}
+                      <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-100">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#006569] to-[#092D32] p-0.5 shrink-0 shadow-xs">
+                            <div className="w-full h-full rounded-[10px] bg-white p-0.5 flex items-center justify-center">
+                              <img
+                                src="/logo-menwa-unj.png"
+                                alt="Menwa UNJ"
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="truncate text-xs font-black text-[#006569]">
+                              {post.prokerName}
+                            </h3>
+                            <div className="flex items-center gap-1 truncate text-[11px] text-[#64748B]">
+                              <MapPin size={11} className="shrink-0 text-[#006569]" />
+                              <span className="truncate">{post.location}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <span className="shrink-0 font-mono text-[11px] font-black text-[#092D32] px-2 py-0.5 rounded-lg bg-slate-100">
+                          {post.monthCode} {post.year}
+                        </span>
+                      </div>
+
+                      {/* Cover Photo Stage */}
+                      <div
+                        className="relative aspect-[16/10] w-full cursor-pointer overflow-hidden bg-slate-950 select-none group"
+                        onDoubleClick={() => handleToggleLike(post, true)}
+                        onClick={() => openLightbox(post, 0, false)}
+                      >
+                        <img
+                          src={coverPhoto}
+                          alt={`${post.prokerName} (${post.year})`}
+                          loading="lazy"
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                        />
+
+                        {/* Badges Overlay */}
+                        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                          <span className="inline-flex items-center gap-1 rounded-lg bg-black/65 backdrop-blur-md px-2 py-0.5 text-[10px] font-black text-[#FFDD00] uppercase tracking-wider">
+                            {post.category || 'DOKUMENTASI'}
+                          </span>
+                        </div>
+
+                        <div className="absolute top-2.5 right-2.5 inline-flex items-center gap-1 rounded-lg bg-black/65 backdrop-blur-md px-2 py-0.5 font-mono text-[10px] font-bold text-white">
+                          <Images size={11} className="text-[#FFDD00]" />
+                          <span>{photoCount} Foto</span>
+                        </div>
+
+                        {/* Double-Click Heart Burst */}
+                        {heartBurstPostId === post.id && (
+                          <div className="pointer-events-none absolute inset-0 grid place-items-center bg-black/20">
+                            <Heart size={68} className="animate-ping fill-[#E11D48] text-[#E11D48]" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Baris Aksi Interaktif */}
+                      <div className="flex items-center justify-between px-4 pt-3">
+                        <div className="flex items-center gap-3">
+                          {/* Tombol Suka */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleLike(post, false)}
+                            aria-label="Sukai postingan"
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#092D32] hover:text-[#E11D48] transition cursor-pointer"
+                          >
+                            <Heart
+                              size={18}
+                              className={
+                                post.isLiked
+                                  ? 'fill-[#E11D48] text-[#E11D48]'
+                                  : 'text-[#092D32] hover:text-[#E11D48]'
+                              }
+                            />
+                            <span className="font-mono tabular-nums font-bold">{post.likes}</span>
+                          </button>
+
+                          {/* Tombol Komentar */}
+                          <button
+                            type="button"
+                            onClick={() => openLightbox(post, 0, true)}
+                            aria-label="Komentar postingan"
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#092D32] hover:text-[#006569] transition cursor-pointer"
+                          >
+                            <MessageCircle size={18} />
+                            <span className="font-mono tabular-nums font-bold">
+                              {post.comments?.length || 0}
+                            </span>
+                          </button>
+
+                          {/* Tombol Bagikan */}
+                          <button
+                            type="button"
+                            onClick={() => handleSharePost(post)}
+                            aria-label="Bagikan tautan"
+                            className="text-[#092D32] hover:text-[#006569] transition cursor-pointer"
+                            title="Salin Tautan Album"
+                          >
+                            <Share2 size={17} />
+                          </button>
+                        </div>
+
+                        {/* Tombol Simpan / Bookmark */}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleBookmark(post.id)}
+                          aria-label="Simpan album"
+                          className="text-[#092D32] hover:text-[#006569] transition cursor-pointer p-1"
+                          title={post.isBookmarked ? 'Tersimpan' : 'Simpan Album'}
+                        >
+                          <Bookmark
+                            size={17}
+                            className={
+                              post.isBookmarked
+                                ? 'fill-[#006569] text-[#006569]'
+                                : 'text-[#092D32]'
+                            }
+                          />
+                        </button>
+                      </div>
+
+                      {/* Cuplikan Narasi Bersih */}
+                      <div className="px-4 pb-4 pt-2 space-y-2">
+                        <p className="line-clamp-2 text-xs leading-relaxed text-slate-700 font-medium">
+                          {cleanCaptionText(post.caption)}
+                        </p>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const targetIdx = filteredPosts.findIndex((p) => p.id === post.id);
+                            if (targetIdx >= 0) {
+                              setShowcaseAlbumIndex(targetIdx);
+                              setShowcaseSlideIndex(0);
+                              setViewMode('showcase');
+                            }
+                          }}
+                          className="inline-flex items-center gap-1 text-[11px] font-black text-[#006569] hover:text-[#092D32] cursor-pointer"
+                        >
+                          <span>Buka di Showcase</span>
+                          <ArrowRight size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        ) : viewMode === 'showcase' ? (
+          /* ====================================================================
+             MODE 2: DOSSIER SHOWCASE (PANGGUNG EKSEBISI SPLIT OTENTIK)
+             ==================================================================== */
+          <div className="space-y-6">
+            {/* 1. Filmstrip Reel Horizontal Album Navigator */}
+            <div className="rounded-3xl neu-card p-4 space-y-2.5">
               <div className="flex items-center justify-between px-1">
-                <span className="text-xs font-bold text-[#006569]">
-                  Geser Reel Album ({activeAlbumIndex + 1} / {filteredPosts.length})
+                <span className="text-xs font-black uppercase tracking-wider text-[#006569] flex items-center gap-1.5">
+                  <FolderOpen size={14} />
+                  <span>Pilih Album Dokumentasi ({showcaseAlbumIndex + 1} / {filteredPosts.length})</span>
                 </span>
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
-                    onClick={() => stepDial(-1)}
-                    disabled={activeAlbumIndex === 0}
-                    className="p-2 rounded-xl neu-btn text-slate-700 disabled:opacity-40"
+                    onClick={() => {
+                      setShowcaseAlbumIndex((prev) => Math.max(0, prev - 1));
+                      setShowcaseSlideIndex(0);
+                    }}
+                    disabled={showcaseAlbumIndex === 0}
+                    className="w-8 h-8 rounded-xl neu-btn flex items-center justify-center text-slate-700 disabled:opacity-30 cursor-pointer"
+                    title="Album Sebelumnya"
                   >
-                    <ChevronLeft size={15} />
+                    <ChevronLeft size={16} />
                   </button>
                   <button
                     type="button"
-                    onClick={() => stepDial(1)}
-                    disabled={activeAlbumIndex === filteredPosts.length - 1}
-                    className="p-2 rounded-xl neu-btn text-slate-700 disabled:opacity-40"
+                    onClick={() => {
+                      setShowcaseAlbumIndex((prev) => Math.min(filteredPosts.length - 1, prev + 1));
+                      setShowcaseSlideIndex(0);
+                    }}
+                    disabled={showcaseAlbumIndex === filteredPosts.length - 1}
+                    className="w-8 h-8 rounded-xl neu-btn flex items-center justify-center text-slate-700 disabled:opacity-30 cursor-pointer"
+                    title="Album Berikutnya"
                   >
-                    <ChevronRight size={15} />
+                    <ChevronRight size={16} />
                   </button>
                 </div>
               </div>
 
-              <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory no-scrollbar">
-                {filteredPosts.map((post, idx) => {
-                  const isCurrent = idx === activeAlbumIndex;
-                  const coverUrl = post.photos?.[0]?.url || '/foto-kampus-unj.jpg';
+              {/* Reel Strip */}
+              <div
+                ref={filmstripReelRef}
+                className="flex items-center gap-3 overflow-x-auto pb-1.5 no-scrollbar snap-x"
+              >
+                {filteredPosts.map((post, pIdx) => {
+                  const isCurrent = pIdx === showcaseAlbumIndex;
+                  const thumbUrl = post.photos?.[0]?.url || '/foto-kampus-unj.jpg';
                   return (
                     <button
                       key={post.id}
                       type="button"
                       onClick={() => {
-                        setActiveAlbumIndex(idx);
-                        setActiveDossierSlide(0);
+                        setShowcaseAlbumIndex(pIdx);
+                        setShowcaseSlideIndex(0);
                       }}
-                      className={`snap-center shrink-0 w-44 rounded-2xl overflow-hidden border-2 text-left transition-all ${
+                      className={`snap-start shrink-0 w-44 sm:w-52 rounded-2xl overflow-hidden border-2 text-left transition-all cursor-pointer ${
                         isCurrent
-                          ? 'border-[#006569] bg-[#092D32] text-white shadow-lg scale-[1.02]'
-                          : 'border-white/80 bg-white text-slate-800 opacity-85 shadow-sm'
+                          ? 'border-[#006569] ring-2 ring-[#FFDD00]/60 bg-[#092D32] text-white shadow-lg scale-[1.02]'
+                          : 'border-white/80 bg-white text-slate-800 hover:border-slate-300 opacity-80'
                       }`}
                     >
-                      <div className="aspect-[16/10] w-full overflow-hidden bg-slate-900 relative">
-                        <img src={coverUrl} alt={post.prokerName} className="w-full h-full object-cover" />
-                        <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[#FFDD00] font-mono text-[9px] font-bold">
+                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-900">
+                        <img src={thumbUrl} alt="" className="w-full h-full object-cover" />
+                        <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/75 text-[#FFDD00] font-mono text-[9px] font-black">
                           {post.monthCode} {post.year}
                         </span>
                       </div>
@@ -963,452 +1148,177 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
               </div>
             </div>
 
-            {/* DESKTOP (>= 1024px) DUAL-ARC & DOSSIER SPLIT LAYOUT — LOCKED TO 1 LAPTOP SCREEN (lg:h-[80vh] lg:max-h-[660px]) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch lg:h-[80vh] lg:min-h-[550px] lg:max-h-[660px]">
-              {/* ==============================================================
-                  SISI KIRI (45% / 5 Kolom): CONCENTRIC RADIAL ARC WHEEL DIAL
-                  ============================================================== */}
-              <div
-                ref={dialContainerRef}
-                onPointerDown={handleDialPointerDown}
-                onPointerMove={handleDialPointerMove}
-                onPointerUp={handleDialPointerUp}
-                onPointerCancel={handleDialPointerUp}
-                className="hidden lg:flex lg:col-span-5 relative rounded-[2.5rem] bg-gradient-to-br from-[#061E22] via-[#092D32] to-[#003B3E] border-2 border-[#006569]/60 shadow-[0_25px_60px_-15px_rgba(9,45,50,0.45)] overflow-hidden select-none cursor-grab active:cursor-grabbing"
-              >
-                {/* Latar Glow & Grid Kinetik Halus */}
-                <div className="pointer-events-none absolute -left-32 top-1/2 -translate-y-1/2 w-[520px] h-[520px] rounded-full bg-[#006569]/30 blur-3xl" />
+            {/* 2. Panggung Split: Visual Canvas (Kiri) + Dossier & Interaksi (Kanan) */}
+            {activeShowcaseAlbum && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Visual Canvas Kiri (7 Kolom) */}
+                <div className="lg:col-span-7 space-y-3">
+                  <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full rounded-3xl overflow-hidden bg-slate-950 neu-card shadow-2xl select-none group">
+                    <img
+                      src={
+                        activeShowcaseAlbum.photos?.[showcaseSlideIndex]?.url ||
+                        activeShowcaseAlbum.photos?.[0]?.url ||
+                        '/foto-kampus-unj.jpg'
+                      }
+                      alt={
+                        activeShowcaseAlbum.photos?.[showcaseSlideIndex]?.caption ||
+                        activeShowcaseAlbum.prokerName
+                      }
+                      className="w-full h-full object-cover transition duration-500"
+                    />
 
-                {/* SVG Concentric Arc Tracks (Pusat di X = -105, Y = 50%) */}
-                <svg
-                  className="pointer-events-none absolute inset-0 w-full h-full"
-                  viewBox="0 0 540 660"
-                  preserveAspectRatio="xMinYMid slice"
-                >
-                  <defs>
-                    <linearGradient id="losferaArcGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#006569" stopOpacity="0.05" />
-                      <stop offset="50%" stopColor="#FFDD00" stopOpacity="0.65" />
-                      <stop offset="100%" stopColor="#006569" stopOpacity="0.05" />
-                    </linearGradient>
-                  </defs>
-                  {/* Busur Dalam: Indikator Kategori */}
-                  <circle
-                    cx="-105"
-                    cy="330"
-                    r="210"
-                    fill="none"
-                    stroke="rgba(255,255,255,0.08)"
-                    strokeWidth="1.5"
-                    strokeDasharray="4 6"
-                  />
-                  {/* Busur Utama: Jalur Filmstrip Foto (R = 335) */}
-                  <circle
-                    cx="-105"
-                    cy="330"
-                    r="335"
-                    fill="none"
-                    stroke="url(#losferaArcGrad)"
-                    strokeWidth="2"
-                  />
-                  {/* Busur Luar: Orbit Reticle (R = 450) */}
-                  <circle
-                    cx="-105"
-                    cy="330"
-                    r="450"
-                    fill="none"
-                    stroke="rgba(0, 101, 105, 0.4)"
-                    strokeWidth="1"
-                  />
-                  {/* Garis Bidik Horizontal 0 Derajat (Active Reticle Line) */}
-                  <line
-                    x1="60"
-                    y1="330"
-                    x2="215"
-                    y2="330"
-                    stroke="#FFDD00"
-                    strokeWidth="1.5"
-                    strokeDasharray="3 3"
-                    strokeOpacity="0.7"
-                  />
-                </svg>
-
-                {/* ARC LAPISAN 1 (Sisi Kiri Dalam): Vertical Curved Category Selector */}
-                <div className="relative z-20 flex flex-col justify-center gap-2 pl-4 pr-2 py-6 border-r border-white/10 bg-black/20 backdrop-blur-md w-[108px] shrink-0">
-                  <div className="text-[9px] font-mono font-bold uppercase tracking-widest text-[#FFDD00]/80 px-1 mb-1">
-                    SEKTOR GIAT
-                  </div>
-                  {DIAL_CATEGORIES.map((cat) => {
-                    const IconComp = cat.icon;
-                    const isActive = selectedCategoryGroup === cat.id && selectedActivityId === 'ALL';
-                    return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedCategoryGroup(cat.id);
-                          setSelectedActivityId('ALL');
-                          setActiveAlbumIndex(0);
-                        }}
-                        className={`group flex items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[11px] font-bold transition-all cursor-pointer ${
-                          isActive
-                            ? 'bg-[#FFDD00] text-[#092D32] font-black shadow-[0_0_20px_rgba(255,221,0,0.4)]'
-                            : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                        }`}
-                      >
-                        <IconComp size={14} className="shrink-0" />
-                        <span className="truncate">{cat.short}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* ARC LAPISAN 2 (Jalur Filmstrip Foto Trigonometri: X0 = -105px, Y0 = 50%, R = 335px) */}
-                <div className="relative flex-1 h-full overflow-hidden">
-                  {/* Header Status Dial */}
-                  <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between text-[11px] font-mono text-teal-200/90">
-                    <span>DIAL WHEEL · {activeAlbumIndex + 1}/{filteredPosts.length}</span>
-                    <span className="text-[#FFDD00]">SCROLL / DRAG ↕</span>
-                  </div>
-
-                  {/* Center Reticle Indicator (0 Degree Pointer) */}
-                  <div className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 z-30 flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#FFDD00] shadow-[0_0_12px_#FFDD00]" />
-                    <div className="w-5 h-[2px] bg-[#FFDD00]" />
-                    <span className="text-[10px] font-mono font-black text-[#FFDD00] bg-[#092D32]/90 border border-[#FFDD00]/50 px-1.5 py-0.5 rounded">
-                      0° AKTIF
-                    </span>
-                  </div>
-
-                  {/* Origin Point Lingkaran Imajiner: X0 = -105px dari batas area busur, Y0 = 50% */}
-                  <div
-                    className="absolute top-1/2"
-                    style={{ left: '-105px', width: 0, height: 0 }}
-                  >
-                    {filteredPosts.map((post, idx) => {
-                      const offset = idx - activeAlbumIndex;
-                      // Batasi render pada rentang -3 s.d +3 agar tetap dalam [-45 deg, +45 deg] dan muat 1 layar
-                      if (Math.abs(offset) > 3) return null;
-
-                      const angle = offset * 14.5; // Rentang -43.5 deg s.d +43.5 deg
-                      const radius = 335; // Jari-jari busur dalam px
-                      const isActive = offset === 0;
-                      const coverPhoto = post.photos?.[0]?.url || '/foto-kampus-unj.jpg';
-                      const distanceFactor = Math.abs(offset);
-                      const scale = isActive ? 1.04 : Math.max(0.76, 1 - distanceFactor * 0.09);
-                      const opacity = isActive ? 1 : Math.max(0.32, 1 - distanceFactor * 0.24);
-
-                      return (
-                        <div
-                          key={post.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveAlbumIndex(idx);
-                            setActiveDossierSlide(0);
-                          }}
-                          style={{
-                            transform: `translate(-50%, -50%) rotate(${angle}deg) translate(${radius}px) rotate(${-angle * 0.65}deg) scale(${scale})`,
-                            opacity,
-                            zIndex: 30 - distanceFactor * 5,
-                            transition: 'transform 420ms cubic-bezier(0.16, 1, 0.3, 1), opacity 320ms ease',
-                          }}
-                          className={`absolute left-0 top-0 w-[250px] rounded-2xl p-2.5 cursor-pointer flex items-center gap-3 border backdrop-blur-md ${
-                            isActive
-                              ? 'bg-white text-[#092D32] border-[#FFDD00] shadow-[0_0_30px_rgba(0,101,105,0.85)] ring-2 ring-[#FFDD00]/70'
-                              : 'bg-[#092D32]/85 text-white border-white/15 hover:border-[#FFDD00]/50'
-                          }`}
-                        >
-                          <div className="w-16 h-14 rounded-xl overflow-hidden bg-slate-900 shrink-0 relative border border-black/10">
-                            <img
-                              src={coverPhoto}
-                              alt={post.prokerName}
-                              className="w-full h-full object-cover"
-                            />
-                            <span className="absolute bottom-0.5 right-0.5 px-1 rounded bg-black/75 text-[#FFDD00] font-mono text-[8px] font-bold">
-                              {post.photos?.length || 1}P
-                            </span>
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-1 font-mono text-[10px]">
-                              <span className={isActive ? 'font-black text-[#006569]' : 'text-[#FFDD00]'}>
-                                {post.monthCode} {post.year}
-                              </span>
-                              <span className="opacity-60">#{String(idx + 1).padStart(2, '0')}</span>
-                            </div>
-                            <h4
-                              className={`text-xs font-black truncate mt-0.5 ${
-                                isActive ? 'text-[#092D32]' : 'text-white'
-                              }`}
-                            >
-                              {post.prokerName}
-                            </h4>
-                            <p
-                              className={`text-[10px] truncate ${
-                                isActive ? 'text-slate-500 font-semibold' : 'text-slate-300/80'
-                              }`}
-                            >
-                              {post.dateLabel || post.location}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Kontrol Putar Atas / Bawah di Pojok Kanan Bawah Dial */}
-                  <div className="absolute bottom-4 right-4 z-30 flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        stepDial(-1);
-                      }}
-                      disabled={activeAlbumIndex === 0}
-                      aria-label="Album Sebelumnya"
-                      className="w-9 h-9 rounded-xl bg-white/10 hover:bg-[#FFDD00] text-white hover:text-[#092D32] border border-white/20 flex items-center justify-center transition disabled:opacity-30 cursor-pointer"
-                    >
-                      <ChevronUp size={18} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        stepDial(1);
-                      }}
-                      disabled={activeAlbumIndex === filteredPosts.length - 1}
-                      aria-label="Album Berikutnya"
-                      className="w-9 h-9 rounded-xl bg-white/10 hover:bg-[#FFDD00] text-white hover:text-[#092D32] border border-white/20 flex items-center justify-center transition disabled:opacity-30 cursor-pointer"
-                    >
-                      <ChevronDown size={18} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* ==============================================================
-                  SISI KANAN (55% / 7 Kolom): DOSSIER & SHOWCASE ALBUM AKTIF (3D NEUMORPHIC)
-                  ============================================================== */}
-              {activeAlbum && (
-                <div className="lg:col-span-7 rounded-[2.5rem] neu-card p-4 sm:p-6 flex flex-col justify-between overflow-y-auto">
-                  <div className="space-y-4">
-                    {/* 1. Header Dossier: Judul Program Kerja Resmi (#006569), Tanggal, Lokasi, Jumlah Foto */}
-                    <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200/70 pb-3.5">
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-semibold">
-                          <span className="font-mono font-bold text-[#006569]">
-                            {activeAlbum.monthCode} {activeAlbum.year}
-                          </span>
-                          <span aria-hidden="true">·</span>
-                          <span>{activeAlbum.dateLabel}</span>
-                          <span aria-hidden="true">·</span>
-                          <span className="inline-flex items-center gap-1 text-slate-600">
-                            <MapPin size={12} className="text-[#006569]" />
-                            {activeAlbum.location}
-                          </span>
-                          <span aria-hidden="true">·</span>
-                          <span className="font-mono font-bold text-[#092D32]">
-                            {activeAlbum.photos?.length || 1} Foto
-                          </span>
-                        </div>
-                        <h2
-                          id="dinding-dokumentasi-title"
-                          className="mt-1 text-xl sm:text-2xl font-black tracking-tight text-[#006569]"
-                        >
-                          {activeAlbum.prokerName}
-                        </h2>
-                      </div>
-
-                      <div className="flex items-center gap-2">
+                    {/* Tombol Geser Slide */}
+                    {(activeShowcaseAlbum.photos?.length || 0) > 1 && (
+                      <>
                         <button
                           type="button"
-                          onClick={() => openLightbox(activeAlbum, activeDossierSlide, false)}
-                          className="inline-flex items-center gap-1.5 rounded-2xl neu-btn text-[#092D32] hover:text-[#006569] px-3.5 py-2 text-xs font-extrabold transition cursor-pointer"
+                          onClick={() => {
+                            const len = activeShowcaseAlbum.photos.length;
+                            setShowcaseSlideIndex((prev) => (prev - 1 + len) % len);
+                          }}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#FFDD00] text-white hover:text-[#092D32] flex items-center justify-center transition cursor-pointer shadow-lg z-10"
+                          aria-label="Foto Sebelumnya"
                         >
-                          <Maximize2 size={13} className="text-[#006569]" />
-                          <span>Layar Penuh</span>
+                          <ChevronLeft size={20} />
                         </button>
-                      </div>
-                    </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const len = activeShowcaseAlbum.photos.length;
+                            setShowcaseSlideIndex((prev) => (prev + 1) % len);
+                          }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#FFDD00] text-white hover:text-[#092D32] flex items-center justify-center transition cursor-pointer shadow-lg z-10"
+                          aria-label="Foto Berikutnya"
+                        >
+                          <ChevronRight size={20} />
+                        </button>
 
-                    {/* 2. Pratinjau Multi-Foto (Hero Carousel Bersih & Luas tanpa thumbnail strip) */}
-                    <div className="w-full">
-                      <div
-                        onDoubleClick={() => handleToggleLike(activeAlbum, true)}
-                        className="relative aspect-[16/10] sm:aspect-[16/9] w-full rounded-2xl overflow-hidden bg-slate-950 group select-none shadow-lg neu-flat-sm"
-                      >
-                        <img
-                          src={
-                            activeAlbum.photos?.[activeDossierSlide]?.url ||
-                            activeAlbum.photos?.[0]?.url ||
-                            '/foto-kampus-unj.jpg'
-                          }
-                          alt={
-                            activeAlbum.photos?.[activeDossierSlide]?.caption ||
-                            activeAlbum.prokerName
-                          }
-                          className="w-full h-full object-cover transition duration-500"
-                        />
-
-                        {/* Navigasi Slide Sebelumnya / Berikutnya */}
-                        {(activeAlbum.photos?.length || 0) > 1 && (
-                          <>
+                        {/* Indicator Dots */}
+                        <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md z-10">
+                          {activeShowcaseAlbum.photos.map((_, sIdx) => (
                             <button
+                              key={sIdx}
                               type="button"
-                              onClick={() => {
-                                const len = activeAlbum.photos.length;
-                                setActiveDossierSlide((prev) => (prev - 1 + len) % len);
-                              }}
-                              aria-label="Slide Foto Sebelumnya"
-                              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#FFDD00] text-white hover:text-[#092D32] flex items-center justify-center transition cursor-pointer tactile-btn shadow-md z-10"
-                            >
-                              <ChevronLeft size={20} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const len = activeAlbum.photos.length;
-                                setActiveDossierSlide((prev) => (prev + 1) % len);
-                              }}
-                              aria-label="Slide Foto Berikutnya"
-                              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#FFDD00] text-white hover:text-[#092D32] flex items-center justify-center transition cursor-pointer tactile-btn shadow-md z-10"
-                            >
-                              <ChevronRight size={20} />
-                            </button>
-
-                            {/* Indicator Dots Carousel */}
-                            <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md z-10">
-                              {(activeAlbum.photos || []).map((_, dotIdx) => (
-                                <button
-                                  key={dotIdx}
-                                  type="button"
-                                  onClick={() => setActiveDossierSlide(dotIdx)}
-                                  aria-label={`Beralih ke foto ${dotIdx + 1}`}
-                                  className={`h-2 rounded-full transition-all cursor-pointer ${
-                                    dotIdx === activeDossierSlide
-                                      ? 'w-6 bg-[#FFDD00]'
-                                      : 'w-2 bg-white/50 hover:bg-white/80'
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                          </>
-                        )}
-
-                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3 sm:p-4 text-white flex items-end justify-between gap-2 z-10">
-                          <p className="text-xs font-medium leading-snug line-clamp-1 max-w-[70%]">
-                            {activeAlbum.photos?.[activeDossierSlide]?.caption || activeAlbum.prokerName}
-                          </p>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => openLightbox(activeAlbum, activeDossierSlide, false)}
-                              className="inline-flex items-center gap-1.5 rounded-xl bg-black/60 hover:bg-[#FFDD00] text-white hover:text-[#092D32] px-2.5 py-1.5 text-xs font-bold transition cursor-pointer tactile-btn shadow-sm"
-                              title="Perbesar foto ke layar penuh"
-                            >
-                              <Maximize2 size={13} />
-                              <span>Zoom</span>
-                            </button>
-                            <span className="font-mono text-xs font-bold text-[#FFDD00] px-2 py-1 rounded-lg bg-black/60">
-                              {activeDossierSlide + 1} / {activeAlbum.photos?.length || 1}
-                            </span>
-                          </div>
+                              onClick={() => setShowcaseSlideIndex(sIdx)}
+                              className={`h-2 rounded-full transition-all cursor-pointer ${
+                                sIdx === showcaseSlideIndex
+                                  ? 'w-6 bg-[#FFDD00]'
+                                  : 'w-2 bg-white/50 hover:bg-white/80'
+                              }`}
+                            />
+                          ))}
                         </div>
+                      </>
+                    )}
 
-                        {heartBurstPostId === activeAlbum.id && (
-                          <div className="pointer-events-none absolute inset-0 grid place-items-center bg-black/20 z-20">
-                            <Heart size={76} className="animate-ping fill-[#E11D48] text-[#E11D48]" />
-                          </div>
-                        )}
+                    {/* Overlay Keterangan Bawah */}
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 sm:p-5 text-white flex items-end justify-between gap-3 z-10">
+                      <p className="text-xs font-semibold leading-relaxed line-clamp-2 max-w-[75%]">
+                        {activeShowcaseAlbum.photos?.[showcaseSlideIndex]?.caption ||
+                          activeShowcaseAlbum.prokerName}
+                      </p>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => openLightbox(activeShowcaseAlbum, showcaseSlideIndex, false)}
+                          className="inline-flex items-center gap-1 rounded-xl bg-black/60 hover:bg-[#FFDD00] text-white hover:text-[#092D32] px-2.5 py-1.5 text-xs font-black transition cursor-pointer"
+                        >
+                          <Maximize2 size={13} />
+                          <span>Zoom</span>
+                        </button>
+                        <span className="font-mono text-xs font-black text-[#FFDD00] px-2 py-1 rounded-lg bg-black/60">
+                          {showcaseSlideIndex + 1} / {activeShowcaseAlbum.photos?.length || 1}
+                        </span>
                       </div>
                     </div>
 
-                    {/* 3. Narasi & Laporan Giat (Bersih dari #hashtag dan @menwa.unj via cleanCaptionText) */}
-                    <div className="rounded-2xl neu-inset p-3.5 space-y-1.5">
-                      <p className="text-xs sm:text-sm font-medium leading-relaxed text-[#092D32]">
-                        {cleanCaptionText(activeAlbum.caption)}
-                      </p>
-                      {activeAlbum.narrativeReport && (
-                        <p className="text-xs leading-relaxed text-slate-600 pt-1 border-t border-slate-200/70">
-                          {cleanCaptionText(activeAlbum.narrativeReport)}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Daftar Komentar Real-Time Ringkas dengan formatCommentTime */}
-                    {(activeAlbum.comments || []).length > 0 && (
-                      <div className="space-y-1.5 max-h-24 overflow-y-auto pr-1">
-                        {activeAlbum.comments.slice(-2).map((c) => (
-                          <div
-                            key={c.id}
-                            className="rounded-xl bg-white/80 border border-slate-200/70 px-3 py-1.5 text-[11px] flex items-center justify-between gap-2"
-                          >
-                            <p className="truncate text-slate-700">
-                              <strong className="font-black text-[#092D32] mr-1.5">
-                                @{c.author}
-                              </strong>
-                              {c.text}
-                            </p>
-                            <span className="font-mono text-[10px] text-slate-400 shrink-0">
-                              {formatCommentTime(c)}
-                            </span>
-                          </div>
-                        ))}
+                    {heartBurstPostId === activeShowcaseAlbum.id && (
+                      <div className="pointer-events-none absolute inset-0 grid place-items-center bg-black/20 z-20">
+                        <Heart size={76} className="animate-ping fill-[#E11D48] text-[#E11D48]" />
                       </div>
                     )}
                   </div>
+                </div>
 
-                  {/* 4. Bar Apresiasi (Like Angka Bersih) & Komentar Sinkron Firestore */}
-                  <div className="mt-4 pt-3.5 border-t border-slate-200/70 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                    <div className="md:col-span-5 flex items-center gap-2.5">
+                {/* Dossier Laporan & Interaksi Kanan (5 Kolom) */}
+                <div className="lg:col-span-5 rounded-3xl neu-card p-6 sm:p-7 space-y-5 text-[#092D32] shadow-xl">
+                  {/* Header Dossier */}
+                  <div className="border-b border-slate-200/80 pb-4 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-1 rounded-xl bg-[#006569] text-[#FFDD00] px-3 py-1 text-[11px] font-black uppercase tracking-wider">
+                        {activeShowcaseAlbum.category || 'PROGRAM KERJA'}
+                      </span>
+                      <span className="font-mono text-xs font-black text-[#092D32]">
+                        {activeShowcaseAlbum.monthName} {activeShowcaseAlbum.year}
+                      </span>
+                    </div>
+
+                    <h2 className="text-xl sm:text-2xl font-black text-[#092D32] tracking-tight">
+                      {activeShowcaseAlbum.prokerName}
+                    </h2>
+
+                    <div className="flex items-center gap-2 text-xs font-semibold text-[#64748B]">
+                      <MapPin size={13} className="text-[#006569] shrink-0" />
+                      <span>{activeShowcaseAlbum.location}</span>
+                    </div>
+                  </div>
+
+                  {/* Narasi Lengkap & Laporan Operasi */}
+                  <div className="rounded-2xl neu-inset p-4 space-y-2">
+                    <h4 className="text-[11px] font-black uppercase tracking-wider text-[#006569]">
+                      Laporan Operasi &amp; Dokumentasi
+                    </h4>
+                    <p className="text-xs sm:text-sm font-medium leading-relaxed text-[#092D32]">
+                      {cleanCaptionText(activeShowcaseAlbum.caption)}
+                    </p>
+                    {activeShowcaseAlbum.narrativeReport && (
+                      <p className="text-xs leading-relaxed text-slate-600 pt-2 border-t border-slate-200/70">
+                        {activeShowcaseAlbum.narrativeReport}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Statistik & Aksi Sosial */}
+                  <div className="flex items-center justify-between gap-3 pt-1">
+                    <div className="flex items-center gap-2">
+                      {/* Suka */}
                       <button
                         type="button"
-                        onClick={() => handleToggleLike(activeAlbum, false)}
-                        aria-label="Sukai dokumentasi"
-                        className="inline-flex items-center gap-1.5 rounded-2xl neu-btn px-3.5 py-2 text-xs font-black text-[#092D32] cursor-pointer"
+                        onClick={() => handleToggleLike(activeShowcaseAlbum, false)}
+                        className="inline-flex items-center gap-1.5 rounded-2xl neu-btn px-4 py-2.5 text-xs font-black text-[#092D32] cursor-pointer"
                       >
                         <Heart
-                          size={18}
-                          className={
-                            activeAlbum.isLiked
-                              ? 'fill-[#E11D48] text-[#E11D48]'
-                              : 'text-[#092D32] hover:text-[#E11D48]'
-                          }
-                        />
-                        <span className="font-mono tabular-nums text-sm">{activeAlbum.likes}</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => openLightbox(activeAlbum, activeDossierSlide, true)}
-                        className="inline-flex items-center gap-1.5 rounded-2xl neu-btn px-3.5 py-2 text-xs font-black text-[#092D32] cursor-pointer"
-                      >
-                        <MessageCircle size={18} className="text-[#006569]" />
-                        <span className="font-mono tabular-nums text-sm">
-                          {activeAlbum.comments?.length || 0}
-                        </span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleSharePost(activeAlbum)}
-                        aria-label="Bagikan dokumentasi"
-                        className="p-2.5 rounded-2xl neu-btn text-[#092D32] cursor-pointer"
-                      >
-                        <Share2 size={17} />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleToggleBookmark(activeAlbum.id)}
-                        aria-label="Simpan dokumentasi"
-                        className="p-2.5 rounded-2xl neu-btn text-[#092D32] cursor-pointer"
-                      >
-                        <Bookmark
                           size={17}
                           className={
-                            activeAlbum.isBookmarked
+                            activeShowcaseAlbum.isLiked
+                              ? 'fill-[#E11D48] text-[#E11D48]'
+                              : 'text-[#092D32]'
+                          }
+                        />
+                        <span className="font-mono tabular-nums">{activeShowcaseAlbum.likes}</span>
+                      </button>
+
+                      {/* Bagikan */}
+                      <button
+                        type="button"
+                        onClick={() => handleSharePost(activeShowcaseAlbum)}
+                        className="inline-flex items-center gap-1.5 rounded-2xl neu-btn px-3.5 py-2.5 text-xs font-black text-[#092D32] cursor-pointer"
+                        title="Salin Tautan"
+                      >
+                        <Share2 size={16} />
+                      </button>
+
+                      {/* Bookmark */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleBookmark(activeShowcaseAlbum.id)}
+                        className="p-2.5 rounded-2xl neu-btn text-[#092D32] cursor-pointer"
+                        title="Simpan ke Arsip Pribadi"
+                      >
+                        <Bookmark
+                          size={16}
+                          className={
+                            activeShowcaseAlbum.isBookmarked
                               ? 'fill-[#006569] text-[#006569]'
                               : 'text-[#092D32]'
                           }
@@ -1416,324 +1326,369 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                       </button>
                     </div>
 
-                    {/* Kolom Komentar Cepat / Daftar Komentar Terkini */}
-                    <div className="md:col-span-7">
-                      {isLoggedIn ? (
-                        <form
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            submitPostComment(
-                              activeAlbum,
-                              dossierCommentText,
-                              setDossierCommentText
-                            );
-                          }}
-                          className="flex items-center gap-2"
-                        >
-                          <div className="flex-1 neu-inset rounded-2xl px-3.5 py-2">
-                            <input
-                              type="text"
-                              value={dossierCommentText}
-                              onChange={(e) => setDossierCommentText(e.target.value)}
-                              style={{ color: '#020617' }}
-                              placeholder={`Komentar sebagai @${currentAuthorName}...`}
-                              className="w-full bg-transparent text-xs font-bold text-slate-950 placeholder:text-slate-400 outline-none"
-                            />
-                          </div>
-                          <button
-                            type="submit"
-                            disabled={!dossierCommentText.trim()}
-                            className="inline-flex items-center gap-1.5 rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] px-4 py-2.5 text-xs font-black text-[#FFDD00] hover:text-white shadow-sm transition-all cursor-pointer disabled:opacity-40"
-                          >
-                            <Send size={14} />
-                            <span>Kirim</span>
-                          </button>
-                        </form>
-                      ) : (
-                        <div className="flex items-center justify-between gap-2 rounded-2xl neu-inset px-3.5 py-2 text-xs">
-                          <span className="text-slate-600 font-semibold truncate">
-                            {(activeAlbum.comments || []).length > 0
-                              ? `@${activeAlbum.comments[activeAlbum.comments.length - 1].author}: "${
-                                  activeAlbum.comments[activeAlbum.comments.length - 1].text
-                                }"`
-                              : 'Masuk akun untuk menulis komentar apresiasi.'}
-                          </span>
-                          <div className="flex items-center gap-2 shrink-0">
-                            {onOpenAuth && (
-                              <button
-                                type="button"
-                                onClick={onOpenAuth}
-                                className="rounded-xl neu-btn-primary px-3 py-1.5 text-[11px] font-black text-[#FFDD00] transition cursor-pointer"
-                              >
-                                Login Akun
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => openLightbox(activeAlbum, activeDossierSlide, true)}
-                              className="font-black text-[#006569] hover:underline cursor-pointer"
-                            >
-                              Diskusi →
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    {/* Tautan Instagram Resmi */}
+                    {activeShowcaseAlbum.socialUrl && (
+                      <a
+                        href={activeShowcaseAlbum.socialUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-black text-[#006569] hover:underline cursor-pointer"
+                      >
+                        <span>Instagram</span>
+                        <ExternalLink size={12} />
+                      </a>
+                    )}
                   </div>
-                </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          /* ====================================================================
-             MODE 2: CLASSIC RESPONSIVE GRID VIEW (3D NEUMORPHIC CARDS)
-             ==================================================================== */
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pt-2">
-            {filteredPosts.map((post) => {
-              const coverPhoto = post.photos?.[0]?.url || '/foto-kampus-unj.jpg';
-              const photoCount = post.photos?.length || 1;
-              return (
-                <article
-                  key={post.id}
-                  className="group flex flex-col justify-between overflow-hidden rounded-3xl neu-card transition-all duration-300 hover:-translate-y-1.5"
-                >
-                  <div>
-                    <div className="flex items-center justify-between gap-2 px-4 py-3.5">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#006569] to-[#092D32] p-0.5">
-                          <div className="grid h-full w-full place-items-center rounded-full bg-white p-0.5">
-                            <img
-                              src="/logo-menwa-unj.png"
-                              alt="Menwa UNJ"
-                              className="h-full w-full rounded-full object-contain"
-                            />
-                          </div>
-                        </div>
-                        <div className="min-w-0">
-                          <div className="truncate text-xs font-black text-[#006569]">
-                            {post.prokerName}
-                          </div>
-                          <div className="flex items-center gap-1 truncate text-[11px] text-[#64748B]">
-                            <MapPin size={11} className="shrink-0 text-[#006569]" />
-                            <span className="truncate">{post.location}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span className="shrink-0 font-mono text-[11px] font-black text-[#092D32]">
-                        {post.monthCode} {post.year}
+
+                  {/* Aliran Komentar Interaktif Real-time */}
+                  <div className="pt-2 border-t border-slate-200/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black uppercase tracking-wider text-[#006569] flex items-center gap-1.5">
+                        <MessageCircle size={14} />
+                        <span>Komentar &amp; Apresiasi ({activeShowcaseAlbum.comments?.length || 0})</span>
                       </span>
                     </div>
 
-                    <div
-                      className="relative aspect-[4/3] w-full cursor-pointer overflow-hidden bg-slate-900 select-none"
-                      onDoubleClick={() => handleToggleLike(post, true)}
-                      onClick={() => openLightbox(post, 0, false)}
-                    >
-                      <img
-                        src={coverPhoto}
-                        alt={`${post.prokerName} (${post.year})`}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-lg bg-[#092D32]/85 px-2 py-0.5 font-mono text-[10px] font-bold text-white">
-                        <Images size={11} className="text-[#FFDD00]" />
-                        <span>1/{photoCount}</span>
-                      </div>
+                    {/* Daftar Komentar Terakhir */}
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                      {(activeShowcaseAlbum.comments || []).length === 0 ? (
+                        <p className="text-xs text-slate-500 italic py-2 text-center">
+                          Belum ada komentar. Jadilah yang pertama memberikan apresiasi!
+                        </p>
+                      ) : (
+                        activeShowcaseAlbum.comments.slice(-4).map((cmt) => (
+                          <div key={cmt.id} className="rounded-2xl bg-white p-3 border border-slate-200/80 text-xs space-y-1 shadow-xs">
+                            <div className="flex items-center justify-between text-[11px]">
+                              <span className="font-black text-[#006569]">@{cmt.author}</span>
+                              <span className="font-mono text-slate-400 text-[10px]">
+                                {formatCommentTime(cmt)}
+                              </span>
+                            </div>
+                            <p className="text-slate-800 font-medium">{cmt.text}</p>
+                          </div>
+                        ))
+                      )}
                     </div>
 
-                    <div className="flex items-center justify-between px-4 pt-3">
-                      <div className="flex items-center gap-4">
-                        <button
-                          type="button"
-                          onClick={() => handleToggleLike(post, false)}
-                          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#092D32] cursor-pointer"
-                        >
-                          <Heart
-                            size={19}
-                            className={
-                              post.isLiked
-                                ? 'fill-[#E11D48] text-[#E11D48]'
-                                : 'text-[#092D32] hover:text-[#E11D48]'
-                            }
-                          />
-                          <span className="font-mono tabular-nums">{post.likes}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => openLightbox(post, 0, true)}
-                          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#092D32] cursor-pointer"
-                        >
-                          <MessageCircle size={19} />
-                          <span className="font-mono tabular-nums">{post.comments?.length || 0}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleSharePost(post)}
-                          className="text-[#092D32] hover:text-[#006569] cursor-pointer"
-                        >
-                          <Share2 size={18} />
-                        </button>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const targetIdx = filteredPosts.findIndex((p) => p.id === post.id);
-                          if (targetIdx >= 0) {
-                            setActiveAlbumIndex(targetIdx);
-                            setViewMode('dial');
-                          }
+                    {/* Formulir Penulisan Komentar (Wajib Login Akun) */}
+                    {isLoggedIn ? (
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          submitPostComment(
+                            activeShowcaseAlbum,
+                            showcaseCommentText,
+                            setShowcaseCommentText
+                          );
                         }}
-                        className="text-[11px] font-black text-[#006569] hover:underline cursor-pointer"
+                        className="flex items-center gap-2 pt-1"
                       >
-                        Buka di Dial →
-                      </button>
-                    </div>
-
-                    <div className="px-4 pb-4 pt-2">
-                      <p className="line-clamp-2 text-xs leading-relaxed text-slate-700 font-medium">
-                        {cleanCaptionText(post.caption)}
-                      </p>
-                    </div>
+                        <div className="flex-1 rounded-2xl bg-white border-2 border-slate-300 focus-within:border-[#006569] px-3.5 py-2 shadow-inner">
+                          <input
+                            type="text"
+                            value={showcaseCommentText}
+                            onChange={(e) => setShowcaseCommentText(e.target.value)}
+                            style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
+                            placeholder={`Komentar sebagai @${currentAuthorName}...`}
+                            className="w-full bg-white text-black text-xs font-bold placeholder:text-slate-400 outline-none"
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={!showcaseCommentText.trim()}
+                          className="inline-flex items-center gap-1.5 rounded-2xl neu-btn-primary px-4 py-2.5 text-xs font-black text-[#FFDD00] shadow-sm cursor-pointer disabled:opacity-40"
+                        >
+                          <Send size={14} />
+                          <span>Kirim</span>
+                        </button>
+                      </form>
+                    ) : (
+                      <div className="rounded-2xl neu-inset p-3 text-center space-y-1.5">
+                        <p className="text-xs text-slate-600 font-semibold">
+                          Masuk akun untuk menulis komentar apresiasi.
+                        </p>
+                        {onOpenAuth && (
+                          <button
+                            type="button"
+                            onClick={onOpenAuth}
+                            className="neu-btn-strong-blue px-5 py-2 rounded-full text-xs font-black text-white cursor-pointer shadow-sm"
+                          >
+                            Login Akun
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
-                </article>
-              );
-            })}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ====================================================================
+             MODE 3: KRONIK GARIS WAKTU (INTERACTIVE HISTORICAL CHRONOLOGY)
+             ==================================================================== */
+          <div className="space-y-10 py-4 max-w-4xl mx-auto">
+            {postsByYear.map(({ year, items }) => (
+              <div key={year} className="space-y-6">
+                {/* Header Tahun Anggaran */}
+                <div className="flex items-center gap-3">
+                  <div className="px-4 py-1.5 rounded-2xl neu-btn-primary text-[#FFDD00] font-black text-sm tracking-wider">
+                    TAHUN ANGGARAN {year}
+                  </div>
+                  <div className="h-[2px] flex-1 bg-gradient-to-r from-[#006569]/40 to-transparent" />
+                  <span className="font-mono text-xs font-bold text-slate-400">
+                    {items.length} Agenda Selesai
+                  </span>
+                </div>
+
+                {/* Timeline Spine */}
+                <div className="relative border-l-2 border-[#006569]/30 ml-4 sm:ml-6 pl-6 sm:pl-8 space-y-6">
+                  {items.map((post) => {
+                    const coverPhoto = post.photos?.[0]?.url || '/foto-kampus-unj.jpg';
+                    return (
+                      <div key={post.id} className="relative group">
+                        {/* Node Badge on the timeline */}
+                        <div className="absolute -left-[31px] sm:-left-[39px] top-4 w-5 h-5 rounded-full bg-[#006569] border-4 border-[#F5F8F6] shadow-md group-hover:scale-125 transition-transform" />
+
+                        {/* Card */}
+                        <div className="rounded-3xl neu-card p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl space-y-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-xs font-black text-[#006569] px-2 py-0.5 rounded-lg bg-teal-50 border border-teal-200">
+                                {post.monthName} {post.year}
+                              </span>
+                              <span className="text-xs font-bold text-slate-500">· {post.category}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                              <MapPin size={12} className="text-[#006569]" />
+                              <span>{post.location}</span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                            <div
+                              onClick={() => openLightbox(post, 0, false)}
+                              className="sm:col-span-4 aspect-[16/10] rounded-2xl overflow-hidden bg-slate-900 cursor-pointer select-none relative group/thumb"
+                            >
+                              <img
+                                src={coverPhoto}
+                                alt={post.prokerName}
+                                className="w-full h-full object-cover transition duration-300 group-hover/thumb:scale-105"
+                              />
+                              <div className="absolute bottom-1.5 right-1.5 bg-black/70 px-1.5 py-0.5 rounded font-mono text-[9px] font-bold text-white">
+                                {post.photos?.length || 1} Foto
+                              </div>
+                            </div>
+
+                            <div className="sm:col-span-8 space-y-2">
+                              <h3 className="text-base font-black text-[#092D32]">
+                                {post.prokerName}
+                              </h3>
+                              <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                                {cleanCaptionText(post.caption)}
+                              </p>
+                              <div className="flex items-center justify-between pt-1">
+                                <div className="flex items-center gap-3 text-xs font-bold text-[#092D32]">
+                                  <span className="flex items-center gap-1">
+                                    <Heart size={14} className="fill-[#E11D48] text-[#E11D48]" />
+                                    <span className="font-mono">{post.likes}</span>
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <MessageCircle size={14} />
+                                    <span className="font-mono">{post.comments?.length || 0}</span>
+                                  </span>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => openLightbox(post, 0, false)}
+                                  className="inline-flex items-center gap-1 text-xs font-black text-[#006569] hover:underline cursor-pointer"
+                                >
+                                  <span>Lihat Foto Lengkap</span>
+                                  <ArrowRight size={13} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
       {/* ======================================================================
-          LIGHTBOX MODAL FULLSCREEN (RENDERED VIA PORTAL)
+          LIGHTBOX MODAL FULLSCREEN INTERAKTIF (DENGAN SLIDE & KOMENTAR)
           ====================================================================== */}
       {activeModalPost &&
-        typeof document !== 'undefined' &&
         createPortal(
           <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={`Dokumentasi ${activeModalPost.prokerName}`}
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/85 p-3 backdrop-blur-md sm:p-6 animate-fade-in"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-2 sm:p-4 backdrop-blur-md animate-fade-in"
             onClick={() => setActiveModalPostId(null)}
           >
-            <button
-              type="button"
-              onClick={() => setActiveModalPostId(null)}
-              className="fixed right-4 top-4 z-[10000] inline-flex items-center gap-2 rounded-full border border-white/25 bg-slate-900/90 px-4 py-2 text-xs font-black uppercase tracking-wider text-white shadow-2xl transition hover:border-[#FFDD00] hover:bg-[#E11D48] cursor-pointer"
-            >
-              <X size={16} />
-              <span>Tutup (ESC)</span>
-            </button>
-
             <div
-              className="relative grid max-h-[88dvh] w-full max-w-6xl grid-cols-1 overflow-hidden rounded-3xl border border-white/20 bg-white shadow-[0_35px_90px_-15px_rgba(0,0,0,0.85)] lg:grid-cols-12"
+              className="relative flex flex-col lg:flex-row max-h-[95vh] w-full max-w-6xl overflow-hidden rounded-3xl bg-[#F5F8F6] text-[#092D32] shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex flex-col justify-between bg-[#021B25] p-4 sm:p-6 lg:col-span-7 overflow-y-auto">
-                <div className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl bg-black">
-                  <img
-                    src={
-                      activeModalPost.photos?.[activeSlideIndex]?.url ||
-                      '/foto-kampus-unj.jpg'
-                    }
-                    alt={
-                      activeModalPost.photos?.[activeSlideIndex]?.caption ||
-                      activeModalPost.prokerName
-                    }
-                    className="h-full w-full object-contain"
-                  />
+              {/* Tombol Tutup Modal */}
+              <button
+                type="button"
+                onClick={() => setActiveModalPostId(null)}
+                aria-label="Tutup modal"
+                className="absolute top-4 right-4 z-40 p-2 rounded-full neu-btn text-slate-600 hover:text-rose-600 transition cursor-pointer shadow-md"
+              >
+                <X size={18} />
+              </button>
 
-                  {(activeModalPost.photos?.length || 0) > 1 && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const len = activeModalPost.photos.length;
-                          setActiveSlideIndex((prev) => (prev - 1 + len) % len);
-                        }}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 grid h-10 w-10 place-items-center rounded-full bg-[#092D32]/85 text-white shadow transition hover:bg-[#FFDD00] hover:text-[#092D32] cursor-pointer"
-                      >
-                        <ChevronLeft size={20} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const len = activeModalPost.photos.length;
-                          setActiveSlideIndex((prev) => (prev + 1) % len);
-                        }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 grid h-10 w-10 place-items-center rounded-full bg-[#092D32]/85 text-white shadow transition hover:bg-[#FFDD00] hover:text-[#092D32] cursor-pointer"
-                      >
-                        <ChevronRight size={20} />
-                      </button>
-                    </>
-                  )}
+              {/* Sisi Kiri: Carousel Foto Layar Lebar */}
+              <div className="relative flex lg:flex-1 aspect-[4/3] sm:aspect-[16/10] lg:aspect-auto items-center justify-center overflow-hidden bg-black">
+                <img
+                  src={
+                    activeModalPost.photos?.[activeSlideIndex]?.url ||
+                    activeModalPost.photos?.[0]?.url ||
+                    '/foto-kampus-unj.jpg'
+                  }
+                  alt={
+                    activeModalPost.photos?.[activeSlideIndex]?.caption ||
+                    activeModalPost.prokerName
+                  }
+                  className="max-h-full max-w-full object-contain select-none"
+                />
 
-                  <span className="absolute left-3 top-3 rounded-lg bg-[#092D32]/90 px-3 py-1 font-mono text-xs font-extrabold text-[#FFDD00]">
-                    Foto {activeSlideIndex + 1} / {activeModalPost.photos?.length || 1}
-                  </span>
-                </div>
+                {/* Tombol Slide Sebelumnya / Berikutnya */}
+                {(activeModalPost.photos?.length || 0) > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const len = activeModalPost.photos.length;
+                        setActiveSlideIndex((prev) => (prev - 1 + len) % len);
+                      }}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#FFDD00] text-white hover:text-[#092D32] flex items-center justify-center transition cursor-pointer shadow-md z-20"
+                    >
+                      <ChevronLeft size={22} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const len = activeModalPost.photos.length;
+                        setActiveSlideIndex((prev) => (prev + 1) % len);
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#FFDD00] text-white hover:text-[#092D32] flex items-center justify-center transition cursor-pointer shadow-md z-20"
+                    >
+                      <ChevronRight size={22} />
+                    </button>
+                  </>
+                )}
 
-                <div className="mt-3 rounded-xl border border-white/10 bg-[#092D32] px-4 py-2.5 text-xs font-medium text-slate-200">
-                  <strong className="mr-1.5 text-[#FFDD00]">
-                    Lensa #{activeSlideIndex + 1}:
-                  </strong>
-                  {activeModalPost.photos?.[activeSlideIndex]?.caption}
+                {/* Indikator Posisi Foto */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md text-white font-mono text-xs font-black z-20">
+                  {activeSlideIndex + 1} / {activeModalPost.photos?.length || 1}
                 </div>
               </div>
 
-              <div className="flex max-h-[85dvh] flex-col justify-between overflow-y-auto bg-white p-5 sm:p-6 lg:col-span-5">
-                <div>
-                  <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src="/logo-menwa-unj.png"
-                        alt="Menwa UNJ"
-                        className="h-10 w-10 rounded-full border border-slate-200 p-1 object-contain"
-                      />
-                      <div>
-                        <h3 className="text-sm font-black text-[#006569]">
-                          {activeModalPost.prokerName} ({activeModalPost.year})
-                        </h3>
-                        <div className="text-xs font-semibold text-slate-500">
-                          {activeModalPost.dateLabel} · {activeModalPost.location}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 space-y-2.5 text-xs leading-relaxed text-slate-700">
-                    <p>{cleanCaptionText(activeModalPost.caption)}</p>
-                    {activeModalPost.narrativeReport && (
-                      <div className="rounded-2xl border border-[#006569]/15 bg-[#F5F8F6] p-3.5 text-xs text-[#092D32]">
-                        <div className="mb-1 font-mono text-[10px] font-black uppercase tracking-wider text-[#006569]">
-                          Laporan Giat:
-                        </div>
-                        {cleanCaptionText(activeModalPost.narrativeReport)}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mt-5 border-t border-slate-100 pt-4">
-                    <div className="mb-2.5 flex items-center justify-between">
-                      <span className="text-xs font-black uppercase tracking-wider text-[#092D32]">
-                        Apresiasi &amp; Komentar ({activeModalPost.comments?.length || 0})
+              {/* Sisi Kanan: Panel Info, Narasi & Komentar */}
+              <div className="flex flex-col justify-between p-6 sm:p-7 lg:w-[420px] max-h-[85vh] lg:max-h-[92vh] overflow-y-auto space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-lg">
+                        {activeModalPost.category || 'PROGRAM KERJA'}
+                      </span>
+                      <span className="font-mono text-xs font-bold text-slate-500">
+                        {activeModalPost.monthCode} {activeModalPost.year}
                       </span>
                     </div>
 
-                    <div className="max-h-44 space-y-2.5 overflow-y-auto pr-1">
+                    <h2 className="mt-2 text-xl font-black text-[#092D32]">
+                      {activeModalPost.prokerName}
+                    </h2>
+
+                    <div className="mt-1 flex items-center gap-1.5 text-xs text-[#64748B] font-semibold">
+                      <MapPin size={13} className="text-[#006569] shrink-0" />
+                      <span>{activeModalPost.location}</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl neu-inset p-3.5 space-y-1.5">
+                    <p className="text-xs leading-relaxed text-slate-800 font-medium">
+                      {cleanCaptionText(activeModalPost.caption)}
+                    </p>
+                    {activeModalPost.narrativeReport && (
+                      <p className="text-xs leading-relaxed text-slate-500 pt-1.5 border-t border-slate-200/70">
+                        {activeModalPost.narrativeReport}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Tombol Interaksi */}
+                  <div className="flex items-center gap-2 pt-1 border-b border-slate-200 pb-3">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleLike(activeModalPost, false)}
+                      className="inline-flex items-center gap-1.5 rounded-2xl neu-btn px-4 py-2 text-xs font-black text-[#092D32] cursor-pointer"
+                    >
+                      <Heart
+                        size={17}
+                        className={
+                          activeModalPost.isLiked
+                            ? 'fill-[#E11D48] text-[#E11D48]'
+                            : 'text-[#092D32]'
+                        }
+                      />
+                      <span className="font-mono tabular-nums">{activeModalPost.likes}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleSharePost(activeModalPost)}
+                      className="inline-flex items-center gap-1.5 rounded-2xl neu-btn px-3.5 py-2 text-xs font-black text-[#092D32] cursor-pointer"
+                    >
+                      <Share2 size={15} />
+                      <span>Bagikan</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleToggleBookmark(activeModalPost.id)}
+                      className="p-2 rounded-2xl neu-btn text-[#092D32] cursor-pointer"
+                    >
+                      <Bookmark
+                        size={16}
+                        className={
+                          activeModalPost.isBookmarked
+                            ? 'fill-[#006569] text-[#006569]'
+                            : 'text-[#092D32]'
+                        }
+                      />
+                    </button>
+                  </div>
+
+                  {/* Daftar Komentar */}
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-[#006569]">
+                      Apresiasi &amp; Komentar ({activeModalPost.comments?.length || 0})
+                    </h4>
+
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                       {(activeModalPost.comments || []).length === 0 ? (
-                        <p className="py-3 text-center text-xs text-slate-400">
+                        <p className="text-xs text-slate-400 italic py-2">
                           Belum ada komentar pada album ini.
                         </p>
                       ) : (
-                        activeModalPost.comments.map((c) => (
-                          <div key={c.id} className="rounded-xl bg-slate-50 px-3 py-2 text-xs">
-                            <div className="flex items-center justify-between">
-                              <span className="font-black text-[#092D32]">@{c.author}</span>
-                              <span className="text-[10px] text-slate-400 font-mono">
-                                {formatCommentTime(c)}
+                        activeModalPost.comments.map((cmt) => (
+                          <div key={cmt.id} className="rounded-2xl bg-white border border-slate-200/80 p-3 text-xs space-y-1">
+                            <div className="flex items-center justify-between text-[11px]">
+                              <span className="font-black text-[#006569]">@{cmt.author}</span>
+                              <span className="font-mono text-slate-400 text-[10px]">
+                                {formatCommentTime(cmt)}
                               </span>
                             </div>
-                            <p className="mt-1 text-slate-700">{c.text}</p>
+                            <p className="text-slate-800 font-medium">{cmt.text}</p>
                           </div>
                         ))
                       )}
@@ -1741,67 +1696,39 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                   </div>
                 </div>
 
-                <div className="mt-4 border-t border-slate-100 pt-3.5">
-                  <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleLike(activeModalPost, false)}
-                        className="inline-flex items-center gap-1.5 rounded-2xl neu-btn px-3.5 py-2 text-xs font-extrabold text-[#092D32] transition cursor-pointer"
-                      >
-                        <Heart
-                          size={16}
-                          className={
-                            activeModalPost.isLiked
-                              ? 'fill-[#E11D48] text-[#E11D48]'
-                              : 'text-[#092D32]'
-                          }
-                        />
-                        <span className="font-mono tabular-nums">{activeModalPost.likes}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSharePost(activeModalPost)}
-                        className="inline-flex items-center gap-1.5 rounded-2xl neu-btn px-3.5 py-2 text-xs font-extrabold text-[#092D32] transition cursor-pointer"
-                      >
-                        <Share2 size={15} /> Bagikan
-                      </button>
-                    </div>
-                  </div>
-
+                {/* Formulir Tulis Komentar */}
+                <div className="pt-2 border-t border-slate-200">
                   {isLoggedIn ? (
                     <form
                       onSubmit={(e) => {
                         e.preventDefault();
                         submitPostComment(activeModalPost, commentText, setCommentText);
                       }}
-                      className="space-y-2"
+                      className="flex items-center gap-2"
                     >
-                      <div className="flex gap-2">
-                        <div className="flex-1 neu-inset rounded-2xl px-3.5 py-2.5">
-                          <input
-                            ref={commentInputRef}
-                            type="text"
-                            value={commentText}
-                            onChange={(e) => setCommentText(e.target.value)}
-                            style={{ color: '#020617' }}
-                            placeholder="Tulis apresiasi atau kesan..."
-                            className="w-full bg-transparent text-xs font-bold text-slate-950 outline-none"
-                          />
-                        </div>
-                        <button
-                          type="submit"
-                          disabled={!commentText.trim()}
-                          className="inline-flex items-center justify-center rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] px-4 py-2.5 text-xs font-black text-[#FFDD00] hover:text-white shadow-sm transition-all cursor-pointer disabled:opacity-50"
-                        >
-                          <Send size={15} />
-                        </button>
+                      <div className="flex-1 rounded-2xl bg-white border-2 border-slate-300 focus-within:border-[#006569] px-3.5 py-2 shadow-inner">
+                        <input
+                          ref={commentInputRef}
+                          type="text"
+                          value={commentText}
+                          onChange={(e) => setCommentText(e.target.value)}
+                          style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
+                          placeholder="Tulis apresiasi kegiatan..."
+                          className="w-full bg-white text-black text-xs font-bold placeholder:text-slate-400 outline-none"
+                        />
                       </div>
+                      <button
+                        type="submit"
+                        disabled={!commentText.trim()}
+                        className="inline-flex items-center gap-1 rounded-2xl neu-btn-primary px-3.5 py-2.5 text-xs font-black text-[#FFDD00] shadow-sm cursor-pointer disabled:opacity-40"
+                      >
+                        <Send size={14} />
+                      </button>
                     </form>
                   ) : (
-                    <div className="rounded-2xl neu-inset p-3.5 text-center space-y-2">
+                    <div className="rounded-2xl neu-inset p-3 text-center space-y-1.5">
                       <p className="text-xs text-slate-600 font-semibold">
-                        Masuk ke akun portal untuk memberikan komentar pada dokumentasi ini.
+                        Masuk akun untuk memberikan komentar pada dokumentasi ini.
                       </p>
                       {onOpenAuth && (
                         <button
@@ -1810,9 +1737,9 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                             setActiveModalPostId(null);
                             onOpenAuth();
                           }}
-                          className="inline-flex items-center justify-center rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] px-4 py-2 text-xs font-black text-[#FFDD00] hover:text-white shadow-sm transition-all cursor-pointer"
+                          className="neu-btn-strong-blue px-5 py-2 rounded-full text-xs font-black text-white cursor-pointer shadow-sm"
                         >
-                          Login Akun untuk Berkomentar
+                          Login Akun
                         </button>
                       )}
                     </div>

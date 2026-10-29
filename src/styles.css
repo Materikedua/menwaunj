@@ -498,6 +498,246 @@ body{overflow-x:hidden;}
     inset 0 2px 4px rgba(9, 45, 50, 0.12);
 }
 
+/* ------------------------------------------------------------
+   SISTEM TOMBOL 3D "STRONG" (Ref: Image 2)
+   - Vivid colors with physical extrusion bevel (4px) + specular top rim
+   - Luminous aura flare on hover (Image 3)
+   - True mechanical depression on active (Image 3)
+   ------------------------------------------------------------ */
+.neu-btn-strong-blue {
+  background: linear-gradient(180deg, #3B82F6 0%, #2563EB 55%, #1D4ED8 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 4px 0 #1E40AF,
+    0 8px 20px rgba(37, 99, 235, 0.38),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.55);
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  cursor: pointer;
+}
+.neu-btn-strong-blue:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 26px rgba(59, 130, 246, 0.65),
+    0 5.5px 0 #1E40AF,
+    0 12px 26px rgba(37, 99, 235, 0.48),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.7);
+}
+.neu-btn-strong-blue:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 #1E40AF,
+    0 2px 5px rgba(37, 99, 235, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.neu-btn-strong-green {
+  background: linear-gradient(180deg, #10B981 0%, #059669 55%, #047857 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 4px 0 #064E3B,
+    0 8px 20px rgba(5, 150, 105, 0.38),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.55);
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  cursor: pointer;
+}
+.neu-btn-strong-green:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 26px rgba(16, 185, 129, 0.65),
+    0 5.5px 0 #064E3B,
+    0 12px 26px rgba(5, 150, 105, 0.48),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.7);
+}
+.neu-btn-strong-green:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 #064E3B,
+    0 2px 5px rgba(5, 150, 105, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.neu-btn-strong-red {
+  background: linear-gradient(180deg, #EF4444 0%, #DC2626 55%, #B91C1C 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 4px 0 #7F1D1D,
+    0 8px 20px rgba(220, 38, 38, 0.38),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.55);
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  cursor: pointer;
+}
+.neu-btn-strong-red:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 26px rgba(239, 68, 68, 0.65),
+    0 5.5px 0 #7F1D1D,
+    0 12px 26px rgba(220, 38, 38, 0.48),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.7);
+}
+.neu-btn-strong-red:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 #7F1D1D,
+    0 2px 5px rgba(220, 38, 38, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.neu-btn-strong-orange {
+  background: linear-gradient(180deg, #F97316 0%, #EA580C 55%, #C2410C 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 4px 0 #7C2D12,
+    0 8px 20px rgba(234, 88, 12, 0.38),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.55);
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  cursor: pointer;
+}
+.neu-btn-strong-orange:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 26px rgba(249, 115, 22, 0.65),
+    0 5.5px 0 #7C2D12,
+    0 12px 26px rgba(234, 88, 12, 0.48),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.7);
+}
+.neu-btn-strong-orange:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 #7C2D12,
+    0 2px 5px rgba(234, 88, 12, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ------------------------------------------------------------
+   TAB PILL & KEYCAP NAVIGATION (Ref: Image 1)
+   - Porcelain rounded-full pill container
+   - Floating keycap tab pills with colorful left icons
+   - Active dark keycap with top bevel highlight & physical depress
+   ------------------------------------------------------------ */
+.neu-pill-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #F8FAFC 0%, #EDF2F7 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 2px 6px rgba(9, 45, 50, 0.05),
+    inset 0 1.5px 2px #FFFFFF;
+}
+
+.neu-pill-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #1E293B;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 2.5px 0 #CBD5E1,
+    0 4px 10px rgba(9, 45, 50, 0.05),
+    inset 0 1.5px 1px #FFFFFF;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.neu-pill-tab:hover:not(:disabled) {
+  transform: translateY(-1.5px);
+  box-shadow:
+    0 0 18px rgba(251, 191, 36, 0.35),
+    0 3.5px 0 #CBD5E1,
+    0 6px 14px rgba(9, 45, 50, 0.08),
+    inset 0 1.5px 1px #FFFFFF;
+  color: #006569;
+}
+
+.neu-pill-tab:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    0 0.5px 0 #CBD5E1,
+    inset 0 1.5px 3px rgba(9, 45, 50, 0.08);
+}
+
+/* Dark Keycap Active Pill (Ref: Image 1 "Start") */
+.neu-pill-tab-dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #FFFFFF;
+  background: linear-gradient(180deg, #1E293B 0%, #0F172A 100%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 3.5px 0 #020617,
+    0 8px 18px rgba(15, 23, 42, 0.32),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.3);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.neu-pill-tab-dark:hover:not(:disabled) {
+  transform: translateY(-1.5px);
+  box-shadow:
+    0 0 22px rgba(255, 221, 0, 0.45),
+    0 4.5px 0 #020617,
+    0 10px 22px rgba(15, 23, 42, 0.4),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.4);
+}
+
+.neu-pill-tab-dark:active:not(:disabled) {
+  transform: translateY(2.5px);
+  box-shadow:
+    0 1px 0 #020617,
+    inset 0 2px 4px rgba(0, 0, 0, 0.45);
+}
+
+/* ------------------------------------------------------------
+   KAPSUL PENCARIAN TACTILE DENGAN WARM BACKLIGHT GLOW (Ref: Image 4)
+   ------------------------------------------------------------ */
+.neu-search-capsule {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  background: #FFFFFF;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 0 22px -2px rgba(251, 146, 60, 0.38),
+    0 5px 14px -3px rgba(9, 45, 50, 0.08),
+    inset 0 1.5px 1px #FFFFFF;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neu-search-capsule:hover {
+  box-shadow:
+    0 0 30px rgba(251, 146, 60, 0.55),
+    0 8px 20px -3px rgba(9, 45, 50, 0.12),
+    inset 0 1.5px 1px #FFFFFF;
+}
+
+.neu-search-capsule:focus-within {
+  border-color: rgba(245, 158, 11, 0.65);
+  box-shadow:
+    0 0 36px rgba(251, 146, 60, 0.65),
+    0 10px 24px -4px rgba(9, 45, 50, 0.15),
+    0 0 0 3px rgba(245, 158, 11, 0.2),
+    inset 0 1.5px 1px #FFFFFF;
+}
+
 /* Soft extruded circular ring */
 .neu-extruded-ring {
   border-radius: 9999px;
