@@ -15,7 +15,6 @@ import {
   RefreshCw,
   ShieldCheck,
 } from 'lucide-react';
-import BorderBeam from './ui/BorderBeam.jsx';
 import { setOfficialSecurityPin, requestOfficialPinReset } from '../firebase.js';
 
 export function OfficialSecurityGate({
@@ -211,14 +210,6 @@ export function OfficialSecurityGate({
           KARTU KONTAINER LOGIN (FLOATING 3D CUSHION CARD)
           ====================================================================== */}
       <div className="relative z-10 w-full max-w-md rounded-[2.75rem] bg-gradient-to-br from-[#FFFFFF] via-[#F6FAF9] to-[#EEF5F4] border-2 border-white/85 shadow-[12px_12px_35px_rgba(9,45,50,0.12),-12px_-12px_35px_rgba(255,255,255,0.96)] p-7 sm:p-10 overflow-hidden text-[#092D32]">
-        <BorderBeam
-          duration={5}
-          borderWidth={2.5}
-          borderRadius={44}
-          colorFrom="#FFDD00"
-          colorTo="#006569"
-        />
-
         {/* Tile Logo 3D Elevated di Bagian Atas */}
         <div className="text-center relative z-10">
           <div className="mx-auto mb-5 w-24 h-24 rounded-3xl neu-logo-tile p-3 flex items-center justify-center relative overflow-hidden">

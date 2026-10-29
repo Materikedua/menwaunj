@@ -173,13 +173,17 @@ img { max-width: 100%; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 38px;
-  padding: 8px 14px;
+  min-height: 40px;
+  padding: 8px 16px;
   color: #ffdd00;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 9999px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
-  box-shadow: -2px -2px 6px rgba(255, 255, 255, 0.15), 3px 3px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%);
+  box-shadow:
+    0 0 20px rgba(251, 146, 60, 0.28),
+    0 3px 0 rgba(0, 0, 0, 0.35),
+    0 8px 18px rgba(0, 0, 0, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
   font-size: 11px;
   font-weight: 850;
   white-space: nowrap;
@@ -187,31 +191,47 @@ img { max-width: 100%; }
   cursor: pointer;
 }
 .portal-search-trigger:hover {
-  transform: translateY(-1.5px);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%);
-  border-color: rgba(255, 221, 0, 0.45);
-  box-shadow: -3px -3px 8px rgba(255, 255, 255, 0.22), 4px 4px 12px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.09) 100%);
+  border-color: rgba(255, 221, 0, 0.65);
+  /* Luminous Warm Backlight Glow dari Image 4 */
+  box-shadow:
+    0 0 32px rgba(251, 146, 60, 0.55),
+    0 4.5px 0 rgba(0, 0, 0, 0.4),
+    0 12px 26px rgba(0, 0, 0, 0.35),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.5);
 }
 .portal-search-trigger:active {
-  transform: scale(0.97);
-  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.4), inset -1px -1px 3px rgba(255, 255, 255, 0.1);
+  transform: translateY(2.5px);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 .portal-search-trigger kbd{font:800 10px/1 sans-serif;padding:5px;border:1px solid rgba(255,255,255,.2);border-radius:5px;color:#fff;}
 
 .portal-account-trigger {
   border-radius: 9999px !important;
-  background: linear-gradient(145deg, #ffffff 0%, #edf4f2 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.9) !important;
-  box-shadow: -2px -2px 6px rgba(255, 255, 255, 0.9), 3px 3px 8px rgba(9, 45, 50, 0.1), inset 0 1px 1px #fff !important;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F5F8F7 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  box-shadow:
+    0 3px 0 #CBD5E1,
+    0 6px 14px rgba(9, 45, 50, 0.07),
+    inset 0 1.5px 1px #FFFFFF !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 .portal-account-trigger:hover {
-  transform: translateY(-1.5px) scale(1.02) !important;
-  box-shadow: -3px -3px 8px rgba(255, 255, 255, 0.95), 4px 4px 12px rgba(9, 45, 50, 0.14), inset 0 1px 2px #fff !important;
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow:
+    0 0 20px rgba(251, 191, 36, 0.4),
+    0 4.5px 0 #CBD5E1,
+    0 10px 20px rgba(9, 45, 50, 0.12),
+    inset 0 1.5px 1px #FFFFFF !important;
 }
 .portal-account-trigger:active {
-  transform: scale(0.97) !important;
-  box-shadow: inset 2px 2px 5px rgba(9, 45, 50, 0.12), inset -2px -2px 5px rgba(255, 255, 255, 0.9) !important;
+  transform: translateY(2px) !important;
+  box-shadow:
+    0 1px 0 #CBD5E1,
+    inset 0 2px 4px rgba(9, 45, 50, 0.08) !important;
 }
 html{scroll-padding-top:145px;}
 body{overflow-x:hidden;}
@@ -262,152 +282,199 @@ body{overflow-x:hidden;}
    Dual-Source Lighting: Top-Left Highlight + Bottom-Right Naval Shadow
    ========================================================================== */
 
+/* ==========================================================================
+   PILAR: SISTEM TOMBOL, TAB & DIV 3D TACTILE (PHYSICAL KEYCAP & WARM GLOW)
+   Berdasarkan Referensi:
+   - Tombol "STRONG": Ekstrusi tebal 3.5-4px bevel bawah + pantulan bevel atas
+   - Tombol "Hover": Luminous warm backlight / amber rim glow di sekeliling tombol
+   - Tombol "Pressed": Mekanisme tekan turun 3px dengan kompresi rim & inset shadow
+   - Tab "Pill": Kapsul porselen halus dengan tab aktif bergaya Dark 3D Keycap
+   - Div / Card: Kontainer mengambang dengan rim fisik 3D dan ambient glow
+   ========================================================================== */
+
 .neu-canvas {
   background: linear-gradient(145deg, #EEF5F6 0%, #F5F8F6 50%, #F9FBFA 100%);
 }
 
-/* Kartu Kontainer 3D Cushion (Floating Extruded Card) */
+/* ------------------------------------------------------------
+   DIV & KARTU KONTAINER 3D (Ref: Image 1 & Image 4)
+   ------------------------------------------------------------ */
 .neu-card {
-  background: linear-gradient(145deg, #ffffff 0%, #f3f7f6 100%);
-  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: linear-gradient(160deg, #FFFFFF 0%, #F6FAF9 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  border-radius: 2rem;
   box-shadow:
-    10px 10px 30px rgba(9, 45, 50, 0.08),
-    -10px -10px 30px rgba(255, 255, 255, 0.95),
-    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    0 4px 0 rgba(226, 232, 240, 0.85),
+    0 16px 36px -6px rgba(9, 45, 50, 0.08),
+    inset 0 1.5px 1px #FFFFFF;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neu-card:hover {
+  box-shadow:
+    0 0 32px rgba(255, 221, 0, 0.18),
+    0 5px 0 rgba(203, 213, 225, 0.9),
+    0 22px 45px -8px rgba(9, 45, 50, 0.12),
+    inset 0 1.5px 1px #FFFFFF;
 }
 
 .neu-card-sm {
-  background: linear-gradient(145deg, #ffffff 0%, #f4f8f7 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  background: linear-gradient(160deg, #FFFFFF 0%, #F6FAF9 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  border-radius: 1.5rem;
   box-shadow:
-    5px 5px 15px rgba(9, 45, 50, 0.07),
-    -5px -5px 15px rgba(255, 255, 255, 0.92),
-    inset 0 1px 1px rgba(255, 255, 255, 0.85);
+    0 3px 0 rgba(226, 232, 240, 0.85),
+    0 10px 24px -4px rgba(9, 45, 50, 0.06),
+    inset 0 1.5px 1px #FFFFFF;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Tile Logo 3D Elevated */
 .neu-logo-tile {
-  background: linear-gradient(145deg, #ffffff 0%, #eef4f3 100%);
-  border: 2px solid rgba(255, 255, 255, 0.92);
+  background: linear-gradient(180deg, #FFFFFF 0%, #EEF4F3 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
   box-shadow:
-    6px 6px 18px rgba(9, 45, 50, 0.1),
-    -6px -6px 18px rgba(255, 255, 255, 0.98),
-    inset 0 2px 3px rgba(255, 255, 255, 0.95);
+    0 3.5px 0 #CBD5E1,
+    0 8px 18px rgba(9, 45, 50, 0.09),
+    inset 0 2px 2px #FFFFFF;
+  border-radius: 1.25rem;
 }
 
 /* Kolom Input Sunken / Inset 3D Neumorphic */
 .neu-inset {
-  background-color: #EFF5F4;
-  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  background-color: #F1F6F5;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-radius: 1rem;
   box-shadow:
-    inset 3px 3px 6px rgba(9, 45, 50, 0.09),
-    inset -3px -3px 6px rgba(255, 255, 255, 0.92);
+    inset 2.5px 2.5px 6px rgba(9, 45, 50, 0.09),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.95);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .neu-inset:focus-within,
 .neu-inset:focus {
-  background-color: #ffffff;
+  background-color: #FFFFFF;
   border-color: rgba(0, 101, 105, 0.45);
   box-shadow:
-    inset 2px 2px 5px rgba(9, 45, 50, 0.06),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.95),
-    0 0 0 3px rgba(0, 101, 105, 0.12);
+    inset 2px 2px 5px rgba(9, 45, 50, 0.05),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.98),
+    0 0 0 3px rgba(0, 101, 105, 0.15);
 }
 
-/* Tombol Timbul Normal (Extruded Pill/Card) */
+/* ------------------------------------------------------------
+   TOMBOL STANDAR & TAB 3D PILL (Ref: Image 1 & Image 2)
+   ------------------------------------------------------------ */
 .neu-btn {
-  background: linear-gradient(145deg, #ffffff 0%, #eef4f3 100%);
+  background: linear-gradient(180deg, #FFFFFF 0%, #F5F8F7 100%);
   color: #092D32;
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.95);
   box-shadow:
-    -4px -4px 10px rgba(255, 255, 255, 0.9),
-    5px 5px 12px rgba(9, 45, 50, 0.1),
-    inset 0 1px 1px rgba(255, 255, 255, 0.8);
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    0 3.5px 0 #CBD5E1,
+    0 6px 14px rgba(9, 45, 50, 0.07),
+    inset 0 1.5px 1px #FFFFFF;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background 0.18s ease;
+  cursor: pointer;
 }
 
 .neu-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  /* Luminous Warm Backlight Glow dari Image 3 & 4 */
   box-shadow:
-    -5px -5px 12px rgba(255, 255, 255, 0.95),
-    7px 7px 16px rgba(9, 45, 50, 0.13),
-    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+    0 0 20px rgba(251, 191, 36, 0.4),
+    0 5px 0 #CBD5E1,
+    0 10px 20px rgba(9, 45, 50, 0.1),
+    inset 0 1.5px 1px #FFFFFF;
+  color: #006569;
 }
 
 .neu-btn:active:not(:disabled),
 .neu-btn-pressed {
-  transform: scale(0.97);
+  /* Sensasi mekanik klik turun 2.5px */
+  transform: translateY(2.5px);
   box-shadow:
-    inset 3px 3px 6px rgba(9, 45, 50, 0.15),
-    inset -3px -3px 6px rgba(255, 255, 255, 0.85);
+    0 1px 0 #CBD5E1,
+    0 2px 4px rgba(9, 45, 50, 0.08),
+    inset 0 2px 4px rgba(9, 45, 50, 0.08);
 }
 
-/* Tombol Utama Berwarna 3D (Deep Teal Menwa) — Guaranteed solid background & high contrast */
+/* ------------------------------------------------------------
+   TOMBOL UTAMA 3D "STRONG" TEAL (Ref: Image 2 & Tab "Start" Image 1)
+   ------------------------------------------------------------ */
 .neu-btn-primary {
-  background: linear-gradient(90deg, #006569 0%, #092D32 55%, #004d50 100%) !important;
-  color: #FFDD00 !important;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: linear-gradient(180deg, #007A7F 0%, #006569 55%, #004F53 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.28);
   box-shadow:
-    0 8px 20px -4px rgba(0, 101, 105, 0.45),
-    -3px -3px 8px rgba(255, 255, 255, 0.7),
-    inset 0 1px 2px rgba(255, 255, 255, 0.35);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    0 4px 0 #00363A,
+    0 8px 20px rgba(0, 101, 105, 0.38),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.38);
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, filter 0.18s ease;
+  cursor: pointer;
 }
 
 .neu-btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  color: #ffffff !important;
+  transform: translateY(-2px);
+  /* Warm Aura Backlight Glow (Image 3) */
   box-shadow:
-    0 12px 26px -4px rgba(0, 101, 105, 0.55),
-    -4px -4px 10px rgba(255, 255, 255, 0.8),
-    inset 0 1px 3px rgba(255, 255, 255, 0.45);
+    0 0 24px rgba(255, 221, 0, 0.52),
+    0 5.5px 0 #00363A,
+    0 12px 26px rgba(0, 101, 105, 0.46),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.48);
 }
 
 .neu-btn-primary:active:not(:disabled) {
-  transform: scale(0.97);
+  /* Sensasi mekanik tombol fisik ditekan turun 3px */
+  transform: translateY(3px);
   box-shadow:
-    inset 3px 3px 7px rgba(0, 0, 0, 0.4),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.15);
+    0 1px 0 #00363A,
+    0 2px 5px rgba(0, 101, 105, 0.22),
+    inset 0 2px 4px rgba(0, 0, 0, 0.35);
 }
 
-/* Tombol Utama Aksen Emas (Vibrant 3D Gold CTA) — Guaranteed solid background & dark text */
+/* ------------------------------------------------------------
+   TOMBOL AKSEN EMAS 3D "STRONG" (Ref: Image 2 "Shop Now" / Gold CTA)
+   ------------------------------------------------------------ */
 .neu-btn-gold {
-  background: linear-gradient(90deg, #FFDD00 0%, #F59E0B 100%) !important;
-  color: #020617 !important;
-  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: linear-gradient(180deg, #FFE033 0%, #FFDD00 55%, #F59E0B 100%) !important;
+  color: #092D32 !important;
+  border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow:
-    0 8px 20px -4px rgba(245, 158, 11, 0.45),
-    -3px -3px 8px rgba(255, 255, 255, 0.75),
-    inset 0 1px 2px rgba(255, 255, 255, 0.75);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    0 4px 0 #B45309,
+    0 8px 20px rgba(245, 158, 11, 0.38),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.85);
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  cursor: pointer;
 }
 
 .neu-btn-gold:hover:not(:disabled) {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  /* Luminous Golden Rim Glow */
   box-shadow:
-    0 12px 25px -4px rgba(245, 158, 11, 0.55),
-    inset 0 1px 3px rgba(255, 255, 255, 0.85);
+    0 0 26px rgba(255, 221, 0, 0.65),
+    0 5.5px 0 #B45309,
+    0 12px 24px rgba(245, 158, 11, 0.45),
+    inset 0 1.5px 1px #FFFFFF;
 }
 
 .neu-btn-gold:active:not(:disabled) {
-  transform: scale(0.97);
+  transform: translateY(3px);
   box-shadow:
-    inset 3px 3px 6px rgba(146, 64, 14, 0.32),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.6);
+    0 1px 0 #B45309,
+    0 2px 5px rgba(245, 158, 11, 0.2),
+    inset 0 2px 4px rgba(180, 83, 9, 0.25);
 }
 
 /* Tombol Kotak Sosial 3D */
 .neu-social-btn {
   width: 3.5rem;
   height: 3.5rem;
-  border-radius: 1rem;
-  background: linear-gradient(145deg, #ffffff 0%, #eef4f3 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  border-radius: 1.15rem;
+  background: linear-gradient(180deg, #FFFFFF 0%, #EEF4F3 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
   box-shadow:
-    -4px -4px 10px rgba(255, 255, 255, 0.92),
-    5px 5px 12px rgba(9, 45, 50, 0.1),
-    inset 0 1px 1px rgba(255, 255, 255, 0.85);
+    0 3.5px 0 #CBD5E1,
+    0 8px 18px rgba(9, 45, 50, 0.08),
+    inset 0 1.5px 1px #FFFFFF;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -417,16 +484,18 @@ body{overflow-x:hidden;}
 .neu-social-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow:
-    -5px -5px 12px rgba(255, 255, 255, 0.96),
-    7px 7px 16px rgba(9, 45, 50, 0.14),
-    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+    0 0 20px rgba(251, 191, 36, 0.4),
+    0 5px 0 #CBD5E1,
+    0 12px 22px rgba(9, 45, 50, 0.12),
+    inset 0 1.5px 1px #FFFFFF;
 }
 
 .neu-social-btn:active:not(:disabled) {
-  transform: scale(0.95);
+  transform: translateY(2.5px);
   box-shadow:
-    inset 3px 3px 6px rgba(9, 45, 50, 0.16),
-    inset -3px -3px 6px rgba(255, 255, 255, 0.88);
+    0 1px 0 #CBD5E1,
+    0 2px 4px rgba(9, 45, 50, 0.08),
+    inset 0 2px 4px rgba(9, 45, 50, 0.12);
 }
 
 /* Soft extruded circular ring */
@@ -439,142 +508,203 @@ body{overflow-x:hidden;}
 
 /* ============================================================
    WEBSITE-WIDE NEUMORPHIC 3D DESIGN SYSTEM
-   Applies authentic dual-source lighting, extruded tactile bevels,
-   and depressed/sunken active states to all buttons and form controls.
+   Applies authentic dual-source lighting, physical extruded 3D bevels,
+   warm backlight glow on hover, and mechanical depression on active.
    ============================================================ */
 
 /* All clickable buttons on site */
 button:not(:disabled):not(.no-neu) {
-  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background 0.2s ease, filter 0.2s ease;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background 0.18s ease;
 }
 
-button:not(:disabled):not(.no-neu):active {
-  transform: scale(0.97);
-}
-
-/* Light / White / Neutral buttons */
+/* Light / White / Neutral buttons (Ref: Image 1 & Image 2) */
 button.bg-white:not(:disabled):not(.no-neu),
 button.bg-slate-50:not(:disabled):not(.no-neu),
 button.bg-slate-100:not(:disabled):not(.no-neu),
 button.bg-gray-50:not(:disabled):not(.no-neu),
 button.bg-gray-100:not(:disabled):not(.no-neu) {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F5F8F7 100%);
   box-shadow:
-    -3px -3px 8px rgba(255, 255, 255, 0.95),
-    4px 4px 10px rgba(9, 45, 50, 0.08),
-    inset 0 1px 1px #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.7);
+    0 3.5px 0 #CBD5E1,
+    0 6px 14px rgba(9, 45, 50, 0.07),
+    inset 0 1.5px 1px #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.95);
 }
 
 button.bg-white:hover:not(:disabled):not(.no-neu),
 button.bg-slate-50:hover:not(:disabled):not(.no-neu),
 button.bg-slate-100:hover:not(:disabled):not(.no-neu) {
-  transform: translateY(-1.5px);
+  transform: translateY(-2px);
+  /* Luminous Warm Backlight Glow (Image 3 & 4) */
   box-shadow:
-    -4px -4px 12px rgba(255, 255, 255, 0.98),
-    6px 6px 14px rgba(9, 45, 50, 0.12),
-    inset 0 1px 2px #ffffff;
+    0 0 20px rgba(251, 191, 36, 0.38),
+    0 5px 0 #CBD5E1,
+    0 10px 20px rgba(9, 45, 50, 0.1),
+    inset 0 1.5px 1px #FFFFFF;
 }
 
 button.bg-white:active:not(:disabled):not(.no-neu),
 button.bg-slate-50:active:not(:disabled):not(.no-neu),
 button.bg-slate-100:active:not(:disabled):not(.no-neu) {
-  transform: scale(0.97);
+  transform: translateY(2.5px);
   box-shadow:
-    inset 2px 2px 5px rgba(9, 45, 50, 0.12),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.9);
+    0 1px 0 #CBD5E1,
+    0 2px 4px rgba(9, 45, 50, 0.08),
+    inset 0 2px 4px rgba(9, 45, 50, 0.08);
 }
 
-/* Deep Teal Buttons */
+/* Deep Teal Buttons (Ref: Image 2 "STRONG" & Tab "Start" Image 1) */
 button.bg-\[\#006569\]:not(:disabled):not(.no-neu),
 button.bg-teal-700:not(:disabled):not(.no-neu),
 button.bg-teal-800:not(:disabled):not(.no-neu),
 button.bg-teal-900:not(:disabled):not(.no-neu) {
+  background: linear-gradient(180deg, #007A7F 0%, #006569 55%, #004F53 100%) !important;
+  color: #FFFFFF !important;
   box-shadow:
-    0 6px 16px -2px rgba(0, 101, 105, 0.45),
-    -2px -2px 6px rgba(255, 255, 255, 0.45),
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+    0 4px 0 #00363A,
+    0 8px 20px rgba(0, 101, 105, 0.38),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.28);
 }
 
 button.bg-\[\#006569\]:hover:not(:disabled):not(.no-neu),
 button.bg-teal-700:hover:not(:disabled):not(.no-neu),
 button.bg-teal-800:hover:not(:disabled):not(.no-neu) {
-  transform: translateY(-1.5px);
+  transform: translateY(-2px);
   box-shadow:
-    0 10px 22px -3px rgba(0, 101, 105, 0.55),
-    -3px -3px 8px rgba(255, 255, 255, 0.65),
-    inset 0 1px 2px rgba(255, 255, 255, 0.45);
+    0 0 24px rgba(255, 221, 0, 0.52),
+    0 5.5px 0 #00363A,
+    0 12px 26px rgba(0, 101, 105, 0.46),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.48);
 }
 
 button.bg-\[\#006569\]:active:not(:disabled):not(.no-neu),
 button.bg-teal-700:active:not(:disabled):not(.no-neu) {
-  transform: scale(0.97);
+  transform: translateY(3px);
   box-shadow:
-    inset 3px 3px 6px rgba(0, 0, 0, 0.38),
-    inset -2px -2px 4px rgba(255, 255, 255, 0.15);
+    0 1px 0 #00363A,
+    0 2px 5px rgba(0, 101, 105, 0.22),
+    inset 0 2px 4px rgba(0, 0, 0, 0.35);
 }
 
-/* Gold CTA buttons */
+/* Gold CTA buttons (Ref: Image 2 "Shop Now" / Amber "STRONG") */
 button.bg-\[\#FFDD00\]:not(:disabled):not(.no-neu),
 button.bg-amber-400:not(:disabled):not(.no-neu),
 button.bg-amber-500:not(:disabled):not(.no-neu) {
+  background: linear-gradient(180deg, #FFE033 0%, #FFDD00 55%, #F59E0B 100%) !important;
+  color: #092D32 !important;
   box-shadow:
-    0 6px 16px -2px rgba(245, 158, 11, 0.45),
-    -2px -2px 6px rgba(255, 255, 255, 0.7),
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  color: #020617;
+    0 4px 0 #B45309,
+    0 8px 20px rgba(245, 158, 11, 0.38),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.7);
 }
 
 button.bg-\[\#FFDD00\]:hover:not(:disabled):not(.no-neu),
 button.bg-amber-400:hover:not(:disabled):not(.no-neu) {
-  transform: translateY(-1.5px);
+  transform: translateY(-2px);
   box-shadow:
-    0 10px 22px -3px rgba(245, 158, 11, 0.55),
-    -3px -3px 8px rgba(255, 255, 255, 0.85),
-    inset 0 1px 2px rgba(255, 255, 255, 0.85);
+    0 0 26px rgba(255, 221, 0, 0.65),
+    0 5.5px 0 #B45309,
+    0 12px 24px rgba(245, 158, 11, 0.45),
+    inset 0 1.5px 1px #FFFFFF;
 }
 
 button.bg-\[\#FFDD00\]:active:not(:disabled):not(.no-neu),
 button.bg-amber-400:active:not(:disabled):not(.no-neu) {
-  transform: scale(0.97);
+  transform: translateY(3px);
   box-shadow:
-    inset 3px 3px 6px rgba(146, 64, 14, 0.32),
-    inset -2px -2px 4px rgba(255, 255, 255, 0.6);
+    0 1px 0 #B45309,
+    0 2px 5px rgba(245, 158, 11, 0.2),
+    inset 0 2px 4px rgba(180, 83, 9, 0.25);
 }
 
-/* Red / Danger buttons */
+/* Blue CTA buttons (Ref: Image 2 "Get Started" STRONG) */
+button.bg-blue-600:not(:disabled):not(.no-neu),
+button.bg-blue-700:not(:disabled):not(.no-neu) {
+  background: linear-gradient(180deg, #3B82F6 0%, #2563EB 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow:
+    0 4px 0 #1D4ED8,
+    0 8px 18px rgba(37, 99, 235, 0.38),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+button.bg-blue-600:hover:not(:disabled):not(.no-neu) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 24px rgba(59, 130, 246, 0.55),
+    0 5.5px 0 #1D4ED8,
+    0 12px 24px rgba(37, 99, 235, 0.45);
+}
+
+button.bg-blue-600:active:not(:disabled):not(.no-neu) {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 #1D4ED8,
+    0 2px 5px rgba(37, 99, 235, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Red / Danger buttons (Ref: Image 2 "Try for Free" STRONG) */
 button.bg-rose-600:not(:disabled):not(.no-neu),
 button.bg-red-600:not(:disabled):not(.no-neu) {
+  background: linear-gradient(180deg, #EF4444 0%, #DC2626 100%) !important;
+  color: #FFFFFF !important;
   box-shadow:
-    0 6px 16px -2px rgba(225, 29, 72, 0.45),
-    -2px -2px 6px rgba(255, 255, 255, 0.35),
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+    0 4px 0 #B91C1C,
+    0 8px 18px rgba(220, 38, 38, 0.38),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-button.bg-rose-600:hover:not(:disabled):not(.no-neu) {
-  transform: translateY(-1.5px);
+button.bg-rose-600:hover:not(:disabled):not(.no-neu),
+button.bg-red-600:hover:not(:disabled):not(.no-neu) {
+  transform: translateY(-2px);
   box-shadow:
-    0 10px 22px -3px rgba(225, 29, 72, 0.55),
-    -3px -3px 8px rgba(255, 255, 255, 0.45);
+    0 0 24px rgba(239, 68, 68, 0.55),
+    0 5.5px 0 #B91C1C,
+    0 12px 24px rgba(220, 38, 38, 0.45);
 }
 
-/* Emerald / Success buttons */
+button.bg-rose-600:active:not(:disabled):not(.no-neu),
+button.bg-red-600:active:not(:disabled):not(.no-neu) {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 #B91C1C,
+    0 2px 5px rgba(220, 38, 38, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Emerald / Success buttons (Ref: Image 2 "Sign Up" STRONG) */
 button.bg-emerald-600:not(:disabled):not(.no-neu),
 button.bg-green-600:not(:disabled):not(.no-neu) {
+  background: linear-gradient(180deg, #10B981 0%, #059669 100%) !important;
+  color: #FFFFFF !important;
   box-shadow:
-    0 6px 16px -2px rgba(5, 150, 105, 0.45),
-    -2px -2px 6px rgba(255, 255, 255, 0.35),
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+    0 4px 0 #047857,
+    0 8px 18px rgba(5, 150, 105, 0.38),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-button.bg-emerald-600:hover:not(:disabled):not(.no-neu) {
-  transform: translateY(-1.5px);
+button.bg-emerald-600:hover:not(:disabled):not(.no-neu),
+button.bg-green-600:hover:not(:disabled):not(.no-neu) {
+  transform: translateY(-2px);
   box-shadow:
-    0 10px 22px -3px rgba(5, 150, 105, 0.55),
-    -3px -3px 8px rgba(255, 255, 255, 0.45);
+    0 0 24px rgba(16, 185, 129, 0.55),
+    0 5.5px 0 #047857,
+    0 12px 24px rgba(5, 150, 105, 0.45);
+}
+
+button.bg-emerald-600:active:not(:disabled):not(.no-neu),
+button.bg-green-600:active:not(:disabled):not(.no-neu) {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 #047857,
+    0 2px 5px rgba(5, 150, 105, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Global Form Controls (Inputs, Selects, Textareas) sunken depth */
@@ -582,8 +712,8 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="
 select:not(.no-neu),
 textarea:not(.no-neu) {
   box-shadow:
-    inset 2px 2px 5px rgba(9, 45, 50, 0.06),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.85);
+    inset 2.5px 2.5px 6px rgba(9, 45, 50, 0.08),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.95);
   transition: all 0.2s ease;
 }
 
@@ -591,8 +721,8 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="
 select:not(.no-neu):focus,
 textarea:not(.no-neu):focus {
   box-shadow:
-    inset 2px 2px 5px rgba(9, 45, 50, 0.04),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.95),
+    inset 2px 2px 5px rgba(9, 45, 50, 0.05),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.98),
     0 0 0 3px rgba(0, 101, 105, 0.15);
   outline: none;
 }

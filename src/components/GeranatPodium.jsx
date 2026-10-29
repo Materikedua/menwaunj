@@ -474,16 +474,6 @@ export function GeranatPodium() {
           /* ========================================================= */
           <div className="relative z-10 max-w-2xl mx-auto my-6">
             <div className="relative rounded-[2rem] bg-white border border-slate-200/90 shadow-xl p-8 sm:p-12 text-center space-y-5 overflow-hidden">
-              
-              {/* BorderBeam Kuning Emas */}
-              <BorderBeam
-                duration={5}
-                borderWidth={2}
-                borderRadius={32}
-                colorFrom="#FFDD00"
-                colorTo="#EAB308"
-              />
-
               <div className="w-18 h-18 rounded-3xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto shadow-sm">
                 <Clock size={34} className="animate-pulse" />
               </div>

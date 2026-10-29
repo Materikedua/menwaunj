@@ -62,7 +62,6 @@ import { OfficialSecurityGate } from './OfficialSecurityGate.jsx';
 import { OfficialPinChangeModal } from './OfficialPinChangeModal.jsx';
 import { OfficialActivityLogModal } from './OfficialActivityLogModal.jsx';
 import { generateBukuPasukanHtml } from './OfficialBukuPasukanGenerator.jsx';
-import BorderBeam from './ui/BorderBeam.jsx';
 
 const ALLOWED_IMAGE_TYPES = [
   'image/jpeg',
@@ -1350,14 +1349,6 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
 
         {/* Kartu Kontainer Login (Floating 3D Cushion Card) */}
         <div className="relative z-10 w-full max-w-md rounded-[2.75rem] neu-card p-8 sm:p-10 text-center overflow-hidden">
-          <BorderBeam
-            duration={5}
-            borderWidth={2.5}
-            borderRadius={44}
-            colorFrom="#006569"
-            colorTo="#FFDD00"
-          />
-
           {/* Tile Logo 3D Elevated di Bagian Atas */}
           <div className="mx-auto mb-5 w-24 h-24 rounded-3xl neu-logo-tile p-3.5 flex items-center justify-center relative overflow-hidden">
             <div className="pointer-events-none absolute -top-6 -left-6 w-16 h-16 bg-white/85 rounded-full blur-md" />
@@ -1952,18 +1943,10 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                 ================================================================ */}
             {activeModule === 'beranda' && (
               <div className="space-y-8 animate-fade-in">
-                {/* DUA KARTU SOROTAN UTAMA (TOP HIGHLIGHT CARDS) DENGAN BORDERBEAM */}
+                {/* DUA KARTU SOROTAN UTAMA (TOP HIGHLIGHT CARDS) */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
                   {/* KARTU SOROTAN 1: KELENGKAPAN ADMINISTRASI & BERKAS */}
                   <div className="relative rounded-[2.25rem] neu-card p-6 flex flex-col justify-between overflow-hidden">
-                    <BorderBeam
-                      duration={5.2}
-                      borderWidth={2.5}
-                      borderRadius={36}
-                      colorFrom="#006569"
-                      colorTo="#FFDD00"
-                    />
-
                     <div>
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-3.5">
@@ -2046,14 +2029,6 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
 
                   {/* KARTU SOROTAN 2: STATUS PASUKAN & PENILAIAN EVALUASI */}
                   <div className="relative rounded-[2.25rem] neu-card p-6 flex flex-col justify-between overflow-hidden">
-                    <BorderBeam
-                      duration={4.8}
-                      borderWidth={2.5}
-                      borderRadius={36}
-                      colorFrom="#FFDD00"
-                      colorTo="#F59E0B"
-                    />
-
                     <div>
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-3.5">

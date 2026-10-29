@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { normalizeWaNumber, getOfficialPortalByWhatsApp } from '../firebase.js';
 import { navigate } from '../lib/router.jsx';
-import BorderBeam from './ui/BorderBeam.jsx';
 
 export function OfficialPortalQuickAccess({
   isOpen: controlledIsOpen,
@@ -96,14 +95,6 @@ export function OfficialPortalQuickAccess({
           </div>
 
           <div className="relative rounded-[2.75rem] neu-card p-8 sm:p-12 lg:p-14 overflow-hidden text-[#092D32]">
-            <BorderBeam
-              duration={5.5}
-              borderWidth={2.5}
-              borderRadius={44}
-              colorFrom="#006569"
-              colorTo="#FFDD00"
-            />
-
             {/* Ambient Background Glows */}
             <div className="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full bg-teal-500/10 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-emerald-500/10 blur-3xl" />
