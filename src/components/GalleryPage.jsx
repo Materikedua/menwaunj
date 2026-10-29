@@ -1,14 +1,56 @@
-import React, { useEffect } from 'react'; import { Images, ArrowRight, Home, ChevronRight, Sparkles, Calendar, Layers, Heart, Share2, } from 'lucide-react'; import { Link } from '../lib/router.jsx'; import { DocumentationWall } from './DocumentationWall.jsx'; export function GalleryPage() { useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, []); return ( <div className="min-h-screen bg-[#F5F8F6] font-sans selection:bg-[#006569] selection:text-[#FFDD00]"> {/* ==================================================================== HERO HEADER SUBTAB GALERI & ARSIP DOKUMENTASI ==================================================================== */} <section className="relative overflow-hidden bg-[#092D32] py-14 text-white sm:py-20 border-b border-[#006569]/40">
-        {/* Background Foto Pasukan di Plaza dengan Blur & Dark Gradient Overlay Hero */}
-        <div className="absolute inset-0 z-0 select-none pointer-events-none">
+import React, { useEffect } from 'react';
+import { Home, ChevronRight } from 'lucide-react';
+import { Link } from '../lib/router.jsx';
+import { DocumentationWall } from './DocumentationWall.jsx';
+
+export function GalleryPage({ onOpenAuth = null }) {
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-[#F5F8F6] font-sans selection:bg-[#006569] selection:text-[#FFDD00]">
+      {/* COMPACT HEADER BAR — Dirancang ringkas agar Radial Arc Wheel pas 1 layar laptop tanpa scroll */}
+      <section className="relative overflow-hidden bg-[#092D32] py-4 sm:py-5 text-white border-b border-[#006569]/40">
+        <div className="absolute inset-0 z-0 select-none pointer-events-none opacity-25">
           <img
             src="/foto-kampus-unj.jpg"
-            alt="Pasukan Menwa UNJ di Plaza Kampus"
-            className="h-full w-full object-cover object-center filter blur-[2.5px] scale-105"
+            alt=""
+            className="h-full w-full object-cover object-center filter blur-[2px]"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#021B25]/95 via-[#092D32]/90 to-[#021B25]/85" />
-          <div className="absolute inset-0 bg-black/35" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#021B25] via-[#092D32]/95 to-[#021B25]" />
         </div>
-        {/* Glow ambient background */}
-        <div aria-hidden="true" className="pointer-events-none absolute -left-20 top-0 h-96 w-96 rounded-full bg-[#006569]/30 blur-3xl" />
-        <div aria-hidden="true" className="pointer-events-none absolute -right-20 bottom-0 h-96 w-96 rounded-full bg-[#FFDD00]/15 blur-3xl" /> <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"> {/* Breadcrumb Navigation */} <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs font-bold text-slate-300" > <Link to="/" className="inline-flex items-center gap-1.5 transition hover:text-[#FFDD00]" > <Home size={14} /> Beranda </Link> <ChevronRight size={14} className="text-slate-500" /> <span className="text-[#FFDD00]">Galeri &amp; Dokumentasi Kegiatan</span> </nav> <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"> <div className="max-w-3xl"> <div className="inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/40 bg-[#021B25] px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-[#FFDD00]"> <Images size={15} className="text-[#FFDD00]" /> ARSIP VISUAL RESMI @MENWA.UNJ </div> <h1 className="mt-4 text-3xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl"> Dinding Galeri &amp;{' '} <span className="text-[#FFDD00]">Dokumentasi Kegiatan</span> </h1> <p className="mt-3.5 max-w-2xl text-sm leading-relaxed text-slate-200 sm:text-base"> Pusat arsip rekaman visual resmi Resimen Mahasiswa Satuan Universitas Negeri Jakarta. Telusuri momen bersejarah 12 Program Kerja Tahunan, kompetisi nasional, pendidikan baret ungu, serta aksi kemanusiaan lintas angkatan 2025–2026. </p> </div> {/* Metrik Cepat Galeri */} <div className="grid grid-cols-3 gap-2.5 sm:gap-4 shrink-0"> <div className="rounded-2xl border border-white/10 bg-[#021B25]/85 px-4 py-3 text-center shadow-lg"> <div className="font-mono text-xl font-black text-[#FFDD00] sm:text-2xl"> 12 </div> <div className="text-[11px] font-bold uppercase tracking-wider text-slate-300"> Proker Tahunan </div> </div> <div className="rounded-2xl border border-white/10 bg-[#021B25]/85 px-4 py-3 text-center shadow-lg"> <div className="font-mono text-xl font-black text-white sm:text-2xl"> 24+ </div> <div className="text-[11px] font-bold uppercase tracking-wider text-slate-300"> Album Foto </div> </div> <div className="rounded-2xl border border-white/10 bg-[#021B25]/85 px-4 py-3 text-center shadow-lg"> <div className="font-mono text-xl font-black text-[#34A853] sm:text-2xl"> 2025–26 </div> <div className="text-[11px] font-bold uppercase tracking-wider text-slate-300"> Rentang Arsip </div> </div> </div> </div> </div> </section> {/* ==================================================================== KOMPONEN UTAMA DINDING DOKUMENTASI INTERAKTIF ==================================================================== */} <DocumentationWall /> </div> ); } export default GalleryPage;
+
+        <div className="relative z-10 mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+              <Link to="/" className="inline-flex items-center gap-1 transition hover:text-[#FFDD00]">
+                <Home size={13} />
+                <span>Beranda</span>
+              </Link>
+              <ChevronRight size={13} className="text-slate-500" />
+              <span className="text-[#FFDD00]">Galeri Dokumentasi</span>
+            </nav>
+            <span className="hidden sm:inline text-white/20">|</span>
+            <h1 className="text-lg sm:text-xl font-black tracking-tight text-white">
+              Arsip Lensa &amp; <span className="text-[#FFDD00]">Dokumentasi Giat Menwa UNJ</span>
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs text-slate-300 font-mono tabular-nums shrink-0">
+            <span><strong className="text-[#FFDD00]">12</strong> Proker Tahunan</span>
+            <span aria-hidden="true">·</span>
+            <span><strong className="text-white">24+</strong> Album Dokumentasi</span>
+            <span aria-hidden="true">·</span>
+            <span><strong className="text-emerald-400">2025–2026</strong></span>
+          </div>
+        </div>
+      </section>
+
+      {/* PANGGUNG UTAMA DOKUMENTASI: RADIAL ARC WHEEL & CLASSIC GRID */}
+      <DocumentationWall onOpenAuth={onOpenAuth} />
+    </div>
+  );
+}
+
+export default GalleryPage;
