@@ -169,9 +169,50 @@ img { max-width: 100%; }
   .doc-motion-card::before, .doc-motion-card::after, .luxury-card::before, .luxury-card::after, .luxury-card-icon, .luxury-card-arrow, .luxury-card .card-kicker::after { transition:none !important; }
 }
 /* V4 — accessible, purposeful global navigation */
-.portal-search-trigger{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:8px 12px;color:#f4df81;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:rgba(255,255,255,.07);font-size:11px;font-weight:850;white-space:nowrap;transition:background .2s ease,border-color .2s ease;}
-.portal-search-trigger:hover{background:rgba(255,255,255,.14);border-color:rgba(255,221,0,.4);}
+.portal-search-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 14px;
+  color: #ffdd00;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 9999px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
+  box-shadow: -2px -2px 6px rgba(255, 255, 255, 0.15), 3px 3px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+.portal-search-trigger:hover {
+  transform: translateY(-1.5px);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%);
+  border-color: rgba(255, 221, 0, 0.45);
+  box-shadow: -3px -3px 8px rgba(255, 255, 255, 0.22), 4px 4px 12px rgba(0, 0, 0, 0.4);
+}
+.portal-search-trigger:active {
+  transform: scale(0.97);
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.4), inset -1px -1px 3px rgba(255, 255, 255, 0.1);
+}
 .portal-search-trigger kbd{font:800 10px/1 sans-serif;padding:5px;border:1px solid rgba(255,255,255,.2);border-radius:5px;color:#fff;}
+
+.portal-account-trigger {
+  border-radius: 9999px !important;
+  background: linear-gradient(145deg, #ffffff 0%, #edf4f2 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: -2px -2px 6px rgba(255, 255, 255, 0.9), 3px 3px 8px rgba(9, 45, 50, 0.1), inset 0 1px 1px #fff !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.portal-account-trigger:hover {
+  transform: translateY(-1.5px) scale(1.02) !important;
+  box-shadow: -3px -3px 8px rgba(255, 255, 255, 0.95), 4px 4px 12px rgba(9, 45, 50, 0.14), inset 0 1px 2px #fff !important;
+}
+.portal-account-trigger:active {
+  transform: scale(0.97) !important;
+  box-shadow: inset 2px 2px 5px rgba(9, 45, 50, 0.12), inset -2px -2px 5px rgba(255, 255, 255, 0.9) !important;
+}
 html{scroll-padding-top:145px;}
 body{overflow-x:hidden;}
 :focus-visible{outline:3px solid #e4bf29;outline-offset:3px;}
@@ -396,13 +437,164 @@ body{overflow-x:hidden;}
   pointer-events: none;
 }
 
-/* Global button tactile interaction */
-button:not(:disabled) {
-  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease, background-color 0.18s ease;
+/* ============================================================
+   WEBSITE-WIDE NEUMORPHIC 3D DESIGN SYSTEM
+   Applies authentic dual-source lighting, extruded tactile bevels,
+   and depressed/sunken active states to all buttons and form controls.
+   ============================================================ */
+
+/* All clickable buttons on site */
+button:not(:disabled):not(.no-neu) {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background 0.2s ease, filter 0.2s ease;
 }
 
-button:active:not(:disabled) {
+button:not(:disabled):not(.no-neu):active {
   transform: scale(0.97);
+}
+
+/* Light / White / Neutral buttons */
+button.bg-white:not(:disabled):not(.no-neu),
+button.bg-slate-50:not(:disabled):not(.no-neu),
+button.bg-slate-100:not(:disabled):not(.no-neu),
+button.bg-gray-50:not(:disabled):not(.no-neu),
+button.bg-gray-100:not(:disabled):not(.no-neu) {
+  box-shadow:
+    -3px -3px 8px rgba(255, 255, 255, 0.95),
+    4px 4px 10px rgba(9, 45, 50, 0.08),
+    inset 0 1px 1px #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+button.bg-white:hover:not(:disabled):not(.no-neu),
+button.bg-slate-50:hover:not(:disabled):not(.no-neu),
+button.bg-slate-100:hover:not(:disabled):not(.no-neu) {
+  transform: translateY(-1.5px);
+  box-shadow:
+    -4px -4px 12px rgba(255, 255, 255, 0.98),
+    6px 6px 14px rgba(9, 45, 50, 0.12),
+    inset 0 1px 2px #ffffff;
+}
+
+button.bg-white:active:not(:disabled):not(.no-neu),
+button.bg-slate-50:active:not(:disabled):not(.no-neu),
+button.bg-slate-100:active:not(:disabled):not(.no-neu) {
+  transform: scale(0.97);
+  box-shadow:
+    inset 2px 2px 5px rgba(9, 45, 50, 0.12),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.9);
+}
+
+/* Deep Teal Buttons */
+button.bg-\[\#006569\]:not(:disabled):not(.no-neu),
+button.bg-teal-700:not(:disabled):not(.no-neu),
+button.bg-teal-800:not(:disabled):not(.no-neu),
+button.bg-teal-900:not(:disabled):not(.no-neu) {
+  box-shadow:
+    0 6px 16px -2px rgba(0, 101, 105, 0.45),
+    -2px -2px 6px rgba(255, 255, 255, 0.45),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+button.bg-\[\#006569\]:hover:not(:disabled):not(.no-neu),
+button.bg-teal-700:hover:not(:disabled):not(.no-neu),
+button.bg-teal-800:hover:not(:disabled):not(.no-neu) {
+  transform: translateY(-1.5px);
+  box-shadow:
+    0 10px 22px -3px rgba(0, 101, 105, 0.55),
+    -3px -3px 8px rgba(255, 255, 255, 0.65),
+    inset 0 1px 2px rgba(255, 255, 255, 0.45);
+}
+
+button.bg-\[\#006569\]:active:not(:disabled):not(.no-neu),
+button.bg-teal-700:active:not(:disabled):not(.no-neu) {
+  transform: scale(0.97);
+  box-shadow:
+    inset 3px 3px 6px rgba(0, 0, 0, 0.38),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.15);
+}
+
+/* Gold CTA buttons */
+button.bg-\[\#FFDD00\]:not(:disabled):not(.no-neu),
+button.bg-amber-400:not(:disabled):not(.no-neu),
+button.bg-amber-500:not(:disabled):not(.no-neu) {
+  box-shadow:
+    0 6px 16px -2px rgba(245, 158, 11, 0.45),
+    -2px -2px 6px rgba(255, 255, 255, 0.7),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: #020617;
+}
+
+button.bg-\[\#FFDD00\]:hover:not(:disabled):not(.no-neu),
+button.bg-amber-400:hover:not(:disabled):not(.no-neu) {
+  transform: translateY(-1.5px);
+  box-shadow:
+    0 10px 22px -3px rgba(245, 158, 11, 0.55),
+    -3px -3px 8px rgba(255, 255, 255, 0.85),
+    inset 0 1px 2px rgba(255, 255, 255, 0.85);
+}
+
+button.bg-\[\#FFDD00\]:active:not(:disabled):not(.no-neu),
+button.bg-amber-400:active:not(:disabled):not(.no-neu) {
+  transform: scale(0.97);
+  box-shadow:
+    inset 3px 3px 6px rgba(146, 64, 14, 0.32),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.6);
+}
+
+/* Red / Danger buttons */
+button.bg-rose-600:not(:disabled):not(.no-neu),
+button.bg-red-600:not(:disabled):not(.no-neu) {
+  box-shadow:
+    0 6px 16px -2px rgba(225, 29, 72, 0.45),
+    -2px -2px 6px rgba(255, 255, 255, 0.35),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+button.bg-rose-600:hover:not(:disabled):not(.no-neu) {
+  transform: translateY(-1.5px);
+  box-shadow:
+    0 10px 22px -3px rgba(225, 29, 72, 0.55),
+    -3px -3px 8px rgba(255, 255, 255, 0.45);
+}
+
+/* Emerald / Success buttons */
+button.bg-emerald-600:not(:disabled):not(.no-neu),
+button.bg-green-600:not(:disabled):not(.no-neu) {
+  box-shadow:
+    0 6px 16px -2px rgba(5, 150, 105, 0.45),
+    -2px -2px 6px rgba(255, 255, 255, 0.35),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+button.bg-emerald-600:hover:not(:disabled):not(.no-neu) {
+  transform: translateY(-1.5px);
+  box-shadow:
+    0 10px 22px -3px rgba(5, 150, 105, 0.55),
+    -3px -3px 8px rgba(255, 255, 255, 0.45);
+}
+
+/* Global Form Controls (Inputs, Selects, Textareas) sunken depth */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not(.no-neu),
+select:not(.no-neu),
+textarea:not(.no-neu) {
+  box-shadow:
+    inset 2px 2px 5px rgba(9, 45, 50, 0.06),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.85);
+  transition: all 0.2s ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not(.no-neu):focus,
+select:not(.no-neu):focus,
+textarea:not(.no-neu):focus {
+  box-shadow:
+    inset 2px 2px 5px rgba(9, 45, 50, 0.04),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.95),
+    0 0 0 3px rgba(0, 101, 105, 0.15);
+  outline: none;
 }
 
 /* Animations for Podiums, Borders & Gamification */

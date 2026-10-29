@@ -188,7 +188,7 @@ export function OfficialPortalQuickAccess({
           />
 
           <div
-            className="relative z-10 w-full max-w-md h-full bg-gradient-to-br from-[#EEF5F6] via-[#F5F8F6] to-[#F9FBFA] border-l-2 border-white/85 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300"
+            className="relative z-10 w-full max-w-md h-full bg-gradient-to-br from-[#EEF5F6] via-[#F5F8F6] to-[#F9FBFA] border-l-2 border-white/85 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300"
             role="dialog"
             aria-modal="true"
             aria-labelledby="portal-official-title"
@@ -197,8 +197,8 @@ export function OfficialPortalQuickAccess({
             <div className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 rounded-full bg-teal-500/10 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-20 -right-16 w-56 h-56 rounded-full bg-amber-500/10 blur-3xl" />
 
-            {/* Top Bar Drawer */}
-            <div className="sticky top-0 z-20 bg-[#F5F8F6]/90 backdrop-blur-md border-b border-white/80 px-6 py-4 flex items-center justify-between">
+            {/* Top Bar Drawer — Pinned Permanently at Top, Never Scrolls Away */}
+            <div className="shrink-0 z-30 bg-[#F5F8F6]/95 backdrop-blur-md border-b border-white/80 px-5 sm:px-6 py-3.5 flex items-center justify-between shadow-xs">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl neu-logo-tile text-[#006569] flex items-center justify-center font-bold">
                   <UserCheck size={18} />
@@ -216,18 +216,31 @@ export function OfficialPortalQuickAccess({
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="w-9 h-9 rounded-xl neu-btn text-[#092D32] hover:text-rose-600 flex items-center justify-center cursor-pointer"
+                className="px-3 py-1.5 rounded-xl neu-btn text-rose-700 hover:text-rose-800 flex items-center gap-1.5 font-black text-xs uppercase tracking-wider cursor-pointer shadow-xs transition hover:scale-105 active:scale-95"
                 title="Tutup (Escape)"
+                aria-label="Tutup panel login official"
               >
-                <X size={16} />
+                <X size={15} />
+                <span>Tutup</span>
               </button>
             </div>
 
-            {/* Body Kartu 3D Login */}
-            <div className="relative z-10 p-6 sm:p-8 flex-1 flex flex-col justify-center">
-              <div className="rounded-[2.5rem] neu-card p-6 sm:p-8 text-center space-y-5">
+            {/* Body Kartu 3D Login — Compact & Fitted */}
+            <div className="relative z-10 p-4 sm:p-6 flex-1 overflow-y-auto flex flex-col justify-center">
+              <div className="relative rounded-[2.5rem] neu-card p-6 sm:p-7 text-center space-y-4">
+                {/* Tombol X Cepat Langsung di Sudut Kartu */}
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="absolute top-4 right-4 w-8 h-8 rounded-full neu-btn text-slate-500 hover:text-rose-600 flex items-center justify-center cursor-pointer shadow-xs transition hover:scale-110 active:scale-95 z-20"
+                  aria-label="Tutup panel login official"
+                  title="Tutup (Escape)"
+                >
+                  <X size={15} />
+                </button>
+
                 {/* Tile Logo 3D Elevated */}
-                <div className="mx-auto w-20 h-20 rounded-3xl neu-logo-tile p-3 flex items-center justify-center relative overflow-hidden">
+                <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-3xl neu-logo-tile p-3 flex items-center justify-center relative overflow-hidden">
                   <img
                     src="/logo-menwa-unj.png"
                     alt="Menwa UNJ"
@@ -236,7 +249,7 @@ export function OfficialPortalQuickAccess({
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-black text-[#092D32] tracking-tight">
+                  <h3 className="text-xl sm:text-2xl font-black text-[#092D32] tracking-tight">
                     Selamat Datang
                   </h3>
                   <p className="mt-1 text-xs text-slate-500 font-semibold leading-relaxed">
@@ -251,8 +264,8 @@ export function OfficialPortalQuickAccess({
                   </div>
                 )}
 
-                <form onSubmit={handleWhatsAppLogin} className="space-y-4 text-left">
-                  <div className="neu-inset rounded-2xl px-4 py-3.5 flex items-center gap-2.5">
+                <form onSubmit={handleWhatsAppLogin} className="space-y-3.5 text-left">
+                  <div className="neu-inset rounded-2xl px-4 py-3 flex items-center gap-2.5">
                     <Phone size={18} className="text-[#006569] shrink-0" />
                     <span className="text-[#006569] font-black text-sm select-none">+62</span>
                     <input
@@ -263,35 +276,44 @@ export function OfficialPortalQuickAccess({
                         if (loginError) setLoginError('');
                       }}
                       placeholder="812xxxxxxxx"
-                      autoFocus
                       style={{ color: '#020617' }}
                       className="w-full bg-transparent text-slate-950 placeholder:text-slate-400 font-black text-sm sm:text-base focus:outline-none"
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={searchingWa}
-                    className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-sm tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-60 shadow-lg hover:shadow-xl transition-all"
-                  >
-                    <span className="mx-auto pl-6 flex items-center gap-2">
-                      {searchingWa ? (
-                        <>
-                          <Loader2 size={16} className="animate-spin text-[#FFDD00]" />
-                          <span>Memeriksa...</span>
-                        </>
-                      ) : (
-                        <span>Login Official</span>
-                      )}
-                    </span>
-                    <span className="w-9 h-9 rounded-full bg-white/15 border border-white/25 flex items-center justify-center text-[#FFDD00] shrink-0">
-                      <ArrowRight size={17} />
-                    </span>
-                  </button>
+                  <div className="space-y-2">
+                    <button
+                      type="submit"
+                      disabled={searchingWa}
+                      className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-sm tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-60 shadow-lg hover:shadow-xl transition-all"
+                    >
+                      <span className="mx-auto pl-6 flex items-center gap-2">
+                        {searchingWa ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin text-[#FFDD00]" />
+                            <span>Memeriksa...</span>
+                          </>
+                        ) : (
+                          <span>Login Official</span>
+                        )}
+                      </span>
+                      <span className="w-8 h-8 rounded-full bg-white/15 border border-white/25 flex items-center justify-center text-[#FFDD00] shrink-0">
+                        <ArrowRight size={16} />
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsOpen(false)}
+                      className="w-full py-2.5 rounded-full neu-btn text-slate-600 hover:text-rose-600 font-black text-xs uppercase tracking-wider cursor-pointer text-center transition"
+                    >
+                      Batal / Tutup
+                    </button>
+                  </div>
                 </form>
 
                 {/* Pemisah "ATAU MASUK MELALUI" */}
-                <div className="flex items-center gap-3 pt-1">
+                <div className="flex items-center gap-3 pt-0.5">
                   <div className="h-[1.5px] flex-1 bg-gradient-to-r from-transparent via-slate-300/80 to-slate-300/80" />
                   <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
                     ATAU MASUK MELALUI
@@ -325,16 +347,6 @@ export function OfficialPortalQuickAccess({
                   </button>
                 </div>
               </div>
-            </div>
-
-            <div className="relative z-20 bg-[#F5F8F6]/90 backdrop-blur-md border-t border-white/80 p-4">
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="w-full py-3 rounded-2xl neu-btn text-[#092D32] font-black text-xs uppercase tracking-wider cursor-pointer text-center"
-              >
-                Tutup Panel Login
-              </button>
             </div>
           </div>
         </div>

@@ -625,15 +625,15 @@ export function UserAccountModal({ isOpen, onClose }) {
                   </div>
                 </div>
 
-                {/* Navigasi Tab Profil */}
-                <div className="flex neu-inset p-1.5 rounded-2xl flex-wrap gap-1.5">
+                {/* Navigasi Tab Profil 3D */}
+                <div className="flex neu-inset p-2 rounded-2xl flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => setActiveTab('profile')}
-                    className={`flex-1 min-w-[110px] py-2.5 text-xs font-black rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                    className={`flex-1 min-w-[115px] py-2.5 px-3 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                       activeTab === 'profile'
-                        ? 'neu-btn text-[#006569]'
-                        : 'text-slate-600 hover:text-[#092D32]'
+                        ? 'neu-btn-primary text-[#FFDD00] shadow-md'
+                        : 'neu-btn text-slate-700 hover:text-[#006569]'
                     }`}
                   >
                     <User size={14} /> Profil &amp; RBAC
@@ -644,10 +644,10 @@ export function UserAccountModal({ isOpen, onClose }) {
                       setActiveTab('submissions');
                       refreshSubmissions();
                     }}
-                    className={`flex-1 min-w-[110px] py-2.5 text-xs font-black rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                    className={`flex-1 min-w-[115px] py-2.5 px-3 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                       activeTab === 'submissions'
-                        ? 'neu-btn text-[#006569]'
-                        : 'text-slate-600 hover:text-[#092D32]'
+                        ? 'neu-btn-primary text-[#FFDD00] shadow-md'
+                        : 'neu-btn text-slate-700 hover:text-[#006569]'
                     }`}
                   >
                     <FileText size={14} /> Formulir ({submissions.length})
@@ -658,10 +658,10 @@ export function UserAccountModal({ isOpen, onClose }) {
                       setActiveTab('certificates');
                       if (refreshCertificates) refreshCertificates();
                     }}
-                    className={`flex-1 min-w-[110px] py-2.5 text-xs font-black rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                    className={`flex-1 min-w-[115px] py-2.5 px-3 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                       activeTab === 'certificates'
-                        ? 'neu-btn text-[#006569]'
-                        : 'text-slate-600 hover:text-[#092D32]'
+                        ? 'neu-btn-primary text-[#FFDD00] shadow-md'
+                        : 'neu-btn text-slate-700 hover:text-[#006569]'
                     }`}
                   >
                     <Award size={14} /> Sertifikat ({certificates.length})
@@ -670,10 +670,10 @@ export function UserAccountModal({ isOpen, onClose }) {
                     <button
                       type="button"
                       onClick={() => setActiveTab('admin')}
-                      className={`flex-1 min-w-[110px] py-2.5 text-xs font-black rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                      className={`flex-1 min-w-[115px] py-2.5 px-3 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                         activeTab === 'admin'
-                          ? 'neu-btn-primary text-[#FFDD00]'
-                          : 'text-[#006569] hover:text-[#092D32]'
+                          ? 'neu-btn-gold text-slate-950 shadow-md'
+                          : 'neu-btn text-[#006569] hover:text-[#092D32]'
                       }`}
                     >
                       <Shield size={14} /> Otorisasi RBAC
