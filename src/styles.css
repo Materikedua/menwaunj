@@ -215,3 +215,222 @@ body{overflow-x:hidden;}
 .brand-pride-stat strong {color:var(--pride-tone);}
 .brand-pride-stat:hover {border-color:var(--pride-tone);box-shadow:0 28px 56px var(--pride-shadow);}
 @media(prefers-reduced-motion:reduce){.brand-pride-stat:hover{transform:none;}}
+
+/* ==========================================================================
+   PILAR: SISTEM TOMBOL & PERMUKAAN 3D NEUMORPHIC GLOBAL (MENWA UNJ)
+   Dual-Source Lighting: Top-Left Highlight + Bottom-Right Naval Shadow
+   ========================================================================== */
+
+.neu-canvas {
+  background: linear-gradient(145deg, #EEF5F6 0%, #F5F8F6 50%, #F9FBFA 100%);
+}
+
+/* Kartu Kontainer 3D Cushion (Floating Extruded Card) */
+.neu-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f3f7f6 100%);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    10px 10px 30px rgba(9, 45, 50, 0.08),
+    -10px -10px 30px rgba(255, 255, 255, 0.95),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+}
+
+.neu-card-sm {
+  background: linear-gradient(145deg, #ffffff 0%, #f4f8f7 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    5px 5px 15px rgba(9, 45, 50, 0.07),
+    -5px -5px 15px rgba(255, 255, 255, 0.92),
+    inset 0 1px 1px rgba(255, 255, 255, 0.85);
+}
+
+/* Tile Logo 3D Elevated */
+.neu-logo-tile {
+  background: linear-gradient(145deg, #ffffff 0%, #eef4f3 100%);
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  box-shadow:
+    6px 6px 18px rgba(9, 45, 50, 0.1),
+    -6px -6px 18px rgba(255, 255, 255, 0.98),
+    inset 0 2px 3px rgba(255, 255, 255, 0.95);
+}
+
+/* Kolom Input Sunken / Inset 3D Neumorphic */
+.neu-inset {
+  background-color: #EFF5F4;
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    inset 3px 3px 6px rgba(9, 45, 50, 0.09),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.92);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neu-inset:focus-within,
+.neu-inset:focus {
+  background-color: #ffffff;
+  border-color: rgba(0, 101, 105, 0.45);
+  box-shadow:
+    inset 2px 2px 5px rgba(9, 45, 50, 0.06),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.95),
+    0 0 0 3px rgba(0, 101, 105, 0.12);
+}
+
+/* Tombol Timbul Normal (Extruded Pill/Card) */
+.neu-btn {
+  background: linear-gradient(145deg, #ffffff 0%, #eef4f3 100%);
+  color: #092D32;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    -4px -4px 10px rgba(255, 255, 255, 0.9),
+    5px 5px 12px rgba(9, 45, 50, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neu-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    -5px -5px 12px rgba(255, 255, 255, 0.95),
+    7px 7px 16px rgba(9, 45, 50, 0.13),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+.neu-btn:active:not(:disabled),
+.neu-btn-pressed {
+  transform: scale(0.97);
+  box-shadow:
+    inset 3px 3px 6px rgba(9, 45, 50, 0.15),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.85);
+}
+
+/* Tombol Utama Berwarna 3D (Deep Teal Menwa) — Guaranteed solid background & high contrast */
+.neu-btn-primary {
+  background: linear-gradient(90deg, #006569 0%, #092D32 55%, #004d50 100%) !important;
+  color: #FFDD00 !important;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 8px 20px -4px rgba(0, 101, 105, 0.45),
+    -3px -3px 8px rgba(255, 255, 255, 0.7),
+    inset 0 1px 2px rgba(255, 255, 255, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neu-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  color: #ffffff !important;
+  box-shadow:
+    0 12px 26px -4px rgba(0, 101, 105, 0.55),
+    -4px -4px 10px rgba(255, 255, 255, 0.8),
+    inset 0 1px 3px rgba(255, 255, 255, 0.45);
+}
+
+.neu-btn-primary:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow:
+    inset 3px 3px 7px rgba(0, 0, 0, 0.4),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.15);
+}
+
+/* Tombol Utama Aksen Emas (Vibrant 3D Gold CTA) — Guaranteed solid background & dark text */
+.neu-btn-gold {
+  background: linear-gradient(90deg, #FFDD00 0%, #F59E0B 100%) !important;
+  color: #020617 !important;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 8px 20px -4px rgba(245, 158, 11, 0.45),
+    -3px -3px 8px rgba(255, 255, 255, 0.75),
+    inset 0 1px 2px rgba(255, 255, 255, 0.75);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neu-btn-gold:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 12px 25px -4px rgba(245, 158, 11, 0.55),
+    inset 0 1px 3px rgba(255, 255, 255, 0.85);
+}
+
+.neu-btn-gold:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow:
+    inset 3px 3px 6px rgba(146, 64, 14, 0.32),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.6);
+}
+
+/* Tombol Kotak Sosial 3D */
+.neu-social-btn {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  background: linear-gradient(145deg, #ffffff 0%, #eef4f3 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    -4px -4px 10px rgba(255, 255, 255, 0.92),
+    5px 5px 12px rgba(9, 45, 50, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.85);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neu-social-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    -5px -5px 12px rgba(255, 255, 255, 0.96),
+    7px 7px 16px rgba(9, 45, 50, 0.14),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+.neu-social-btn:active:not(:disabled) {
+  transform: scale(0.95);
+  box-shadow:
+    inset 3px 3px 6px rgba(9, 45, 50, 0.16),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.88);
+}
+
+/* Soft extruded circular ring */
+.neu-extruded-ring {
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(0, 101, 105, 0.04) 0%, rgba(255, 221, 0, 0.02) 100%);
+  border: 1.5px solid rgba(0, 101, 105, 0.1);
+  pointer-events: none;
+}
+
+/* Global button tactile interaction */
+button:not(:disabled) {
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Animations for Podiums, Borders & Gamification */
+@keyframes borderSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes flamePulse {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(245, 158, 11, 0.4), 0 0 60px rgba(239, 68, 68, 0.2), inset 0 0 12px rgba(251, 191, 36, 0.25);
+    border-color: rgba(245, 158, 11, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 45px rgba(245, 158, 11, 0.65), 0 0 85px rgba(239, 68, 68, 0.35), inset 0 0 20px rgba(251, 191, 36, 0.4);
+    border-color: rgba(239, 68, 68, 0.85);
+  }
+}
+
+@keyframes smoothFloatBob {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float-bob-1 { animation: smoothFloatBob 3.8s ease-in-out infinite; }
+.animate-float-bob-2 { animation: smoothFloatBob 4.4s ease-in-out infinite 0.6s; }
+.animate-float-bob-3 { animation: smoothFloatBob 4.0s ease-in-out infinite 1.2s; }
+.animate-border-spin { animation: borderSpin 4s linear infinite; }
+.animate-border-spin-slow { animation: borderSpin 6s linear infinite; }
+.animate-border-spin-fast { animation: borderSpin 2.8s linear infinite; }
+.animate-flame-pulse { animation: flamePulse 3s ease-in-out infinite; }

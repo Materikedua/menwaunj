@@ -275,10 +275,9 @@ export function UserAccountModal({ isOpen, onClose }) {
             user ? 'max-w-2xl' : 'max-w-md'
           } rounded-[2.75rem] bg-gradient-to-br from-[#EEF5F6] via-[#F5F8F6] to-[#F9FBFA] border-2 border-white/85 shadow-[12px_12px_35px_rgba(9,45,50,0.22),-12px_-12px_35px_rgba(255,255,255,0.95)] overflow-hidden flex flex-col max-h-[92vh]`}
         >
-          {/* Soft Extruded Circular Rings (Ornamen Latar 3D Timbul) */}
-          <div className="pointer-events-none absolute -top-20 -left-20 w-52 h-52 neu-extruded-ring opacity-75" />
-          <div className="pointer-events-none absolute top-14 -right-12 w-28 h-28 neu-extruded-ring opacity-65" />
-          <div className="pointer-events-none absolute -bottom-24 -right-16 w-60 h-60 neu-extruded-ring opacity-70" />
+          {/* Ambient Background Glows */}
+          <div className="pointer-events-none absolute -top-20 -left-20 w-52 h-52 rounded-full bg-teal-500/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -right-16 w-60 h-60 rounded-full bg-amber-500/10 blur-3xl" />
 
           {/* Tombol Tutup Taktil 3D di Pojok Kanan Atas */}
           <div className="relative z-20 flex items-center justify-between px-6 pt-5 pb-1">
@@ -410,7 +409,7 @@ export function UserAccountModal({ isOpen, onClose }) {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary text-white font-black text-sm tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-60"
+                      className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-sm tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-60 shadow-lg hover:shadow-xl transition-all"
                     >
                       <span className="mx-auto pl-6">
                         {submitting ? 'Mengirim Tautan...' : 'Kirim Tautan Reset'}
@@ -511,7 +510,7 @@ export function UserAccountModal({ isOpen, onClose }) {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary text-white font-black text-sm sm:text-base tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-60 mt-2"
+                      className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-sm sm:text-base tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-60 shadow-lg hover:shadow-xl transition-all mt-2"
                     >
                       <span className="mx-auto pl-6">
                         {submitting
@@ -846,14 +845,14 @@ export function UserAccountModal({ isOpen, onClose }) {
                       <button
                         type="submit"
                         disabled={submitting}
-                        className="flex-1 py-3.5 px-5 neu-btn-primary text-[#FFDD00] font-black text-xs uppercase tracking-wider rounded-2xl cursor-pointer"
+                        className="flex-1 py-3.5 px-6 neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-xs uppercase tracking-wider rounded-2xl cursor-pointer shadow-md hover:shadow-lg transition-all"
                       >
                         {submitting ? 'Menyimpan...' : 'Perbarui Profil Pokok'}
                       </button>
                       <button
                         type="button"
                         onClick={logout}
-                        className="py-3.5 px-5 neu-btn text-rose-700 font-black text-xs rounded-2xl flex items-center gap-1.5 cursor-pointer"
+                        className="py-3.5 px-5 neu-btn bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/90 font-black text-xs rounded-2xl flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
                       >
                         <LogOut size={14} /> Keluar
                       </button>
@@ -991,7 +990,7 @@ export function UserAccountModal({ isOpen, onClose }) {
                       <button
                         type="button"
                         onClick={loadAllUsers}
-                        className="px-3.5 py-2 neu-btn-primary text-[#FFDD00] text-xs font-black rounded-xl cursor-pointer"
+                        className="px-4 py-2 neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white text-xs font-black rounded-xl cursor-pointer shadow-sm hover:shadow transition-all"
                       >
                         Muat Ulang
                       </button>

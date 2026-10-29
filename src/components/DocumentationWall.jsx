@@ -669,7 +669,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                 onClick={() => setViewMode('dial')}
                 className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-black transition cursor-pointer whitespace-nowrap ${
                   viewMode === 'dial'
-                    ? 'neu-btn-primary text-[#FFDD00]'
+                    ? 'neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-950'
                 }`}
               >
@@ -681,7 +681,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                 onClick={() => setViewMode('grid')}
                 className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-black transition cursor-pointer whitespace-nowrap ${
                   viewMode === 'grid'
-                    ? 'neu-btn-primary text-[#FFDD00]'
+                    ? 'neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-950'
                 }`}
               >
@@ -704,8 +704,8 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                     }}
                     className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
                       active
-                        ? 'neu-btn-primary text-[#FFDD00]'
-                        : 'neu-btn text-slate-700 hover:text-[#006569]'
+                        ? 'neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white shadow-xs'
+                        : 'neu-btn bg-white hover:bg-slate-50 text-slate-700 hover:text-[#006569] border border-slate-200/80'
                     }`}
                   >
                     {cat.short}
@@ -721,8 +721,8 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                 onClick={() => setExtraDropdownOpen((prev) => !prev)}
                 className={`inline-flex items-center gap-1.5 rounded-2xl px-3.5 py-2 text-xs font-bold transition cursor-pointer whitespace-nowrap ${
                   selectedActivityId !== 'ALL'
-                    ? 'neu-btn-primary text-[#FFDD00]'
-                    : 'neu-btn text-[#092D32]'
+                    ? 'neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white shadow-xs'
+                    : 'neu-btn bg-white hover:bg-slate-50 text-[#092D32] border border-slate-200/80'
                 }`}
               >
                 <span>
@@ -867,7 +867,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
             <button
               type="button"
               onClick={handleResetFilters}
-              className="mt-5 inline-flex items-center gap-2 rounded-2xl neu-btn-primary px-5 py-2.5 text-xs font-black uppercase tracking-wider text-[#FFDD00] cursor-pointer"
+              className="mt-5 inline-flex items-center gap-2 rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] px-5 py-2.5 text-xs font-black uppercase tracking-wider text-[#FFDD00] hover:text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
             >
               <RotateCcw size={14} /> Reset Semua Filter
             </button>
@@ -1427,7 +1427,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                           <button
                             type="submit"
                             disabled={!dossierCommentText.trim()}
-                            className="inline-flex items-center gap-1.5 rounded-2xl neu-btn-primary px-4 py-2.5 text-xs font-black text-[#FFDD00] transition cursor-pointer disabled:opacity-40"
+                            className="inline-flex items-center gap-1.5 rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] px-4 py-2.5 text-xs font-black text-[#FFDD00] hover:text-white shadow-sm transition-all cursor-pointer disabled:opacity-40"
                           >
                             <Send size={14} />
                             <span>Kirim</span>
@@ -1776,7 +1776,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                         <button
                           type="submit"
                           disabled={!commentText.trim()}
-                          className="inline-flex items-center justify-center rounded-2xl neu-btn-primary px-4 py-2.5 text-xs font-black text-[#FFDD00] transition cursor-pointer disabled:opacity-50"
+                          className="inline-flex items-center justify-center rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] px-4 py-2.5 text-xs font-black text-[#FFDD00] hover:text-white shadow-sm transition-all cursor-pointer disabled:opacity-50"
                         >
                           <Send size={15} />
                         </button>
@@ -1794,7 +1794,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                             setActiveModalPostId(null);
                             onOpenAuth();
                           }}
-                          className="inline-flex items-center justify-center rounded-2xl neu-btn-primary px-4 py-2 text-xs font-black text-[#FFDD00] transition cursor-pointer"
+                          className="inline-flex items-center justify-center rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] px-4 py-2 text-xs font-black text-[#FFDD00] hover:text-white shadow-sm transition-all cursor-pointer"
                         >
                           Login Akun untuk Berkomentar
                         </button>

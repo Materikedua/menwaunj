@@ -104,8 +104,9 @@ export function OfficialPortalQuickAccess({
               colorTo="#FFDD00"
             />
 
-            <div className="pointer-events-none absolute -top-24 -right-24 w-72 h-72 neu-extruded-ring opacity-70" />
-            <div className="pointer-events-none absolute -bottom-24 -left-24 w-72 h-72 neu-extruded-ring opacity-60" />
+            {/* Ambient Background Glows */}
+            <div className="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full bg-teal-500/10 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-emerald-500/10 blur-3xl" />
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               <div className="lg:col-span-7 flex flex-col items-start text-left">
@@ -132,7 +133,7 @@ export function OfficialPortalQuickAccess({
                   <button
                     type="button"
                     onClick={() => setIsOpen(true)}
-                    className="w-full sm:w-auto inline-flex items-center justify-between gap-4 pl-7 pr-4 py-3.5 rounded-full neu-btn-primary text-white font-black text-xs sm:text-sm uppercase tracking-wider cursor-pointer"
+                    className="w-full sm:w-auto inline-flex items-center justify-between gap-4 pl-7 pr-4 py-3.5 rounded-full neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-xs sm:text-sm uppercase tracking-wider cursor-pointer shadow-lg hover:shadow-xl transition-all"
                   >
                     <span>Masuk Portal Official</span>
                     <span className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-[#FFDD00]">
@@ -143,7 +144,7 @@ export function OfficialPortalQuickAccess({
                   <button
                     type="button"
                     onClick={() => navigate('/official')}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full neu-btn text-[#092D32] font-black text-xs uppercase tracking-wider cursor-pointer"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full neu-btn bg-white hover:bg-slate-50 text-[#092D32] border border-slate-200/90 font-black text-xs uppercase tracking-wider cursor-pointer shadow-sm hover:shadow transition-all"
                   >
                     <span>Buka Halaman Penuh</span>
                     <ExternalLink size={14} className="text-[#006569]" />
@@ -192,9 +193,9 @@ export function OfficialPortalQuickAccess({
             aria-modal="true"
             aria-labelledby="portal-official-title"
           >
-            {/* Ornamen Lingkaran 3D Timbul */}
-            <div className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 neu-extruded-ring opacity-75" />
-            <div className="pointer-events-none absolute -bottom-20 -right-16 w-56 h-56 neu-extruded-ring opacity-70" />
+            {/* Ambient Background Glows */}
+            <div className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 rounded-full bg-teal-500/10 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-20 -right-16 w-56 h-56 rounded-full bg-amber-500/10 blur-3xl" />
 
             {/* Top Bar Drawer */}
             <div className="sticky top-0 z-20 bg-[#F5F8F6]/90 backdrop-blur-md border-b border-white/80 px-6 py-4 flex items-center justify-between">
@@ -271,7 +272,7 @@ export function OfficialPortalQuickAccess({
                   <button
                     type="submit"
                     disabled={searchingWa}
-                    className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary text-white font-black text-sm tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-60"
+                    className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-sm tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-60 shadow-lg hover:shadow-xl transition-all"
                   >
                     <span className="mx-auto pl-6 flex items-center gap-2">
                       {searchingWa ? (

@@ -37,6 +37,7 @@ import {
   Eye,
   Save,
   Share2,
+  HelpCircle,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.jsx';
 import {
@@ -1334,10 +1335,9 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
   if (!activeSlug) {
     return (
       <div className="relative min-h-[85vh] w-full py-10 sm:py-14 px-3 sm:px-6 font-sans flex flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-[#EEF5F6] via-[#F5F8F6] to-[#F9FBFA] rounded-[2.75rem]">
-        {/* Ornamen Latar Lingkaran Melengkung 3D Timbul (Soft Extruded Circular Rings) */}
-        <div className="pointer-events-none absolute -top-20 -left-20 w-72 h-72 neu-extruded-ring opacity-80" />
-        <div className="pointer-events-none absolute top-16 right-8 w-28 h-28 neu-extruded-ring opacity-70" />
-        <div className="pointer-events-none absolute -bottom-24 -right-16 w-80 h-80 neu-extruded-ring opacity-75" />
+        {/* Ambient Background Glows */}
+        <div className="pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-teal-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-amber-500/10 blur-3xl" />
 
         {loginError && (
           <div className="relative z-10 mb-6 w-full max-w-md rounded-2xl border border-[#E11D48]/30 bg-rose-50 px-5 py-4 text-[#E11D48] shadow-sm flex items-start gap-3 animate-fade-in">
@@ -1533,6 +1533,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
     { id: 'biodata', label: 'Biodata Pasukan', icon: Users, badge: `${progress.biodataCount}/20`, pct: progress.biodataPct },
     { id: 'timeline', label: 'Timeline Acara', icon: Calendar, badge: '6 Tahap', pct: progress.timelinePct },
     { id: 'penilaian', label: 'Rekap Nilai Juri', icon: Award, badge: `${scoringSummary.finalScore}`, pct: progress.penilaianPct },
+    { id: 'bantuan', label: 'Bantuan & Juknis', icon: HelpCircle, badge: 'Siaga 24/7' },
   ];
 
   // 7 Milestone Kelengkapan Administrasi & Juknis (Kartu Sorotan 1)
@@ -1623,6 +1624,18 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
       accentText: 'text-indigo-800',
       barColor: '#4F46E5',
       icon: Award,
+    },
+    {
+      id: 'bantuan',
+      number: '06',
+      title: 'Pusat Unduh Juknis & Bantuan',
+      subtitle: 'Juknis PDF resmi GERANAT, formulir blanko surat, tata tertib, dan kontak panitia siaga 24/7',
+      progress: 100,
+      statusText: 'Helpdesk Siaga',
+      accentBg: 'from-teal-500/15 to-emerald-500/5',
+      accentText: 'text-[#006569]',
+      barColor: '#006569',
+      icon: HelpCircle,
     },
   ];
 
@@ -1839,7 +1852,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                 <button
                   type="button"
                   onClick={handlePrintBukuPasukan}
-                  className="px-4 py-2.5 rounded-2xl neu-btn-primary text-[#FFDD00] text-xs font-black flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+                  className="px-4 py-2.5 rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white text-xs font-black flex items-center gap-1.5 cursor-pointer whitespace-nowrap shadow-md hover:shadow-lg transition-all"
                 >
                   <Printer size={14} />
                   <span>Cetak Buku Pasukan A4</span>
@@ -2023,7 +2036,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                       <button
                         type="button"
                         onClick={() => setActiveModule('pemberkasan')}
-                        className="px-4 py-2.5 rounded-2xl neu-btn-primary text-[#FFDD00] text-xs font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                        className="px-4 py-2.5 rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-md hover:shadow-lg transition-all"
                       >
                         <span>Kelola Berkas</span>
                         <ChevronRight size={14} />
@@ -2142,7 +2155,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                         <button
                           type="button"
                           onClick={() => setActiveModule('biodata')}
-                          className="px-4 py-2.5 rounded-2xl neu-btn-primary text-[#FFDD00] text-xs font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                          className="px-4 py-2.5 rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-md hover:shadow-lg transition-all"
                         >
                           <span>Biodata Tim</span>
                           <ChevronRight size={14} />
@@ -2246,9 +2259,9 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                                 </span>
                               )}
 
-                              <span className="inline-flex items-center gap-1 text-xs font-black text-[#006569] group-hover:translate-x-1 transition-transform">
+                              <span className="inline-flex items-center gap-1 text-xs font-black px-3.5 py-1.5 rounded-xl bg-slate-100 group-hover:bg-[#006569] text-[#092D32] group-hover:text-[#FFDD00] transition-all shadow-xs">
                                 <span>Buka</span>
-                                <ChevronRight size={14} />
+                                <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
                               </span>
                             </div>
                           </div>
@@ -2537,14 +2550,14 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                           <a
                             href={docItem.templateUrl}
                             download
-                            className="px-3.5 py-2.5 rounded-2xl neu-btn text-[#092D32] font-bold text-xs flex items-center gap-1.5 transition"
+                            className="px-3.5 py-2.5 rounded-2xl neu-btn bg-white hover:bg-slate-50 text-[#092D32] border border-slate-200/90 font-bold text-xs flex items-center gap-1.5 transition shadow-xs"
                           >
                             <Download size={14} className="text-[#006569]" />
                             <span>Unduh Template</span>
                           </a>
 
                           {canEdit && (
-                            <label className="px-4 py-2.5 rounded-2xl neu-btn-primary text-[#FFDD00] font-black text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition">
+                            <label className="px-4 py-2.5 rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition shadow-md hover:shadow-lg">
                               <Upload size={14} />
                               <span>
                                 {uploadingDocId === docItem.id
@@ -2622,7 +2635,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                               setShowOfficialForm(false);
                             }}
                             disabled={(portalData?.pasukanList?.length || 0) >= 18 && !showPasukanForm}
-                            className="px-4 py-2.5 rounded-2xl neu-btn-primary disabled:opacity-40 text-[#FFDD00] font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition cursor-pointer"
+                            className="px-4 py-2.5 rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] disabled:opacity-40 text-[#FFDD00] hover:text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition cursor-pointer shadow-md"
                           >
                             <UserPlus size={15} />
                             <span>Tambah Pasukan ({portalData?.pasukanList?.length || 0}/18)</span>
@@ -2724,7 +2737,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                               )}
                             </div>
                             <div className="space-y-1.5">
-                              <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl neu-btn-primary text-[#FFDD00] font-black text-xs uppercase cursor-pointer">
+                              <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-xs uppercase cursor-pointer shadow-sm">
                                 <Upload size={13} /> Pilih Foto
                                 <input
                                   type="file"
@@ -2874,7 +2887,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                         </button>
                         <button
                           type="submit"
-                          className="px-6 py-3 rounded-2xl neu-btn-primary text-[#FFDD00] font-black text-xs uppercase tracking-wider cursor-pointer"
+                          className="px-6 py-3 rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-xs uppercase tracking-wider cursor-pointer shadow-md hover:shadow-lg transition-all"
                         >
                           Simpan Biodata Pasukan
                         </button>
@@ -2930,7 +2943,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                               )}
                             </div>
                             <div className="space-y-1.5">
-                              <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl neu-btn-primary text-[#FFDD00] font-black text-xs uppercase cursor-pointer">
+                              <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-xs uppercase cursor-pointer shadow-sm">
                                 <Upload size={13} /> Pilih Foto
                                 <input
                                   type="file"
@@ -3021,7 +3034,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                         </button>
                         <button
                           type="submit"
-                          className="px-6 py-3 rounded-2xl neu-btn-primary text-[#FFDD00] font-black text-xs uppercase tracking-wider cursor-pointer"
+                          className="px-6 py-3 rounded-2xl neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-xs uppercase tracking-wider cursor-pointer shadow-md hover:shadow-lg transition-all"
                         >
                           Simpan Biodata Official
                         </button>
@@ -3608,6 +3621,99 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                           </div>
                         );
                       })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ================================================================
+                MODULE 6: PUSAT UNDUH JUKNIS & BANTUAN PANITIA
+                ================================================================ */}
+            {activeModule === 'bantuan' && (
+              <div className="neu-card rounded-3xl p-6 sm:p-8 space-y-6 animate-fade-in">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/70 pb-4">
+                  <div>
+                    <span className="text-[10px] font-mono font-black uppercase tracking-widest text-[#006569] block">
+                      MODUL 06 · LAYANAN KONTINGEN &amp; PUSAT BANTUAN
+                    </span>
+                    <h2 className="text-xl sm:text-2xl font-black text-[#092D32]">
+                      Pusat Unduh Juknis &amp; Helpdesk Panitia
+                    </h2>
+                    <p className="text-xs text-[#64748B] mt-0.5">
+                      Dokumen teknis resmi perlombaan GERANAT, template formulir dan surat pernyataan, serta saluran koordinasi langsung dengan Panitia Menwa UNJ.
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Helpdesk Siaga 24/7
+                  </span>
+                </div>
+
+                {/* Grid Download Cepat & Kontak WA */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="rounded-2xl neu-card-sm p-5 space-y-3 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#006569] flex items-center justify-center font-bold">
+                        <FileText size={20} />
+                      </div>
+                      <h3 className="text-sm font-black text-[#092D32]">Buku Panduan &amp; Juknis GERANAT 2026</h3>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        Petunjuk teknis resmi perlombaan LKBB GERANAT Satuan Menwa UNJ mencakup ketentuan lapangan, materi gerakan PBB, tata cara penghormatan, dan jadwal registrasi ulang.
+                      </p>
+                    </div>
+                    <a
+                      href="/docs/juknis-geranat-2026.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl neu-btn-primary bg-gradient-to-r from-[#006569] to-[#092D32] text-[#FFDD00] hover:text-white font-black text-xs uppercase tracking-wider shadow-sm hover:shadow transition-all cursor-pointer"
+                    >
+                      <Download size={14} />
+                      <span>Unduh Juknis Lengkap (PDF)</span>
+                    </a>
+                  </div>
+
+                  <div className="rounded-2xl neu-card-sm p-5 space-y-3 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#059669] flex items-center justify-center font-bold">
+                        <Phone size={20} />
+                      </div>
+                      <h3 className="text-sm font-black text-[#092D32]">Helpdesk WhatsApp Resmi Panitia</h3>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        Mengalami kendala saat melengkapi biodata 20 personel, upload berkas, atau verifikasi nomor urut kontingen? Hubungi panitia teknis melalui WhatsApp.
+                      </p>
+                    </div>
+                    <a
+                      href={`https://wa.me/6281234567890?text=${encodeURIComponent(
+                        `Halo Panitia GERANAT Menwa UNJ, saya Official dari kontingen ${detectedSchoolName} (${activeSlug}). Ingin bertanya terkait kelengkapan administrasi.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-black text-xs uppercase tracking-wider shadow-sm hover:shadow transition-all cursor-pointer"
+                    >
+                      <Phone size={14} />
+                      <span>Hubungi Panitia (WhatsApp)</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* Frequently Asked Questions Ringkas */}
+                <div className="rounded-2xl bg-[#F5F8F6] border border-slate-200/80 p-5 space-y-3">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-[#092D32]">
+                    Pertanyaan Umum Official (FAQ)
+                  </h4>
+                  <div className="space-y-2.5 text-xs text-slate-600">
+                    <div className="p-3 bg-white rounded-xl border border-slate-200/60 shadow-2xs">
+                      <strong className="text-[#092D32] block mb-0.5">Berapa kuota personel wajib yang harus diisi?</strong>
+                      Setiap kontingen wajib mendaftarkan 16 Pasukan Peleton Inti + 2 Pasukan Cadangan (total 18 pasukan) serta 2 Official Pendamping. Total keseluruhan adalah 20 personel.
+                    </div>
+                    <div className="p-3 bg-white rounded-xl border border-slate-200/60 shadow-2xs">
+                      <strong className="text-[#092D32] block mb-0.5">Format file apa saja yang diterima untuk pemberkasan?</strong>
+                      Format yang didukung adalah PDF, JPG, PNG, atau WEBP dengan ukuran maksimal 2 MB per berkas dokumen wajib.
+                    </div>
+                    <div className="p-3 bg-white rounded-xl border border-slate-200/60 shadow-2xs">
+                      <strong className="text-[#092D32] block mb-0.5">Kapan penilaian dari dewan juri dipublikasikan?</strong>
+                      Penilaian dewan juri akan muncul secara bertahap atau setelah seluruh kontingen menyelesaikan rangkaian penampilan di lapangan sesuai instruksi dewan juri.
                     </div>
                   </div>
                 </div>

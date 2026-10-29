@@ -203,10 +203,9 @@ export function OfficialSecurityGate({
 
   return (
     <div className="relative min-h-[86vh] py-8 sm:py-12 px-3 sm:px-6 font-sans flex flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-[#EEF5F6] via-[#F5F8F6] to-[#F9FBFA]">
-      {/* Ornamen Lingkaran Melengkung 3D Timbul (Soft Extruded Circular Rings) */}
-      <div className="pointer-events-none absolute -top-20 -left-20 w-72 h-72 neu-extruded-ring opacity-80" />
-      <div className="pointer-events-none absolute top-16 right-8 w-28 h-28 neu-extruded-ring opacity-70" />
-      <div className="pointer-events-none absolute -bottom-24 -right-16 w-80 h-80 neu-extruded-ring opacity-75" />
+      {/* Ambient Background Glows */}
+      <div className="pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-teal-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-amber-500/10 blur-3xl" />
 
       {/* ======================================================================
           KARTU KONTAINER LOGIN (FLOATING 3D CUSHION CARD)
@@ -335,7 +334,7 @@ export function OfficialSecurityGate({
             <button
               type="submit"
               disabled={isLockedOut || submitting || pinInput.length !== 6}
-              className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary text-white font-black text-sm sm:text-base tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-sm sm:text-base tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-50 shadow-lg hover:shadow-xl transition-all"
             >
               <span className="mx-auto pl-6 flex items-center gap-2">
                 {submitting ? (
@@ -407,7 +406,7 @@ export function OfficialSecurityGate({
             <button
               type="submit"
               disabled={submitting || newPinInput.length !== 6 || confirmPinInput.length !== 6}
-              className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary text-white font-black text-sm sm:text-base tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-sm sm:text-base tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-50 shadow-lg hover:shadow-xl transition-all"
             >
               <span className="mx-auto pl-6">
                 {submitting ? 'Mengaktifkan PIN...' : 'Aktifkan PIN & Masuk'}
