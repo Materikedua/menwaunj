@@ -412,7 +412,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
       if (sessionStorage.getItem(guestKey) === 'true') {
         setIsGuestMode(true);
         setIsUnlocked(false);
-      } else if (sessionStorage.getItem(sessionKey) === 'unlocked' || hasAdminAccess) {
+      } else if (sessionStorage.getItem(sessionKey) === 'unlocked') {
         setIsUnlocked(true);
         setIsGuestMode(false);
       } else {
@@ -420,12 +420,13 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
         setIsGuestMode(false);
       }
     } catch {
-      setIsUnlocked(Boolean(hasAdminAccess));
+      setIsUnlocked(false);
+      setIsGuestMode(false);
     }
-  }, [activeSlug, hasAdminAccess]);
+  }, [activeSlug]);
 
-  // Strict Rule: canEdit = false mutlak ketika isGuestMode === true
-  const canEdit = Boolean(!isGuestMode && (isUnlocked || hasAdminAccess));
+  // Strict Rule: canEdit = false mutlak jika isGuestMode === true atau belum isUnlocked
+  const canEdit = Boolean(!isGuestMode && isUnlocked);
 
   const handleUnlockWithPin = () => {
     try {
@@ -1371,7 +1372,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
               <label className="block text-[11px] font-black uppercase tracking-[0.14em] text-[#092D32] mb-2">
                 NOMOR WHATSAPP OFFICIAL
               </label>
-              <div className="flex items-center gap-3 rounded-2xl neu-inset px-4 py-3.5">
+              <div className="flex items-center gap-3 rounded-2xl bg-white border-2 border-slate-300 focus-within:border-[#006569] focus-within:ring-2 focus-within:ring-[#006569]/20 px-4 py-3.5 shadow-inner transition-all">
                 <Phone size={18} className="text-[#006569] shrink-0" />
                 <span className="text-[#006569] font-black text-sm sm:text-base select-none">
                   +62
@@ -1384,8 +1385,8 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                     if (loginError) setLoginError('');
                   }}
                   placeholder="812xxxxxxxx"
-                  style={{ color: '#020617' }}
-                  className="w-full bg-transparent text-slate-950 placeholder:text-slate-400 font-bold text-sm sm:text-base focus:outline-none"
+                  style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
+                  className="w-full bg-white text-black font-mono placeholder:text-slate-400 font-bold text-base sm:text-lg focus:outline-none"
                 />
               </div>
               <span className="mt-2 block text-[11px] font-semibold text-slate-500">

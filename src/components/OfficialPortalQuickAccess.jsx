@@ -256,7 +256,7 @@ export function OfficialPortalQuickAccess({
                 )}
 
                 <form onSubmit={handleWhatsAppLogin} className="space-y-3.5 text-left">
-                  <div className="neu-inset rounded-2xl px-4 py-3 flex items-center gap-2.5">
+                  <div className="bg-white border-2 border-slate-300 focus-within:border-[#006569] focus-within:ring-2 focus-within:ring-[#006569]/20 rounded-2xl px-4 py-3 flex items-center gap-2.5 shadow-inner transition-all">
                     <Phone size={18} className="text-[#006569] shrink-0" />
                     <span className="text-[#006569] font-black text-sm select-none">+62</span>
                     <input
@@ -267,8 +267,8 @@ export function OfficialPortalQuickAccess({
                         if (loginError) setLoginError('');
                       }}
                       placeholder="812xxxxxxxx"
-                      style={{ color: '#020617' }}
-                      className="w-full bg-transparent text-slate-950 placeholder:text-slate-400 font-black text-sm sm:text-base focus:outline-none"
+                      style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
+                      className="w-full bg-white text-black font-mono placeholder:text-slate-400 font-black text-sm sm:text-base focus:outline-none"
                     />
                   </div>
 

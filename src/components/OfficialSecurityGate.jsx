@@ -14,6 +14,7 @@ import {
   Eye as GuestEye,
   RefreshCw,
   ShieldCheck,
+  X,
 } from 'lucide-react';
 import { setOfficialSecurityPin, requestOfficialPinReset } from '../firebase.js';
 
@@ -210,6 +211,19 @@ export function OfficialSecurityGate({
           KARTU KONTAINER LOGIN (FLOATING 3D CUSHION CARD)
           ====================================================================== */}
       <div className="relative z-10 w-full max-w-md rounded-[2.75rem] bg-gradient-to-br from-[#FFFFFF] via-[#F6FAF9] to-[#EEF5F4] border-2 border-white/85 shadow-[12px_12px_35px_rgba(9,45,50,0.12),-12px_-12px_35px_rgba(255,255,255,0.96)] p-7 sm:p-10 overflow-hidden text-[#092D32]">
+        {/* Tombol Exit / Tutup Cepat di Pojok Kanan Atas Kartu (Tanpa Perlu Scroll) */}
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            title="Keluar / Ganti WhatsApp Kontingen"
+            aria-label="Keluar / Ganti WhatsApp Kontingen"
+            className="absolute top-4 sm:top-5 right-4 sm:right-5 w-9 h-9 rounded-2xl neu-btn text-slate-500 hover:text-rose-600 flex items-center justify-center cursor-pointer shadow-xs transition hover:scale-110 active:scale-95 z-30"
+          >
+            <X size={17} />
+          </button>
+        )}
+
         {/* Tile Logo 3D Elevated di Bagian Atas */}
         <div className="text-center relative z-10">
           <div className="mx-auto mb-5 w-24 h-24 rounded-3xl neu-logo-tile p-3 flex items-center justify-center relative overflow-hidden">
@@ -275,11 +289,11 @@ export function OfficialSecurityGate({
         )}
 
         {/* ====================================================================
-            MODE 1: VERIFIKASI 6-DIGIT PIN KEAMANAN (INSET 3D FIELD)
+            MODE 1: VERIFIKASI 6-DIGIT PIN KEAMANAN (SOLID WHITE FIELD + BLACK TEXT)
             ==================================================================== */}
         {!isSetupMode && hasExistingPin && (
           <form onSubmit={handleVerifyPin} className="mt-6 space-y-4">
-            <div className="neu-inset rounded-2xl px-4 py-3.5 flex items-center gap-3">
+            <div className="bg-white border-2 border-slate-300 focus-within:border-[#006569] focus-within:ring-2 focus-within:ring-[#006569]/20 rounded-2xl px-4 py-3.5 flex items-center gap-3 shadow-inner transition-all">
               <Lock size={19} className="text-[#006569] shrink-0" />
               <input
                 type={showPin ? 'text' : 'password'}
@@ -295,8 +309,8 @@ export function OfficialSecurityGate({
                 }}
                 placeholder="6-Digit PIN Official"
                 autoFocus
-                style={{ color: '#020617' }}
-                className="w-full bg-transparent text-slate-950 font-mono font-black text-lg sm:text-xl tracking-[0.35em] text-center placeholder:tracking-normal placeholder:font-sans placeholder:text-sm placeholder:font-semibold placeholder:text-slate-400 focus:outline-none disabled:opacity-50"
+                style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
+                className="w-full bg-white text-black font-mono font-black text-lg sm:text-xl tracking-[0.35em] text-center placeholder:tracking-normal placeholder:font-sans placeholder:text-sm placeholder:font-semibold placeholder:text-slate-400 focus:outline-none disabled:opacity-50"
               />
               <button
                 type="button"
@@ -345,11 +359,11 @@ export function OfficialSecurityGate({
         )}
 
         {/* ====================================================================
-            MODE 2: INISIASI PIN PERTAMA KALI (INSET 3D FIELDS)
+            MODE 2: INISIASI PIN PERTAMA KALI (SOLID WHITE FIELDS + BLACK TEXT)
             ==================================================================== */}
         {(isSetupMode || !hasExistingPin) && (
           <form onSubmit={handleSetupFirstPin} className="mt-6 space-y-3.5 text-left">
-            <div className="neu-inset rounded-2xl px-4 py-3.5 flex items-center gap-3">
+            <div className="bg-white border-2 border-slate-300 focus-within:border-[#006569] focus-within:ring-2 focus-within:ring-[#006569]/20 rounded-2xl px-4 py-3.5 flex items-center gap-3 shadow-inner transition-all">
               <Phone size={18} className="text-[#006569] shrink-0" />
               <span className="text-[#006569] font-black text-sm select-none">+62</span>
               <input
@@ -357,13 +371,13 @@ export function OfficialSecurityGate({
                 value={phoneConfirmInput}
                 onChange={(e) => setPhoneConfirmInput(e.target.value)}
                 placeholder="Konfirmasi WhatsApp Official"
-                style={{ color: '#020617' }}
-                className="w-full bg-transparent text-slate-950 font-bold text-sm sm:text-base placeholder:text-slate-400 focus:outline-none"
+                style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
+                className="w-full bg-white text-black font-mono font-bold text-sm sm:text-base placeholder:text-slate-400 focus:outline-none"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="neu-inset rounded-2xl px-3.5 py-3 flex items-center gap-2">
+              <div className="bg-white border-2 border-slate-300 focus-within:border-[#006569] focus-within:ring-2 focus-within:ring-[#006569]/20 rounded-2xl px-3.5 py-3 flex items-center gap-2 shadow-inner transition-all">
                 <KeyRound size={16} className="text-[#006569] shrink-0" />
                 <input
                   type={showPin ? 'text' : 'password'}
@@ -372,12 +386,12 @@ export function OfficialSecurityGate({
                   value={newPinInput}
                   onChange={(e) => setNewPinInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="PIN 6 Digit"
-                  style={{ color: '#020617' }}
-                  className="w-full bg-transparent text-slate-950 font-mono font-black text-sm tracking-widest text-center placeholder:font-sans placeholder:tracking-normal placeholder:text-xs placeholder:text-slate-400 focus:outline-none"
+                  style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
+                  className="w-full bg-white text-black font-mono font-black text-sm tracking-widest text-center placeholder:font-sans placeholder:tracking-normal placeholder:text-xs placeholder:text-slate-400 focus:outline-none"
                 />
               </div>
 
-              <div className="neu-inset rounded-2xl px-3.5 py-3 flex items-center gap-2">
+              <div className="bg-white border-2 border-slate-300 focus-within:border-[#006569] focus-within:ring-2 focus-within:ring-[#006569]/20 rounded-2xl px-3.5 py-3 flex items-center gap-2 shadow-inner transition-all">
                 <Lock size={16} className="text-[#006569] shrink-0" />
                 <input
                   type={showPin ? 'text' : 'password'}
@@ -388,8 +402,8 @@ export function OfficialSecurityGate({
                     setConfirmPinInput(e.target.value.replace(/\D/g, '').slice(0, 6))
                   }
                   placeholder="Ulangi PIN"
-                  style={{ color: '#020617' }}
-                  className="w-full bg-transparent text-slate-950 font-mono font-black text-sm tracking-widest text-center placeholder:font-sans placeholder:tracking-normal placeholder:text-xs placeholder:text-slate-400 focus:outline-none"
+                  style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
+                  className="w-full bg-white text-black font-mono font-black text-sm tracking-widest text-center placeholder:font-sans placeholder:tracking-normal placeholder:text-xs placeholder:text-slate-400 focus:outline-none"
                 />
               </div>
             </div>

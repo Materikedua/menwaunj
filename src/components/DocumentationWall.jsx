@@ -54,30 +54,53 @@ const DIAL_CATEGORIES = [
   { id: 'PROTOKOLER', label: 'Protokoler & Komando', short: 'Protokoler', icon: Sparkles, match: ['sertijab', 'pcab', 'rakomsat', 'pam-wisuda', 'upacara', 'kunjungan'] },
 ];
 
+export function parseCommentDate(comment) {
+  if (!comment) return null;
+  const raw = comment.createdAt || comment.timestamp || comment.time;
+  if (!raw) {
+    if (comment.id && typeof comment.id === 'string' && comment.id.startsWith('c-')) {
+      const ms = parseInt(comment.id.replace('c-', ''), 10);
+      if (!isNaN(ms) && ms > 1600000000000) return new Date(ms);
+    }
+    return null;
+  }
+  if (typeof raw?.toDate === 'function') return raw.toDate();
+  if (typeof raw?.seconds === 'number') return new Date(raw.seconds * 1000);
+  if (typeof raw === 'number') return new Date(raw > 1e11 ? raw : raw * 1000);
+  if (typeof raw === 'string') {
+    const d = new Date(raw);
+    if (!isNaN(d.getTime())) return d;
+    const num = Number(raw);
+    if (!isNaN(num) && num > 1600000000) return new Date(num > 1e11 ? num : num * 1000);
+  }
+  return null;
+}
+
 export function formatCommentTime(comment) {
   if (!comment) return '';
-  const dateStr = comment.createdAt || comment.timestamp || comment.time;
-  if (!dateStr) return 'Baru saja';
-  const commentDate = new Date(dateStr);
-  if (isNaN(commentDate.getTime())) return typeof dateStr === 'string' ? dateStr : 'Baru saja';
+  const d = parseCommentDate(comment);
+  if (!d) return comment.timeAgo || 'Baru saja';
 
+  const timeStr = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
   const now = new Date();
-  const diffMs = now.getTime() - commentDate.getTime();
+  const diffMs = now.getTime() - d.getTime();
   const diffSec = Math.floor(diffMs / 1000);
   const diffMin = Math.floor(diffSec / 60);
   const diffHour = Math.floor(diffMin / 60);
   const diffDay = Math.floor(diffHour / 24);
 
-  if (diffSec < 60) return 'Baru saja';
-  if (diffMin < 60) return `${diffMin} mnt lalu`;
-  if (diffHour < 24) return `${diffHour} jam lalu`;
-  if (diffDay < 7) return `${diffDay} hr lalu`;
+  if (diffSec < 60 && diffSec >= 0) return `Baru saja (${timeStr})`;
+  if (diffMin < 60 && diffMin >= 0) return `${diffMin} mnt lalu (${timeStr})`;
+  if (diffHour < 24 && diffHour >= 0) return `${diffHour} jam lalu (${timeStr})`;
+  if (diffDay === 1) return `Kemarin (${timeStr})`;
+  if (diffDay < 7 && diffDay >= 0) return `${diffDay} hr lalu (${timeStr})`;
 
-  return commentDate.toLocaleDateString('id-ID', {
+  const dateStr = d.toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
   });
+  return `${dateStr}, ${timeStr}`;
 }
 
 export function cleanCaptionText(text) {
@@ -1209,11 +1232,11 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                       </div>
                     </div>
 
-                    {/* 2. Pratinjau Multi-Foto (Hero Carousel 16:9) + Strip Thumbnail */}
-                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-stretch">
+                    {/* 2. Pratinjau Multi-Foto (Hero Carousel Bersih & Luas tanpa thumbnail strip) */}
+                    <div className="w-full">
                       <div
                         onDoubleClick={() => handleToggleLike(activeAlbum, true)}
-                        className="sm:col-span-9 relative aspect-[16/10] w-full rounded-2xl overflow-hidden bg-slate-950 group select-none shadow-md"
+                        className="relative aspect-[16/10] sm:aspect-[16/9] w-full rounded-2xl overflow-hidden bg-slate-950 group select-none shadow-lg neu-flat-sm"
                       >
                         <img
                           src={
@@ -1238,9 +1261,9 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                                 setActiveDossierSlide((prev) => (prev - 1 + len) % len);
                               }}
                               aria-label="Slide Foto Sebelumnya"
-                              className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/65 hover:bg-[#FFDD00] text-white hover:text-[#092D32] flex items-center justify-center transition cursor-pointer"
+                              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#FFDD00] text-white hover:text-[#092D32] flex items-center justify-center transition cursor-pointer tactile-btn shadow-md z-10"
                             >
-                              <ChevronLeft size={17} />
+                              <ChevronLeft size={20} />
                             </button>
                             <button
                               type="button"
@@ -1249,62 +1272,55 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                                 setActiveDossierSlide((prev) => (prev + 1) % len);
                               }}
                               aria-label="Slide Foto Berikutnya"
-                              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/65 hover:bg-[#FFDD00] text-white hover:text-[#092D32] flex items-center justify-center transition cursor-pointer"
+                              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#FFDD00] text-white hover:text-[#092D32] flex items-center justify-center transition cursor-pointer tactile-btn shadow-md z-10"
                             >
-                              <ChevronRight size={17} />
+                              <ChevronRight size={20} />
                             </button>
+
+                            {/* Indicator Dots Carousel */}
+                            <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md z-10">
+                              {(activeAlbum.photos || []).map((_, dotIdx) => (
+                                <button
+                                  key={dotIdx}
+                                  type="button"
+                                  onClick={() => setActiveDossierSlide(dotIdx)}
+                                  aria-label={`Beralih ke foto ${dotIdx + 1}`}
+                                  className={`h-2 rounded-full transition-all cursor-pointer ${
+                                    dotIdx === activeDossierSlide
+                                      ? 'w-6 bg-[#FFDD00]'
+                                      : 'w-2 bg-white/50 hover:bg-white/80'
+                                  }`}
+                                />
+                              ))}
+                            </div>
                           </>
                         )}
 
-                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3 text-white flex items-end justify-between gap-2">
-                          <p className="text-[11px] font-medium leading-snug line-clamp-1">
+                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3 sm:p-4 text-white flex items-end justify-between gap-2 z-10">
+                          <p className="text-xs font-medium leading-snug line-clamp-1 max-w-[70%]">
                             {activeAlbum.photos?.[activeDossierSlide]?.caption || activeAlbum.prokerName}
                           </p>
                           <div className="flex items-center gap-2 shrink-0">
                             <button
                               type="button"
                               onClick={() => openLightbox(activeAlbum, activeDossierSlide, false)}
-                              className="inline-flex items-center gap-1 rounded-lg bg-black/60 hover:bg-[#FFDD00] text-white hover:text-[#092D32] px-2 py-1 text-[10px] font-bold transition cursor-pointer"
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-black/60 hover:bg-[#FFDD00] text-white hover:text-[#092D32] px-2.5 py-1.5 text-xs font-bold transition cursor-pointer tactile-btn shadow-sm"
                               title="Perbesar foto ke layar penuh"
                             >
-                              <Maximize2 size={11} />
+                              <Maximize2 size={13} />
                               <span>Zoom</span>
                             </button>
-                            <span className="font-mono text-[10px] font-bold text-[#FFDD00]">
-                              {activeDossierSlide + 1}/{activeAlbum.photos?.length || 1}
+                            <span className="font-mono text-xs font-bold text-[#FFDD00] px-2 py-1 rounded-lg bg-black/60">
+                              {activeDossierSlide + 1} / {activeAlbum.photos?.length || 1}
                             </span>
                           </div>
                         </div>
 
                         {heartBurstPostId === activeAlbum.id && (
-                          <div className="pointer-events-none absolute inset-0 grid place-items-center bg-black/20">
+                          <div className="pointer-events-none absolute inset-0 grid place-items-center bg-black/20 z-20">
                             <Heart size={76} className="animate-ping fill-[#E11D48] text-[#E11D48]" />
                           </div>
                         )}
-                      </div>
-
-                      {/* Strip Thumbnail Vertikal di Kanan Hero */}
-                      <div className="sm:col-span-3 flex sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto max-h-[240px] pr-0.5">
-                        {(activeAlbum.photos || []).map((ph, sIdx) => {
-                          const isCurrentSlide = sIdx === activeDossierSlide;
-                          return (
-                            <button
-                              key={sIdx}
-                              type="button"
-                              onClick={() => setActiveDossierSlide(sIdx)}
-                              className={`relative shrink-0 w-20 sm:w-full aspect-[16/10] rounded-xl overflow-hidden border-2 transition cursor-pointer ${
-                                isCurrentSlide
-                                  ? 'border-[#006569] ring-2 ring-[#006569]/30'
-                                  : 'border-transparent opacity-65 hover:opacity-100'
-                              }`}
-                            >
-                              <img src={ph.url} alt="" className="w-full h-full object-cover" />
-                              <span className="absolute bottom-1 right-1 bg-black/70 text-white font-mono text-[9px] px-1 rounded">
-                                0{sIdx + 1}
-                              </span>
-                            </button>
-                          );
-                        })}
                       </div>
                     </div>
 
