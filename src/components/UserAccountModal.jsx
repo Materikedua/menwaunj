@@ -22,11 +22,13 @@ import {
   CheckCircle2,
   Building2,
   Calendar,
+  CreditCard,
 } from 'lucide-react';
 import { useAuth, VALID_ROLES } from '../hooks/useAuth.jsx';
 import { getLeaderboardUsers, verifyMenwaMember, updateUserRoleByAdmin } from '../firebase.js';
 import { CertificateViewerModal } from './CertificateViewerModal.jsx';
 import { navigate } from '../lib/router.jsx';
+import { playTactileClick } from '../lib/tactileAudio.js';
 
 const ROLE_LABELS = {
   superadmin: 'Superadmin / Komandan Satuan',
@@ -37,7 +39,7 @@ const ROLE_LABELS = {
   public_user: 'Pengunjung Publik / Peserta',
 };
 
-export function UserAccountModal({ isOpen, onClose }) {
+export function UserAccountModal({ isOpen, onClose, onOpenKTA = null }) {
   const {
     user,
     profile,
@@ -342,34 +344,28 @@ export function UserAccountModal({ isOpen, onClose }) {
                   </p>
                 </div>
 
-                {/* Switcher Masuk / Daftar */}
+                {/* Switcher Masuk / Daftar dengan Tactile 3.5D Pill Bar (Ref: Image 1) */}
                 {authMode !== 'forgot' ? (
-                  <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl neu-inset">
+                  <div className="grid grid-cols-2 gap-1.5 p-1 rounded-full neu-pill-bar">
                     <button
                       type="button"
                       onClick={() => {
+                        playTactileClick('pill');
                         setAuthMode('login');
                         setError('');
                       }}
-                      className={`py-2.5 text-xs font-black rounded-xl transition cursor-pointer ${
-                        authMode === 'login'
-                          ? 'neu-btn text-[#006569]'
-                          : 'text-slate-500 hover:text-[#092D32]'
-                      }`}
+                      className={authMode === 'login' ? 'neu-pill-tab-dark justify-center' : 'neu-pill-tab justify-center'}
                     >
                       Masuk Akun
                     </button>
                     <button
                       type="button"
                       onClick={() => {
+                        playTactileClick('pill');
                         setAuthMode('register');
                         setError('');
                       }}
-                      className={`py-2.5 text-xs font-black rounded-xl transition cursor-pointer ${
-                        authMode === 'register'
-                          ? 'neu-btn text-[#006569]'
-                          : 'text-slate-500 hover:text-[#092D32]'
-                      }`}
+                      className={authMode === 'register' ? 'neu-pill-tab-dark justify-center' : 'neu-pill-tab justify-center'}
                     >
                       Daftar Baru
                     </button>
@@ -707,6 +703,20 @@ export function UserAccountModal({ isOpen, onClose }) {
                         </span>
                       </div>
                     </div>
+
+                    {onOpenKTA && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playTactileClick('press');
+                          onOpenKTA();
+                        }}
+                        className="w-full neu-btn-strong-blue rounded-2xl py-3 px-4 text-xs font-black text-white flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                      >
+                        <CreditCard size={16} />
+                        <span>Lihat &amp; Cetak E-KTA Digital 3D (Kartu Tanda Anggota)</span>
+                      </button>
+                    )}
 
                     <div>
                       <label className="block text-xs font-black text-[#092D32] mb-1.5">

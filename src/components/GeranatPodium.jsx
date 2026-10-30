@@ -27,6 +27,7 @@ import { navigate } from '../lib/router.jsx';
 import { formatRupiah } from '../lib/qris.js';
 import { OfficialPortalQuickAccess } from './OfficialPortalQuickAccess.jsx';
 import BorderBeam from './ui/BorderBeam.jsx';
+import { playTactileSound } from '../lib/tactileAudio.js';
 
 // Data simulasi pratinjau podium interaktif (Kuning, Hijau, Merah)
 const PREVIEW_PODIUM_TEAMS = [
@@ -234,11 +235,14 @@ export function GeranatPodium() {
             {!isVotingOpen && (
               <button
                 type="button"
-                onClick={() => setPreviewMode((prev) => !prev)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold text-[11px] transition cursor-pointer shadow-xs"
+                onClick={() => {
+                  playTactileSound('pill');
+                  setPreviewMode((prev) => !prev);
+                }}
+                className="neu-pill-tab inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-slate-800 font-bold text-[11px] transition cursor-pointer"
                 title="Aktifkan simulasi interaktif animasi podium dan ombang-ambing"
               >
-                {previewMode ? <EyeOff size={13} /> : <Eye size={13} />}
+                {previewMode ? <EyeOff size={13} className="text-amber-600" /> : <Eye size={13} className="text-amber-600" />}
                 <span>{previewMode ? 'Kembali ke Mode Standby Kosong' : '✨ Uji Pratinjau Podium Juara (3 Warna)'}</span>
               </button>
             )}
@@ -308,8 +312,11 @@ export function GeranatPodium() {
 
                     <button
                       type="button"
-                      onClick={() => triggerCheer(1, topThree[1].teamName)}
-                      className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[11px] font-bold transition active:scale-95 cursor-pointer"
+                      onClick={() => {
+                        playTactileSound('pill');
+                        triggerCheer(1, topThree[1].teamName);
+                      }}
+                      className="mt-3.5 neu-btn-strong-green inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-white text-[11px] font-bold cursor-pointer"
                     >
                       <span>🌿 Semangati</span>
                     </button>
@@ -374,8 +381,11 @@ export function GeranatPodium() {
                     <div className="mt-3.5">
                       <button
                         type="button"
-                        onClick={() => triggerCheer(0, topThree[0].teamName)}
-                        className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-md transition active:scale-95 cursor-pointer"
+                        onClick={() => {
+                          playTactileSound('press');
+                          triggerCheer(0, topThree[0].teamName);
+                        }}
+                        className="neu-btn-gold inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-slate-950 font-black text-xs cursor-pointer shadow-md"
                       >
                         <Flame size={13} className="fill-slate-950" />
                         <span>Beri Api Semangat! 🔥</span>
@@ -438,8 +448,11 @@ export function GeranatPodium() {
 
                     <button
                       type="button"
-                      onClick={() => triggerCheer(2, topThree[2].teamName)}
-                      className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 hover:bg-rose-200 text-rose-800 text-[11px] font-bold transition active:scale-95 cursor-pointer"
+                      onClick={() => {
+                        playTactileSound('pill');
+                        triggerCheer(2, topThree[2].teamName);
+                      }}
+                      className="mt-3.5 neu-btn-strong-red inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-white text-[11px] font-bold cursor-pointer"
                     >
                       <span>🔥 Semangati</span>
                     </button>
@@ -495,8 +508,11 @@ export function GeranatPodium() {
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
                   type="button"
-                  onClick={() => navigate('/geranat/voting')}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase tracking-wider shadow-md transition hover:scale-105 active:scale-95 cursor-pointer"
+                  onClick={() => {
+                    playTactileSound('press');
+                    navigate('/geranat/voting');
+                  }}
+                  className="w-full sm:w-auto neu-btn-primary inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-white font-black text-xs uppercase tracking-wider cursor-pointer"
                 >
                   <span>Kunjungi Halaman Charity Vote</span>
                   <ArrowRight size={15} />
@@ -504,8 +520,11 @@ export function GeranatPodium() {
 
                 <button
                   type="button"
-                  onClick={() => setPreviewMode(true)}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs transition cursor-pointer"
+                  onClick={() => {
+                    playTactileSound('pill');
+                    setPreviewMode(true);
+                  }}
+                  className="w-full sm:w-auto neu-pill-tab inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-slate-800 font-bold text-xs transition cursor-pointer"
                 >
                   <Sparkles size={14} className="text-[#FBBC05]" />
                   <span>Lihat Pratinjau Podium Juara (3 Warna)</span>
@@ -520,8 +539,11 @@ export function GeranatPodium() {
           {sortedTeams.length > 0 && (
             <button
               type="button"
-              onClick={() => setShowFullRanking((prev) => !prev)}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white hover:bg-slate-50 border-2 border-slate-200 text-slate-800 font-black text-xs sm:text-sm uppercase tracking-wider transition flex items-center justify-center gap-2.5 cursor-pointer shadow-sm"
+              onClick={() => {
+                playTactileSound('pill');
+                setShowFullRanking((prev) => !prev);
+              }}
+              className="w-full sm:w-auto neu-pill-tab px-6 py-3 rounded-2xl text-slate-800 font-black text-xs sm:text-sm uppercase tracking-wider transition flex items-center justify-center gap-2.5 cursor-pointer shadow-sm"
             >
               <Trophy size={17} className="text-[#FBBC05]" />
               <span>🏆 Lihat Peringkat Lengkap Pasukan ({sortedTeams.length})</span>
@@ -531,10 +553,13 @@ export function GeranatPodium() {
 
           <button
             type="button"
-            onClick={() => navigate('/geranat/voting')}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs sm:text-sm uppercase tracking-wider transition flex items-center justify-center gap-2.5 cursor-pointer shadow-lg hover:scale-105"
+            onClick={() => {
+              playTactileSound('press');
+              navigate('/geranat/voting');
+            }}
+            className="w-full sm:w-auto neu-btn-gold px-8 py-3.5 rounded-2xl text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider transition flex items-center justify-center gap-2.5 cursor-pointer shadow-lg"
           >
-            <Heart size={18} className="fill-[#FFDD00]" />
+            <Heart size={18} className="fill-[#006569] text-[#006569]" />
             <span>🗳️ Kunjungi Charity Vote</span>
             <ArrowRight size={16} />
           </button>
@@ -553,14 +578,14 @@ export function GeranatPodium() {
                   Perolehan suara dan persentase dukungan untuk setiap kontingen pasukan.
                 </p>
               </div>
-              <div className="relative">
-                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <div className="neu-search-capsule px-4 py-1.5 w-full sm:w-72">
+                <Search size={15} className="text-amber-500 shrink-0" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cari kontingen atau instansi..."
-                  className="pl-9 pr-4 py-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#006569] w-full sm:w-64 shadow-xs"
+                  className="bg-transparent border-none text-xs text-black font-semibold placeholder:text-slate-500 focus:outline-none w-full"
                 />
               </div>
             </div>
@@ -605,8 +630,11 @@ export function GeranatPodium() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => navigate('/geranat/voting')}
-                        className="px-3.5 py-2 rounded-xl bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase tracking-wider transition cursor-pointer"
+                        onClick={() => {
+                          playTactileSound('press');
+                          navigate('/geranat/voting');
+                        }}
+                        className="neu-btn-primary px-4 py-2 rounded-xl text-white font-black text-xs uppercase tracking-wider cursor-pointer"
                       >
                         Dukung
                       </button>
