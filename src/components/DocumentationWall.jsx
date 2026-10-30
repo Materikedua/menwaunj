@@ -32,7 +32,9 @@ import {
   CalendarDays,
   SlidersHorizontal,
   FolderOpen,
+  Camera,
 } from 'lucide-react';
+import { playTactileClick } from '../lib/tactileAudio.js';
 import {
   DEFAULT_DOCUMENTATION_DATA,
   PROKER_12_MONTHS,
@@ -146,8 +148,8 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
     contentRegistry = [];
   }
 
-  // Mode Tampilan: 'grid' (Grid Klasik - Default!) | 'showcase' (Dossier Showcase) | 'timeline' (Garis Waktu)
-  const [viewMode, setViewMode] = useState('grid');
+  // Mode Tampilan: 'showcase' (Showcase Album - Sesuai Lampiran!) | 'grid' (Grid Klasik) | 'timeline' (Garis Waktu)
+  const [viewMode, setViewMode] = useState('showcase');
 
   // Filter & Urutan
   const [selectedCategoryGroup, setSelectedCategoryGroup] = useState('ALL');
@@ -623,12 +625,33 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
             BARIS ATAS: KONTROL TAMPILAN & FILTER PINTAR (3D TACTILE NEUMORPHIC)
             ==================================================================== */}
         <div className="relative z-30 rounded-3xl neu-card p-3.5 sm:p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 shadow-md">
-          {/* Sisi Kiri: Switcher 3 Mode Tampilan Otentik (Grid Klasik | Showcase | Garis Waktu) */}
+          {/* Sisi Kiri: Switcher 3 Mode Tampilan (Showcase Album | Grid Klasik | Garis Waktu) */}
           <div className="flex flex-wrap items-center gap-3">
             <div className="neu-pill-bar">
               <button
                 type="button"
-                onClick={() => setViewMode('grid')}
+                onClick={() => {
+                  playTactileClick('pill');
+                  setViewMode('showcase');
+                  setShowcaseSlideIndex(0);
+                }}
+                className={
+                  viewMode === 'showcase'
+                    ? 'neu-pill-tab-dark'
+                    : 'neu-pill-tab'
+                }
+                title="Tampilan Showcase Album"
+              >
+                <Layers size={14} className={viewMode === 'showcase' ? 'text-amber-400' : 'text-amber-500'} />
+                <span>Showcase Album</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  playTactileClick('pill');
+                  setViewMode('grid');
+                }}
                 className={
                   viewMode === 'grid'
                     ? 'neu-pill-tab-dark'
@@ -643,23 +666,9 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
               <button
                 type="button"
                 onClick={() => {
-                  setViewMode('showcase');
-                  setShowcaseSlideIndex(0);
+                  playTactileClick('pill');
+                  setViewMode('timeline');
                 }}
-                className={
-                  viewMode === 'showcase'
-                    ? 'neu-pill-tab-dark'
-                    : 'neu-pill-tab'
-                }
-                title="Tampilan Dossier Eksebisi Split"
-              >
-                <Layers size={14} className={viewMode === 'showcase' ? 'text-amber-400' : 'text-amber-500'} />
-                <span>Dossier Showcase</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewMode('timeline')}
                 className={
                   viewMode === 'timeline'
                     ? 'neu-pill-tab-dark'
@@ -1070,356 +1079,83 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
           </div>
         ) : viewMode === 'showcase' ? (
           /* ====================================================================
-             MODE 2: DOSSIER SHOWCASE (PANGGUNG EKSEBISI SPLIT OTENTIK)
+             MODE 2: SHOWCASE ALBUM GALERI (PERSIS SESUAI REFERENSI GAMBAR USER)
              ==================================================================== */
           <div className="space-y-6">
-            {/* 1. Filmstrip Reel Horizontal Album Navigator */}
-            <div className="rounded-3xl neu-card p-4 space-y-2.5">
-              <div className="flex items-center justify-between px-1">
-                <span className="text-xs font-black uppercase tracking-wider text-[#006569] flex items-center gap-1.5">
-                  <FolderOpen size={14} />
-                  <span>Pilih Album Dokumentasi ({showcaseAlbumIndex + 1} / {filteredPosts.length})</span>
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowcaseAlbumIndex((prev) => Math.max(0, prev - 1));
-                      setShowcaseSlideIndex(0);
-                    }}
-                    disabled={showcaseAlbumIndex === 0}
-                    className="w-8 h-8 rounded-xl neu-btn flex items-center justify-center text-slate-700 disabled:opacity-30 cursor-pointer"
-                    title="Album Sebelumnya"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowcaseAlbumIndex((prev) => Math.min(filteredPosts.length - 1, prev + 1));
-                      setShowcaseSlideIndex(0);
-                    }}
-                    disabled={showcaseAlbumIndex === filteredPosts.length - 1}
-                    className="w-8 h-8 rounded-xl neu-btn flex items-center justify-center text-slate-700 disabled:opacity-30 cursor-pointer"
-                    title="Album Berikutnya"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredPosts.map((post) => {
+                const photosCount = post.photos?.length || 1;
+                const coverUrl = post.photos?.[0]?.url || '/foto-kampus-unj.jpg';
+                const dateBadge = `${post.monthCode || ''} ${post.year || ''}`.trim() || 'OKT 2026';
 
-              {/* Reel Strip */}
-              <div
-                ref={filmstripReelRef}
-                className="flex items-center gap-3 overflow-x-auto pb-1.5 no-scrollbar snap-x"
-              >
-                {filteredPosts.map((post, pIdx) => {
-                  const isCurrent = pIdx === showcaseAlbumIndex;
-                  const thumbUrl = post.photos?.[0]?.url || '/foto-kampus-unj.jpg';
-                  return (
-                    <button
-                      key={post.id}
-                      type="button"
-                      onClick={() => {
-                        setShowcaseAlbumIndex(pIdx);
-                        setShowcaseSlideIndex(0);
-                      }}
-                      className={`snap-start shrink-0 w-44 sm:w-52 rounded-2xl overflow-hidden border-2 text-left transition-all cursor-pointer ${
-                        isCurrent
-                          ? 'border-[#006569] ring-2 ring-[#FFDD00]/60 bg-[#092D32] text-white shadow-lg scale-[1.02]'
-                          : 'border-white/80 bg-white text-slate-800 hover:border-slate-300 opacity-80'
-                      }`}
-                    >
-                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-900">
-                        <img src={thumbUrl} alt="" className="w-full h-full object-cover" />
-                        <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/75 text-[#FFDD00] font-mono text-[9px] font-black">
-                          {post.monthCode} {post.year}
-                        </span>
-                      </div>
-                      <div className="p-2.5">
-                        <div className="font-black text-xs truncate">{post.prokerName}</div>
-                        <div className={`text-[10px] truncate mt-0.5 ${isCurrent ? 'text-teal-200' : 'text-slate-500'}`}>
-                          {post.location}
+                return (
+                  <article
+                    key={post.id}
+                    onClick={() => {
+                      playTactileClick('pop');
+                      openLightbox(post, 0, false);
+                    }}
+                    className="group bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 p-4 sm:p-5 flex flex-col justify-between cursor-pointer"
+                  >
+                    <div>
+                      {/* Container Foto Cover dengan Badges */}
+                      <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden bg-slate-900 shadow-sm mb-4">
+                        <img
+                          src={coverUrl}
+                          alt={post.prokerName}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                        {/* Badge Jumlah Foto (Kiri Bawah) */}
+                        <div className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-md text-white text-[11px] font-black tracking-wider shadow-sm">
+                          <Camera size={13} className="text-[#FFDD00]" />
+                          <span>{photosCount} FOTO</span>
+                        </div>
+                        {/* Badge Bulan/Tahun (Kanan Atas) */}
+                        <div className="absolute top-2.5 right-2.5 inline-flex items-center px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-md text-[#FFDD00] text-[11px] font-mono font-black tracking-wider shadow-sm">
+                          <span>{dateBadge}</span>
                         </div>
                       </div>
-                    </button>
-                  );
-                })}
-              </div>
+
+                      {/* Info Konten Album */}
+                      <div className="space-y-1.5">
+                        <div className="text-[11px] font-black uppercase tracking-wider text-[#006569]">
+                          {post.category || 'PROGRAM KERJA'}
+                        </div>
+                        <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug line-clamp-1 group-hover:text-[#006569] transition-colors">
+                          {post.prokerName}
+                        </h3>
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 pt-0.5">
+                          <MapPin size={13} className="text-slate-400 shrink-0" />
+                          <span className="truncate">{post.location}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tombol Footer Buka Album */}
+                    <div className="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          playTactileClick('pop');
+                          openLightbox(post, 0, false);
+                        }}
+                        className="inline-flex items-center gap-1 text-xs sm:text-sm font-black text-slate-800 group-hover:text-[#006569] transition-colors cursor-pointer py-1"
+                      >
+                        <span>Buka Album</span>
+                        <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
 
-            {/* 2. Panggung Split: Visual Canvas (Kiri) + Dossier & Interaksi (Kanan) */}
-            {activeShowcaseAlbum && (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                {/* Visual Canvas Kiri (7 Kolom) */}
-                <div className="lg:col-span-7 space-y-3">
-                  <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full rounded-3xl overflow-hidden bg-slate-950 neu-card shadow-2xl select-none group">
-                    <img
-                      src={
-                        activeShowcaseAlbum.photos?.[showcaseSlideIndex]?.url ||
-                        activeShowcaseAlbum.photos?.[0]?.url ||
-                        '/foto-kampus-unj.jpg'
-                      }
-                      alt={
-                        activeShowcaseAlbum.photos?.[showcaseSlideIndex]?.caption ||
-                        activeShowcaseAlbum.prokerName
-                      }
-                      className="w-full h-full object-cover transition duration-500"
-                    />
-
-                    {/* Tombol Geser Slide */}
-                    {(activeShowcaseAlbum.photos?.length || 0) > 1 && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const len = activeShowcaseAlbum.photos.length;
-                            setShowcaseSlideIndex((prev) => (prev - 1 + len) % len);
-                          }}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#FFDD00] text-white hover:text-[#092D32] flex items-center justify-center transition cursor-pointer shadow-lg z-10"
-                          aria-label="Foto Sebelumnya"
-                        >
-                          <ChevronLeft size={20} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const len = activeShowcaseAlbum.photos.length;
-                            setShowcaseSlideIndex((prev) => (prev + 1) % len);
-                          }}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-[#FFDD00] text-white hover:text-[#092D32] flex items-center justify-center transition cursor-pointer shadow-lg z-10"
-                          aria-label="Foto Berikutnya"
-                        >
-                          <ChevronRight size={20} />
-                        </button>
-
-                        {/* Indicator Dots */}
-                        <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md z-10">
-                          {activeShowcaseAlbum.photos.map((_, sIdx) => (
-                            <button
-                              key={sIdx}
-                              type="button"
-                              onClick={() => setShowcaseSlideIndex(sIdx)}
-                              className={`h-2 rounded-full transition-all cursor-pointer ${
-                                sIdx === showcaseSlideIndex
-                                  ? 'w-6 bg-[#FFDD00]'
-                                  : 'w-2 bg-white/50 hover:bg-white/80'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </>
-                    )}
-
-                    {/* Overlay Keterangan Bawah */}
-                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 sm:p-5 text-white flex items-end justify-between gap-3 z-10">
-                      <p className="text-xs font-semibold leading-relaxed line-clamp-2 max-w-[75%]">
-                        {activeShowcaseAlbum.photos?.[showcaseSlideIndex]?.caption ||
-                          activeShowcaseAlbum.prokerName}
-                      </p>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => openLightbox(activeShowcaseAlbum, showcaseSlideIndex, false)}
-                          className="inline-flex items-center gap-1 rounded-xl bg-black/60 hover:bg-[#FFDD00] text-white hover:text-[#092D32] px-2.5 py-1.5 text-xs font-black transition cursor-pointer"
-                        >
-                          <Maximize2 size={13} />
-                          <span>Zoom</span>
-                        </button>
-                        <span className="font-mono text-xs font-black text-[#FFDD00] px-2 py-1 rounded-lg bg-black/60">
-                          {showcaseSlideIndex + 1} / {activeShowcaseAlbum.photos?.length || 1}
-                        </span>
-                      </div>
-                    </div>
-
-                    {heartBurstPostId === activeShowcaseAlbum.id && (
-                      <div className="pointer-events-none absolute inset-0 grid place-items-center bg-black/20 z-20">
-                        <Heart size={76} className="animate-ping fill-[#E11D48] text-[#E11D48]" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Dossier Laporan & Interaksi Kanan (5 Kolom) */}
-                <div className="lg:col-span-5 rounded-3xl neu-card p-6 sm:p-7 space-y-5 text-[#092D32] shadow-xl">
-                  {/* Header Dossier */}
-                  <div className="border-b border-slate-200/80 pb-4 space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1 rounded-xl bg-[#006569] text-[#FFDD00] px-3 py-1 text-[11px] font-black uppercase tracking-wider">
-                        {activeShowcaseAlbum.category || 'PROGRAM KERJA'}
-                      </span>
-                      <span className="font-mono text-xs font-black text-[#092D32]">
-                        {activeShowcaseAlbum.monthName} {activeShowcaseAlbum.year}
-                      </span>
-                    </div>
-
-                    <h2 className="text-xl sm:text-2xl font-black text-[#092D32] tracking-tight">
-                      {activeShowcaseAlbum.prokerName}
-                    </h2>
-
-                    <div className="flex items-center gap-2 text-xs font-semibold text-[#64748B]">
-                      <MapPin size={13} className="text-[#006569] shrink-0" />
-                      <span>{activeShowcaseAlbum.location}</span>
-                    </div>
-                  </div>
-
-                  {/* Narasi Lengkap & Laporan Operasi */}
-                  <div className="rounded-2xl neu-inset p-4 space-y-2">
-                    <h4 className="text-[11px] font-black uppercase tracking-wider text-[#006569]">
-                      Laporan Operasi &amp; Dokumentasi
-                    </h4>
-                    <p className="text-xs sm:text-sm font-medium leading-relaxed text-[#092D32]">
-                      {cleanCaptionText(activeShowcaseAlbum.caption)}
-                    </p>
-                    {activeShowcaseAlbum.narrativeReport && (
-                      <p className="text-xs leading-relaxed text-slate-600 pt-2 border-t border-slate-200/70">
-                        {activeShowcaseAlbum.narrativeReport}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Statistik & Aksi Sosial */}
-                  <div className="flex items-center justify-between gap-3 pt-1">
-                    <div className="flex items-center gap-2">
-                      {/* Suka */}
-                      <button
-                        type="button"
-                        onClick={() => handleToggleLike(activeShowcaseAlbum, false)}
-                        className="inline-flex items-center gap-1.5 rounded-2xl neu-btn px-4 py-2.5 text-xs font-black text-[#092D32] cursor-pointer"
-                      >
-                        <Heart
-                          size={17}
-                          className={
-                            activeShowcaseAlbum.isLiked
-                              ? 'fill-[#E11D48] text-[#E11D48]'
-                              : 'text-[#092D32]'
-                          }
-                        />
-                        <span className="font-mono tabular-nums">{activeShowcaseAlbum.likes}</span>
-                      </button>
-
-                      {/* Bagikan */}
-                      <button
-                        type="button"
-                        onClick={() => handleSharePost(activeShowcaseAlbum)}
-                        className="inline-flex items-center gap-1.5 rounded-2xl neu-btn px-3.5 py-2.5 text-xs font-black text-[#092D32] cursor-pointer"
-                        title="Salin Tautan"
-                      >
-                        <Share2 size={16} />
-                      </button>
-
-                      {/* Bookmark */}
-                      <button
-                        type="button"
-                        onClick={() => handleToggleBookmark(activeShowcaseAlbum.id)}
-                        className="p-2.5 rounded-2xl neu-btn text-[#092D32] cursor-pointer"
-                        title="Simpan ke Arsip Pribadi"
-                      >
-                        <Bookmark
-                          size={16}
-                          className={
-                            activeShowcaseAlbum.isBookmarked
-                              ? 'fill-[#006569] text-[#006569]'
-                              : 'text-[#092D32]'
-                          }
-                        />
-                      </button>
-                    </div>
-
-                    {/* Tautan Instagram Resmi */}
-                    {activeShowcaseAlbum.socialUrl && (
-                      <a
-                        href={activeShowcaseAlbum.socialUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-black text-[#006569] hover:underline cursor-pointer"
-                      >
-                        <span>Instagram</span>
-                        <ExternalLink size={12} />
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Aliran Komentar Interaktif Real-time */}
-                  <div className="pt-2 border-t border-slate-200/80 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black uppercase tracking-wider text-[#006569] flex items-center gap-1.5">
-                        <MessageCircle size={14} />
-                        <span>Komentar &amp; Apresiasi ({activeShowcaseAlbum.comments?.length || 0})</span>
-                      </span>
-                    </div>
-
-                    {/* Daftar Komentar Terakhir */}
-                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                      {(activeShowcaseAlbum.comments || []).length === 0 ? (
-                        <p className="text-xs text-slate-500 italic py-2 text-center">
-                          Belum ada komentar. Jadilah yang pertama memberikan apresiasi!
-                        </p>
-                      ) : (
-                        activeShowcaseAlbum.comments.slice(-4).map((cmt) => (
-                          <div key={cmt.id} className="rounded-2xl bg-white p-3 border border-slate-200/80 text-xs space-y-1 shadow-xs">
-                            <div className="flex items-center justify-between text-[11px]">
-                              <span className="font-black text-[#006569]">@{cmt.author}</span>
-                              <span className="font-mono text-slate-400 text-[10px]">
-                                {formatCommentTime(cmt)}
-                              </span>
-                            </div>
-                            <p className="text-slate-800 font-medium">{cmt.text}</p>
-                          </div>
-                        ))
-                      )}
-                    </div>
-
-                    {/* Formulir Penulisan Komentar (Wajib Login Akun) */}
-                    {isLoggedIn ? (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          submitPostComment(
-                            activeShowcaseAlbum,
-                            showcaseCommentText,
-                            setShowcaseCommentText
-                          );
-                        }}
-                        className="flex items-center gap-2 pt-1"
-                      >
-                        <div className="flex-1 rounded-2xl bg-white border-2 border-slate-300 focus-within:border-[#006569] px-3.5 py-2 shadow-inner">
-                          <input
-                            type="text"
-                            value={showcaseCommentText}
-                            onChange={(e) => setShowcaseCommentText(e.target.value)}
-                            style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
-                            placeholder={`Komentar sebagai @${currentAuthorName}...`}
-                            className="w-full bg-white text-black text-xs font-bold placeholder:text-slate-400 outline-none"
-                          />
-                        </div>
-                        <button
-                          type="submit"
-                          disabled={!showcaseCommentText.trim()}
-                          className="inline-flex items-center gap-1.5 rounded-2xl neu-btn-primary px-4 py-2.5 text-xs font-black text-[#FFDD00] shadow-sm cursor-pointer disabled:opacity-40"
-                        >
-                          <Send size={14} />
-                          <span>Kirim</span>
-                        </button>
-                      </form>
-                    ) : (
-                      <div className="rounded-2xl neu-inset p-3 text-center space-y-1.5">
-                        <p className="text-xs text-slate-600 font-semibold">
-                          Masuk akun untuk menulis komentar apresiasi.
-                        </p>
-                        {onOpenAuth && (
-                          <button
-                            type="button"
-                            onClick={onOpenAuth}
-                            className="neu-btn-strong-blue px-5 py-2 rounded-full text-xs font-black text-white cursor-pointer shadow-sm"
-                          >
-                            Login Akun
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
+            {filteredPosts.length === 0 && (
+              <div className="neu-card rounded-3xl p-12 text-center text-slate-500 space-y-2">
+                <FolderOpen size={36} className="mx-auto text-slate-400 opacity-60" />
+                <p className="font-bold text-sm">Tidak ada album dokumentasi yang cocok dengan pencarian.</p>
               </div>
             )}
           </div>

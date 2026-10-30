@@ -103,6 +103,7 @@ export const TAB_PATHS = {
   administrasi: '/administrasi',
   'mako-ops': '/mako-ops',
   games: '/games',
+  geranat: '/geranat',
   geranat_voting: '/geranat/voting',
   charity_voting: '/charity/voting',
   portal_peserta: '/portal-peserta',

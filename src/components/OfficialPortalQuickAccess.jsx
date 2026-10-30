@@ -113,7 +113,7 @@ export function OfficialPortalQuickAccess({
 
                 <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#092D32] leading-tight tracking-tight">
                   Semua Kebutuhan Official dalam{' '}
-                  <span className="text-[#006569]">Satu Konsol 3D</span>
+                  <span className="text-[#006569]">Satu Layanan Terpadu</span>
                 </h3>
 
                 <p className="mt-4 text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-lg">

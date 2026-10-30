@@ -55,7 +55,7 @@ const primaryGuides = [
   {
     title: 'Galeri & Dokumentasi',
     category: 'Arsip Lensa',
-    description: 'Arsip foto kegiatan resmi 2023-2026 dalam 3 mode interaktif.',
+    description: 'Dokumentasi dan arsip foto kegiatan resmi Menwa UNJ 2023–2026.',
     to: '/gallery',
     icon: Sparkles,
   },
@@ -84,6 +84,13 @@ const primaryGuides = [
 
 export const informationIndex = [
   ...primaryGuides,
+  {
+    title: 'Cari Progres Surat Masuk',
+    category: 'Layanan administrasi',
+    description: 'Lacak status disposisi surat, verifikasi berkas, dan nomor registrasi permohonan dinas.',
+    to: '/administrasi',
+    icon: FileText,
+  },
   {
     title: 'Pendidikan & Latihan Satuan',
     category: 'Kurikulum militer',
@@ -193,7 +200,7 @@ export function BrandHome({ onOpenSearch }) {
               <ArrowRight size={18} />
             </Link>
             <Link to="/gallery" className="neu-btn-primary px-6 py-3.5 rounded-2xl text-xs md:text-sm font-black flex items-center gap-2 shadow-lg text-[#FFDD00]">
-              <span>Arsip Galeri 3-Mode</span>
+              <span>Galeri &amp; Dokumentasi Kegiatan</span>
               <Sparkles size={18} />
             </Link>
             <Link to="/garis-komando" className="neu-btn px-6 py-3.5 rounded-2xl text-xs md:text-sm font-bold flex items-center gap-2 text-slate-800">
