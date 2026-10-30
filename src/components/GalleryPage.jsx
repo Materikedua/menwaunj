@@ -16,6 +16,9 @@ export function GalleryPage({ onOpenAuth = null }) {
           <img
             src="/foto-kampus-unj.jpg"
             alt=""
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
             className="h-full w-full object-cover object-center filter blur-[2px]"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#021B25] via-[#092D32]/95 to-[#021B25]" />

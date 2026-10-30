@@ -235,7 +235,14 @@ function TeamIdCardPreview({
         <div className="flex items-center gap-2.5 min-w-0 relative z-10">
           <div className="w-8 h-8 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
             {schoolLogo ? (
-              <img src={schoolLogo} alt="Logo Sekolah" className="w-full h-full object-contain" />
+              <img
+                src={schoolLogo}
+                alt="Logo Sekolah"
+                onError={(e) => {
+                  e.currentTarget.src = '/logo-menwa-unj.png';
+                }}
+                className="w-full h-full object-contain"
+              />
             ) : (
               <img src="/logo-menwa-unj.png" alt="Menwa UNJ" className="w-full h-full object-contain" />
             )}
@@ -3635,7 +3642,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                       </div>
                       <h3 className="text-sm font-black text-[#092D32]">Buku Panduan &amp; Juknis GERANAT 2026</h3>
                       <p className="text-xs text-slate-600 leading-relaxed">
-                        Petunjuk teknis resmi perlombaan LKBB GERANAT Satuan Menwa UNJ mencakup ketentuan lapangan, materi gerakan PBB, tata cara penghormatan, dan jadwal registrasi ulang.
+                        Petunjuk teknis resmi perlombaan LFPB GERANAT Satuan Menwa UNJ mencakup ketentuan lapangan, materi gerakan PBB, tata cara penghormatan, dan jadwal registrasi ulang.
                       </p>
                     </div>
                     <a

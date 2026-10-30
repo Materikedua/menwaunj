@@ -53,7 +53,7 @@ const AVAILABLE_YEARS = ['Semua Tahun', '2026', '2025', '2024', '2023'];
 
 const GALLERY_CATEGORIES = [
   { id: 'ALL', label: 'Semua Giat', short: 'Semua', icon: LayoutGrid },
-  { id: 'LKBB', label: 'LKBB & Paskibra', short: 'Paskibra', icon: Award, match: ['geranat', 'paskibra', 'lkbb'] },
+  { id: 'LFPB', label: 'LFPB & Paskibra', short: 'Paskibra', icon: Award, match: ['geranat', 'paskibra', 'lkbb', 'lfpb'] },
   { id: 'DIKLAT', label: 'Diklat & Militer', short: 'Diklat', icon: Shield, match: ['pembaretan', 'cakrawala', 'kds', 'provos', 'diklat', 'latgabnas', 'binjas', 'olahraga'] },
   { id: 'BAKSOS', label: 'Baksos & Rohani', short: 'Baksos', icon: HeartHandshake, match: ['buka-bersama', 'santunan', 'baksos', 'pengabdian', 'kemanusiaan'] },
   { id: 'SEMINAR', label: 'Seminar & Prestasi', short: 'Seminar', icon: BookOpen, match: ['youth-spark', 'ksatria-cendekia', 'lempika', 'seminar', 'kompetisi'] },
@@ -708,7 +708,7 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                           ? 'text-[#FFDD00]'
                           : cat.id === 'ALL'
                           ? 'text-teal-600'
-                          : cat.id === 'LKBB'
+                          : cat.id === 'LFPB'
                           ? 'text-amber-500'
                           : cat.id === 'DIKLAT'
                           ? 'text-emerald-600'
@@ -961,6 +961,9 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                           src={coverPhoto}
                           alt={`${post.prokerName} (${post.year})`}
                           loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.src = '/foto-kampus-unj.jpg';
+                          }}
                           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                         />
 
@@ -1103,6 +1106,9 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                         <img
                           src={coverUrl}
                           alt={post.prokerName}
+                          onError={(e) => {
+                            e.currentTarget.src = '/foto-kampus-unj.jpg';
+                          }}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           loading="lazy"
                         />
@@ -1209,6 +1215,9 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                               <img
                                 src={coverPhoto}
                                 alt={post.prokerName}
+                                onError={(e) => {
+                                  e.currentTarget.src = '/foto-kampus-unj.jpg';
+                                }}
                                 className="w-full h-full object-cover transition duration-300 group-hover/thumb:scale-105"
                               />
                               <div className="absolute bottom-1.5 right-1.5 bg-black/70 px-1.5 py-0.5 rounded font-mono text-[9px] font-bold text-white">
@@ -1292,6 +1301,9 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
                     activeModalPost.photos?.[activeSlideIndex]?.caption ||
                     activeModalPost.prokerName
                   }
+                  onError={(e) => {
+                    e.currentTarget.src = '/foto-kampus-unj.jpg';
+                  }}
                   className="max-h-full max-w-full object-contain select-none"
                 />
 

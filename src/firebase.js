@@ -1,8 +1,20 @@
 import { initializeApp, getApps, getApp } from 'firebase/app'; import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updateProfile } from 'firebase/auth'; import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, orderBy, limit, getDocs, onSnapshot, deleteDoc, serverTimestamp, getDocFromServer, increment } from 'firebase/firestore'; import { getStorage, ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage'; import firebaseConfig from '../firebase-applet-config.json'; /* Initialize Firebase app singleton */ export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp(); /* Initialize and export Auth instance */ export const auth = getAuth(app); /* Initialize and export Firestore instance using firestoreDatabaseId */ export const firestore = getFirestore(app, firebaseConfig.firestoreDatabaseId); /* Initialize and export Firebase Storage instance */ export const storage = getStorage(app); /* Alias db for common convention and backward compatibility */ export const db = firestore; /* Configure Google Auth Provider */ export const googleProvider = new GoogleAuthProvider(); googleProvider.setCustomParameters({ prompt: 'select_account' }); /* Validate connection to Firestore on boot */ async function testConnection() { try { await getDocFromServer(doc(firestore, 'test', 'connection')); } catch (error) { if (error instanceof Error && error.message.includes('the client is offline')) { console.error('Please check your Firebase configuration.'); } } } if (typeof window !== 'undefined') { testConnection(); } /* Export common auth & firestore methods */ export { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updateProfile, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, onSnapshot, deleteDoc, serverTimestamp, getDocFromServer }; /* Kirim email reset kata sandi resmi via Firebase Auth / Gmail */ export async function resetUserPassword(email) { if (!email || !email.trim()) { throw new Error('Alamat email wajib diisi.'); } return await sendPasswordResetEmail(auth, email.trim()); } /* Error handling helper */ export function handleFirestoreError(error, operationType, path) { const errInfo = { error: error instanceof Error ? error.message : String(error), authInfo: { userId: auth.currentUser?.uid || null, email: auth.currentUser?.email || null, emailVerified: auth.currentUser?.emailVerified || null, isAnonymous: auth.currentUser?.isAnonymous || null, }, operationType, path }; console.error('Firestore Error: ', JSON.stringify(errInfo)); throw new Error(JSON.stringify(errInfo)); } /* Google Sign-In helper */ export async function loginWithGoogle() { const result = await signInWithPopup(auth, googleProvider); const user = result.user; const userDocRef = doc(firestore, 'users', user.uid); try { const snap = await getDoc(userDocRef); if (!snap.exists()) { await setDoc(userDocRef, { uid: user.uid, email: user.email || '', displayName: user.displayName || 'Anggota Pengunjung', institution: 'Universitas Negeri Jakarta', occupation: 'Mahasiswa', birthDate: '', phone: '', updatedAt: new Date().toISOString() }); } } catch (err) { console.warn('Auto profile setup warning:', err); } return user; } /* Email Sign-In helper */ export async function loginWithEmail(email, password) { const cred = await signInWithEmailAndPassword(auth, email, password); return cred.user; } /* Email Registration helper */ export async function registerWithEmail(email, password, displayName, institution, occupation, birthDate, phone) { const cred = await createUserWithEmailAndPassword(auth, email, password); const user = cred.user; if (displayName) { await updateProfile(user, { displayName }); } const userDocRef = doc(firestore, 'users', user.uid); try { await setDoc(userDocRef, { uid: user.uid, email: user.email || email, displayName: displayName || user.displayName || 'Anggota Pengguna', institution: institution || 'Universitas Negeri Jakarta', occupation: occupation || 'Mahasiswa', birthDate: birthDate || '', phone: phone || '', updatedAt: new Date().toISOString() }); } catch (err) { console.warn('Profile creation warning:', err); } return user; } /* Sign-Out helper */ export async function logoutUser() { await signOut(auth); } /* User Profile helpers */ export async function getUserProfile(uid) { if (!uid) return null; const path = `users/${uid}`; try { const snap = await getDoc(doc(firestore, 'users', uid)); if (snap.exists()) { return snap.data(); } return null; } catch (error) { handleFirestoreError(error, 'get', path); } } export async function updateUserProfile(uid, profileData) { if (!uid) return; const path = `users/${uid}`; try { const ref = doc(firestore, 'users', uid); await updateDoc(ref, { ...profileData, updatedAt: new Date().toISOString() }); } catch (error) { handleFirestoreError(error, 'update', path); } } /* Submit Formulir Administrasi */
+/* Helper nomor surat resmi Menwa UNJ: B-(001-999)/Web/(Romawi Bulan)/(Tahun) */
+export function generateLetterId() {
+  const romawi = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+  const now = new Date();
+  const romanMonth = romawi[now.getMonth()] || 'X';
+  const year = now.getFullYear();
+  const randomNum = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
+  return `B-${randomNum}/Web/${romanMonth}/${year}`;
+}
+
+/* Submit Formulir Administrasi */
 export async function submitAdministrationForm(formData) {
   const path = 'forms_submissions';
   try {
-    const subId = `ADM-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    const subId = formData.submissionId || generateLetterId();
+    const safeDocId = subId.replace(/\//g, '_');
     const payload = {
       ...formData,
       submissionId: subId,
@@ -16,7 +28,7 @@ export async function submitAdministrationForm(formData) {
     if (formData?.documentPdfBase64 && storage) {
       try {
         const safeFileName = (formData.documentPdfName || 'berkas_permohonan.pdf').replace(/[^a-zA-Z0-9._-]/g, '_');
-        const sRef = storageRef(storage, `adminu_submissions/${subId}/${safeFileName}`);
+        const sRef = storageRef(storage, `adminu_submissions/${safeDocId}/${safeFileName}`);
         await uploadString(sRef, formData.documentPdfBase64, 'data_url');
         const downloadUrl = await getDownloadURL(sRef);
         payload.documentPdfUrl = downloadUrl;
@@ -25,7 +37,7 @@ export async function submitAdministrationForm(formData) {
       }
     }
 
-    await setDoc(doc(firestore, 'forms_submissions', subId), payload);
+    await setDoc(doc(firestore, 'forms_submissions', safeDocId), payload);
     return subId;
   } catch (error) {
     handleFirestoreError(error, 'create', path);
@@ -36,12 +48,30 @@ export async function submitAdministrationForm(formData) {
 export async function getSubmissionById(queryId) {
   if (!queryId || !String(queryId).trim()) return null;
   const cleanId = String(queryId).trim();
+  const safeDocId = cleanId.replace(/\//g, '_');
   try {
-    // 1. Cek langsung ke doc ID di forms_submissions
-    const docSnap = await getDoc(doc(firestore, 'forms_submissions', cleanId));
-    if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() };
+    // 1. Cek langsung ke safeDocId
+    try {
+      const docSnap = await getDoc(doc(firestore, 'forms_submissions', safeDocId));
+      if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() };
+      }
+    } catch {
+      /* ignore invalid path if any */
     }
+
+    // Jika cleanId tidak mengandung slash, coba cek doc langsung juga
+    if (!cleanId.includes('/')) {
+      try {
+        const directSnap = await getDoc(doc(firestore, 'forms_submissions', cleanId));
+        if (directSnap.exists()) {
+          return { id: directSnap.id, ...directSnap.data() };
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
     // 2. Query berdasarkan field submissionId
     const qSub = query(collection(firestore, 'forms_submissions'), where('submissionId', '==', cleanId), limit(1));
     const snapSub = await getDocs(qSub);
@@ -49,6 +79,18 @@ export async function getSubmissionById(queryId) {
       const d = snapSub.docs[0];
       return { id: d.id, ...d.data() };
     }
+
+    // 2b. Dukung variasi pencarian slash vs dash
+    const altSlashId = cleanId.replace(/-/g, '/');
+    if (altSlashId !== cleanId) {
+      const qAlt = query(collection(firestore, 'forms_submissions'), where('submissionId', '==', altSlashId), limit(1));
+      const snapAlt = await getDocs(qAlt);
+      if (!snapAlt.empty) {
+        const d = snapAlt.docs[0];
+        return { id: d.id, ...d.data() };
+      }
+    }
+
     // 3. Query berdasarkan field participantToken
     const qTok = query(collection(firestore, 'forms_submissions'), where('participantToken', '==', cleanId), limit(1));
     const snapTok = await getDocs(qTok);
@@ -56,22 +98,30 @@ export async function getSubmissionById(queryId) {
       const d = snapTok.docs[0];
       return { id: d.id, ...d.data() };
     }
+
     // 4. Cek ke koleksi participant_portals (jika token berupa token portal peserta)
-    const pSnap = await getDoc(doc(firestore, 'participant_portals', cleanId));
-    if (pSnap.exists()) {
-      const pData = pSnap.data();
-      return {
-        id: pSnap.id,
-        submissionId: pSnap.id,
-        fullName: pData.applicantName || pData.teamName || 'Peserta Terdaftar',
-        institution: pData.institution || 'Instansi Terdaftar',
-        serviceType: pData.programTitle || 'Pendaftaran Portal Official',
-        status: pData.paymentStatus === 'LUNAS' ? 'disetujui' : 'menunggu_konfirmasi',
-        createdAt: pData.createdAt,
-        participantToken: pData.token,
-        isParticipantPortal: true,
-      };
+    if (!cleanId.includes('/')) {
+      try {
+        const pSnap = await getDoc(doc(firestore, 'participant_portals', cleanId));
+        if (pSnap.exists()) {
+          const pData = pSnap.data();
+          return {
+            id: pSnap.id,
+            submissionId: pSnap.id,
+            fullName: pData.applicantName || pData.teamName || 'Peserta Terdaftar',
+            institution: pData.institution || 'Instansi Terdaftar',
+            serviceType: pData.programTitle || 'Pendaftaran Portal Official',
+            status: pData.paymentStatus === 'LUNAS' ? 'disetujui' : 'menunggu_konfirmasi',
+            createdAt: pData.createdAt,
+            participantToken: pData.token,
+            isParticipantPortal: true,
+          };
+        }
+      } catch {
+        /* ignore */
+      }
     }
+
     return null;
   } catch (err) {
     console.warn('Gagal mencari progres surat:', err);

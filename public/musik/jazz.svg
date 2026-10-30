@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <linearGradient id="jazz-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="32" fill="url(#jazz-grad)" />
+  <circle cx="200" cy="200" r="120" fill="#000000" opacity="0.25" />
+  <circle cx="200" cy="200" r="40" fill="#FFDD00" opacity="0.9" />
+  <circle cx="200" cy="200" r="12" fill="#00383b" />
+  <text x="200" y="340" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="28" fill="#FFFFFF" letter-spacing="4">JAZZ PLAYLIST</text>
+  <text x="200" y="365" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="14" fill="#FFDD00" letter-spacing="2">MENWA SATUAN UNJ</text>
+</svg>

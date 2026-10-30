@@ -139,8 +139,8 @@ export function LetterProgressSection({ initialId = '', onClose }) {
             Cari Status &amp; Disposisi Surat Masuk
           </h3>
           <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-            Ketik ID registrasi surat (contoh:{' '}
-            <code className="text-[#006569] font-mono font-bold">ADM-2026-...</code>) atau Token
+            Ketik nomor registrasi surat (contoh:{' '}
+            <code className="text-[#006569] font-mono font-bold">B-001/Web/X/2026</code>) atau Token
             Peserta untuk mengecek perkembangan secara privat.
           </p>
         </div>
@@ -162,7 +162,7 @@ export function LetterProgressSection({ initialId = '', onClose }) {
           htmlFor="input-id-surat"
           className="block text-xs font-black uppercase tracking-wider text-slate-700"
         >
-          ID Pengajuan Surat / Token Portal Peserta:
+          Nomor Surat Resmi / Token Portal Peserta:
         </label>
         <div className="flex flex-col sm:flex-row items-stretch gap-3">
           <div className="relative flex-1">
@@ -171,7 +171,7 @@ export function LetterProgressSection({ initialId = '', onClose }) {
               type="text"
               value={searchId}
               onChange={(e) => setSearchId(e.target.value)}
-              placeholder="Contoh: ADM-2026-1030-XXXX atau TOKEN PESERTA..."
+              placeholder="Contoh: B-001/Web/X/2026 atau TOKEN PESERTA..."
               className="w-full bg-slate-50 focus:bg-white border-2 border-slate-300 focus:border-[#006569] rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition shadow-inner"
             />
             {searchId && (
@@ -214,10 +214,10 @@ export function LetterProgressSection({ initialId = '', onClose }) {
         <div className="rounded-2xl border-2 border-dashed border-rose-200 bg-rose-50/60 p-6 sm:p-8 text-center space-y-3 animate-fade-in">
           <AlertCircle size={40} className="mx-auto text-rose-500" />
           <h4 className="text-base font-black text-rose-950">
-            Surat dengan ID Tersebut Tidak Ditemukan
+            Surat dengan Nomor / ID Tersebut Tidak Ditemukan
           </h4>
           <p className="text-xs text-rose-700 max-w-md mx-auto leading-relaxed font-medium">
-            Pastikan ID pengajuan (<span className="font-mono font-bold">ADM-2026-...</span>) atau
+            Pastikan nomor surat (<span className="font-mono font-bold">B-001/Web/X/2026</span>) atau
             Token yang dimasukkan sudah benar dan sesuai dengan tanda terima pengajuan berkas Anda.
           </p>
         </div>

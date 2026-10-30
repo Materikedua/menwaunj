@@ -12,7 +12,7 @@ const TermsOfServicePage = lazy(() => import('./components/LegalPages.jsx').then
     children: [
       { id: 'kc', label: 'KC VIII', badge: 'Lomba Nasional', icon: <Trophy size={16} className="text-[#FFDD00]" />, desc: 'Ksatria Cendekia VIII: lomba, pendaftaran, jersey, dan jadwal.' },
       { id: 'youth-spark', label: 'Youth Spark', badge: 'Seminar Nasional', icon: <Sparkles size={16} className="text-amber-400" />, desc: 'Pembinaan Aktivitas Pemuda: seminar nasional, pelatihan, dan kompetisi.' },
-      { id: 'geranat', label: 'Geranat VII', badge: 'LKBB & Paskibra', icon: <Award size={16} className="text-emerald-400" />, desc: 'Gerakan Paskibra Semangat VII: lomba formasi, podium juara & e-voting.' },
+      { id: 'geranat', label: 'Geranat VII', badge: 'LFPB & Paskibra', icon: <Award size={16} className="text-emerald-400" />, desc: 'Gerakan Paskibra Semangat VII: lomba formasi, podium juara & e-voting.' },
     ],
   },
   { id: 'struktur', label: 'Organisasi', icon: <Shield size={20} />, desc: 'Garis Komando dan struktur organisasi Menwa UNJ.' },

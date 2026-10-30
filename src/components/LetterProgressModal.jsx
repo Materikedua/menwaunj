@@ -157,7 +157,7 @@ export function LetterProgressModal({ isOpen, onClose, initialId = '' }) {
                 required
                 value={searchId}
                 onChange={(e) => setSearchId(e.target.value)}
-                placeholder="Contoh: ADM-XXXX-XXXX atau REG-XXXX"
+                placeholder="Contoh: B-001/Web/X/2026 atau TOKEN..."
                 className="bg-transparent border-none text-xs sm:text-sm text-black font-bold placeholder:text-slate-400 focus:outline-none w-full"
               />
             </div>

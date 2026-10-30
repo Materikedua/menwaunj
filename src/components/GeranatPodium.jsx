@@ -293,6 +293,9 @@ export function GeranatPodium() {
                       <img
                         src={topThree[1].photoUrl || 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=600&q=80'}
                         alt={topThree[1].teamName}
+                        onError={(e) => {
+                          e.currentTarget.src = '/geranat-menwa-unj.png';
+                        }}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -359,6 +362,9 @@ export function GeranatPodium() {
                       <img
                         src={topThree[0].photoUrl || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80'}
                         alt={topThree[0].teamName}
+                        onError={(e) => {
+                          e.currentTarget.src = '/geranat-menwa-unj.png';
+                        }}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -429,6 +435,9 @@ export function GeranatPodium() {
                       <img
                         src={topThree[2].photoUrl || 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=600&q=80'}
                         alt={topThree[2].teamName}
+                        onError={(e) => {
+                          e.currentTarget.src = '/geranat-menwa-unj.png';
+                        }}
                         className="w-full h-full object-cover"
                       />
                     </div>

@@ -145,7 +145,14 @@ export const informationIndex = [
 const EventStoryCard = ({ to, image, eyebrow, title, meta, description, variant = '' }) => (
   <Link to={to} className={`brand-event-card ${variant}`}>
     <div className="brand-event-image">
-      <img loading="lazy" src={image} alt="" />
+      <img
+        loading="lazy"
+        src={image}
+        alt=""
+        onError={(e) => {
+          e.currentTarget.src = '/foto-kampus-unj.jpg';
+        }}
+      />
     </div>
     <span className="brand-event-cover" />
     <div className="brand-event-content">
