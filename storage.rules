@@ -12,9 +12,11 @@ service firebase.storage {
       );
     }
 
-    function isValidImage() {
-      return request.resource.contentType.matches('image/.*') &&
-             request.resource.size < 15 * 1024 * 1024;
+    function isValidImageOrPdf() {
+      return (
+        request.resource.contentType.matches('image/.*') ||
+        request.resource.contentType == 'application/pdf'
+      ) && request.resource.size <= 15 * 1024 * 1024;
     }
 
     // Aset publik (bisa dibaca publik, hanya bisa ditulis admin terotorisasi)
@@ -23,10 +25,16 @@ service firebase.storage {
       allow write: if isSuperAdmin();
     }
 
-    // Berkas pendaftaran & foto kontingen official
+    // Berkas pengajuan formulir administrasi pengguna terverifikasi
+    match /submissions/{userId}/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (request.auth.uid == userId || isSuperAdmin()) && isValidImageOrPdf();
+    }
+
+    // Berkas pendaftaran & foto kontingen official (LFPB Geranat VII / KC VIII)
     match /official/{schoolSlug}/{allPaths=**} {
       allow read: if true;
-      allow write: if isSignedIn() || isValidImage();
+      allow write: if isValidImageOrPdf();
     }
 
     // Default Fallback

@@ -117,14 +117,20 @@ service cloud.firestore {
       allow create: if isOwner(userId) && isValidId(userId) &&
         request.resource.data.uid == userId &&
         (!('role' in request.resource.data) || request.resource.data.role == 'public_user') &&
-        (!('isVerifiedMenwa' in request.resource.data) || request.resource.data.isVerifiedMenwa == false);
+        (!('isVerifiedMenwa' in request.resource.data) || request.resource.data.isVerifiedMenwa == false) &&
+        (!('displayName' in request.resource.data) || (request.resource.data.displayName is string && request.resource.data.displayName.size() <= 120)) &&
+        (!('institution' in request.resource.data) || (request.resource.data.institution is string && request.resource.data.institution.size() <= 150)) &&
+        (!('phone' in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30));
 
       // Pembaruan Akun: Staf bebas update; Pemilik TIDAK boleh mengubah role, isVerifiedMenwa, atau memanipulasi poin sewenang-wenang
       allow update: if isStaffAdmin() || (
         isOwner(userId) &&
         request.resource.data.uid == resource.data.uid &&
         (!('role' in request.resource.data) || request.resource.data.role == resource.data.role) &&
-        (!('isVerifiedMenwa' in request.resource.data) || request.resource.data.isVerifiedMenwa == resource.data.isVerifiedMenwa)
+        (!('isVerifiedMenwa' in request.resource.data) || request.resource.data.isVerifiedMenwa == resource.data.isVerifiedMenwa) &&
+        (!('displayName' in request.resource.data) || (request.resource.data.displayName is string && request.resource.data.displayName.size() <= 120)) &&
+        (!('institution' in request.resource.data) || (request.resource.data.institution is string && request.resource.data.institution.size() <= 150)) &&
+        (!('phone' in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30))
       );
 
       allow delete: if isSuperAdmin();
@@ -157,7 +163,9 @@ service cloud.firestore {
       allow update: if isSignedIn() && (
         isStaffAdmin() || (
           resource.data.applicantUid == request.auth.uid &&
-          request.resource.data.applicantUid == resource.data.applicantUid
+          request.resource.data.applicantUid == resource.data.applicantUid &&
+          (!('fullName' in request.resource.data) || (request.resource.data.fullName is string && request.resource.data.fullName.size() <= 120)) &&
+          (!('institution' in request.resource.data) || (request.resource.data.institution is string && request.resource.data.institution.size() <= 150))
         )
       );
 
