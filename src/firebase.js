@@ -536,4 +536,137 @@ export async function restoreOfficialPortalSnapshot(schoolSlug) {
   });
 }
 
+/* =============================================================== */
+/* 🛡️ SISTEM KEDARURATAN SIBER & LOCKDOWN GATEWAY (SIAGA 1)          */
+/* =============================================================== */
+
+const LOCKDOWN_STORAGE_KEY = 'menwa_lockdown_state_v1';
+
+export const DEFAULT_LOCKDOWN_STATE = {
+  isLockdown: false,
+  level: 'NORMAL', // 'NORMAL' | 'SIAGA_1' | 'MAINTENANCE' | 'DEFACEMENT_CONTAINMENT'
+  headline: 'SISTEM SIAGA 1 — MODE PEMELIHARAAN & INTEGRITAS KEAMANAN SIBER RESMI',
+  message: 'Komando Resimen Mahasiswa Jayakarta Satuan UNJ sedang melakukan audit integritas sistem dan pemulihan data berkala. Seluruh akses publik dinonaktifkan sementara demi menjamin keaslian informasi resmi satuan.',
+  activatedAt: null,
+  activatedBy: null,
+  allowAdminBypass: true,
+  emergencyPhone: '+6281525823503',
+  emergencyWaUrl: 'https://wa.me/6281525823503?text=Laporan%20Kedaruratan%20Siber%20Mako%20Menwa%20UNJ',
+};
+
+export async function getLockdownState() {
+  try {
+    const snap = await getDoc(doc(firestore, 'system_security', 'lockdown_state'));
+    if (snap.exists()) {
+      return { ...DEFAULT_LOCKDOWN_STATE, ...snap.data() };
+    }
+  } catch (err) {
+    console.warn('Gagal membaca lockdown_state dari Firestore:', err);
+  }
+  try {
+    const local = localStorage.getItem(LOCKDOWN_STORAGE_KEY);
+    if (local) return { ...DEFAULT_LOCKDOWN_STATE, ...JSON.parse(local) };
+  } catch {
+    /* fallback */
+  }
+  return DEFAULT_LOCKDOWN_STATE;
+}
+
+export function subscribeToLockdownState(onUpdate) {
+  if (typeof onUpdate !== 'function') return () => {};
+  try {
+    return onSnapshot(
+      doc(firestore, 'system_security', 'lockdown_state'),
+      (snap) => {
+        if (snap.exists()) {
+          const data = { ...DEFAULT_LOCKDOWN_STATE, ...snap.data() };
+          try {
+            localStorage.setItem(LOCKDOWN_STORAGE_KEY, JSON.stringify(data));
+          } catch { /* ignore */ }
+          onUpdate(data);
+        } else {
+          onUpdate(DEFAULT_LOCKDOWN_STATE);
+        }
+      },
+      (err) => {
+        console.warn('Lockdown listener warning:', err);
+        try {
+          const local = localStorage.getItem(LOCKDOWN_STORAGE_KEY);
+          if (local) onUpdate({ ...DEFAULT_LOCKDOWN_STATE, ...JSON.parse(local) });
+        } catch { /* ignore */ }
+      }
+    );
+  } catch {
+    return () => {};
+  }
+}
+
+export async function setLockdownState(config) {
+  const payload = {
+    ...DEFAULT_LOCKDOWN_STATE,
+    ...config,
+    updatedAt: new Date().toISOString(),
+  };
+  try {
+    localStorage.setItem(LOCKDOWN_STORAGE_KEY, JSON.stringify(payload));
+  } catch { /* ignore */ }
+
+  try {
+    await setDoc(doc(firestore, 'system_security', 'lockdown_state'), payload, { merge: true });
+  } catch (err) {
+    console.warn('Gagal menyimpan lockdown_state ke Firestore:', err);
+  }
+
+  await recordSecurityIncident({
+    type: payload.isLockdown ? 'LOCKDOWN_ENGAGED' : 'LOCKDOWN_DISENGAGED',
+    level: payload.level,
+    details: `Status Siaga 1 diubah: ${payload.isLockdown ? 'AKTIF' : 'NONAKTIF'} oleh ${payload.activatedBy || 'Admin Mako'}`,
+    metadata: payload,
+  });
+
+  return payload;
+}
+
+export async function recordSecurityIncident(incident) {
+  const logId = `INC-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+  const payload = {
+    incidentId: logId,
+    type: incident.type || 'SECURITY_ALERT',
+    level: incident.level || 'SIAGA_1',
+    details: incident.details || 'Insiden keamanan siber terdeteksi',
+    actorEmail: incident.actorEmail || auth.currentUser?.email || 'system_detector',
+    timestamp: new Date().toISOString(),
+    metadata: incident.metadata || {},
+    legalProtectionClause: 'Rekaman log forensik digital ini dilindungi secara hukum berdasarkan UU ITE Pasal 30, 32, dan 46.',
+  };
+
+  try {
+    await setDoc(doc(firestore, 'incident_logs', logId), payload);
+  } catch (err) {
+    console.warn('Gagal mencatat incident_log ke Firestore:', err);
+  }
+
+  try {
+    const existing = JSON.parse(localStorage.getItem('menwa_incident_logs_v1') || '[]');
+    existing.unshift(payload);
+    localStorage.setItem('menwa_incident_logs_v1', JSON.stringify(existing.slice(0, 50)));
+  } catch { /* ignore */ }
+
+  return payload;
+}
+
+export async function getIncidentLogs() {
+  try {
+    const snap = await getDocs(query(collection(firestore, 'incident_logs'), orderBy('timestamp', 'desc'), limit(50)));
+    return snap.docs.map((d) => ({ ...d.data(), id: d.id }));
+  } catch (err) {
+    console.warn('Incident logs read warning:', err);
+    try {
+      return JSON.parse(localStorage.getItem('menwa_incident_logs_v1') || '[]');
+    } catch {
+      return [];
+    }
+  }
+}
+
 export default app;

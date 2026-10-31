@@ -281,8 +281,19 @@ service cloud.firestore {
     }
 
     // ---------------------------------------------------------------
-    // 9. Audit Logs & System Notifications (Immutable)
+    // 9. Audit Logs, Incident Logs & System Lockdown (Immutable Forensic Trail)
     // ---------------------------------------------------------------
+    match /system_security/{secId} {
+      allow read: if true;
+      allow write: if isStaffAdmin();
+    }
+
+    match /incident_logs/{logId} {
+      allow read: if isStaffAdmin();
+      allow create: if true; // Logger darurat sistem
+      allow update, delete: if false; // Immutable forensic evidence
+    }
+
     match /audit_logs/{logId} {
       allow read: if isSuperAdmin();
       allow create: if isSignedIn() || isStaffAdmin();

@@ -5,6 +5,9 @@
     "edition": "ENTERPRISE",
     "dataAccessMode": "FIRESTORE_NATIVE"
   },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "hosting": {
     "public": "dist",
     "ignore": [
