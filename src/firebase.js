@@ -556,6 +556,14 @@ export const DEFAULT_LOCKDOWN_STATE = {
 
 export async function getLockdownState() {
   try {
+    const snap = await getDoc(doc(firestore, 'settings', 'lockdown_state'));
+    if (snap.exists()) {
+      return { ...DEFAULT_LOCKDOWN_STATE, ...snap.data() };
+    }
+  } catch {
+    /* fallback to system_security */
+  }
+  try {
     const snap = await getDoc(doc(firestore, 'system_security', 'lockdown_state'));
     if (snap.exists()) {
       return { ...DEFAULT_LOCKDOWN_STATE, ...snap.data() };
@@ -575,8 +583,9 @@ export async function getLockdownState() {
 export function subscribeToLockdownState(onUpdate) {
   if (typeof onUpdate !== 'function') return () => {};
   try {
+    // Utamakan koleksi 'settings' yang dapat diakses publik oleh seluruh klien/browser
     return onSnapshot(
-      doc(firestore, 'system_security', 'lockdown_state'),
+      doc(firestore, 'settings', 'lockdown_state'),
       (snap) => {
         if (snap.exists()) {
           const data = { ...DEFAULT_LOCKDOWN_STATE, ...snap.data() };
@@ -589,7 +598,7 @@ export function subscribeToLockdownState(onUpdate) {
         }
       },
       (err) => {
-        console.warn('Lockdown listener warning:', err);
+        console.warn('Lockdown listener settings warning:', err);
         try {
           const local = localStorage.getItem(LOCKDOWN_STORAGE_KEY);
           if (local) onUpdate({ ...DEFAULT_LOCKDOWN_STATE, ...JSON.parse(local) });
@@ -612,9 +621,15 @@ export async function setLockdownState(config) {
   } catch { /* ignore */ }
 
   try {
+    await setDoc(doc(firestore, 'settings', 'lockdown_state'), payload, { merge: true });
+  } catch (err) {
+    console.warn('Gagal menyimpan lockdown_state ke settings:', err);
+  }
+
+  try {
     await setDoc(doc(firestore, 'system_security', 'lockdown_state'), payload, { merge: true });
   } catch (err) {
-    console.warn('Gagal menyimpan lockdown_state ke Firestore:', err);
+    console.warn('Gagal menyimpan lockdown_state ke system_security:', err);
   }
 
   await recordSecurityIncident({
