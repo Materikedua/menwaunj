@@ -49,6 +49,7 @@ import {
   subscribeToOfficialPortal,
   saveOfficialPortalSnapshot,
   restoreOfficialPortalSnapshot,
+  compressImageFile,
 } from '../firebase.js';
 import {
   GERANAT_SCORING_GROUPS,
@@ -105,7 +106,17 @@ export function validateImageFile(file) {
   return { valid: true, error: '' };
 }
 
-function readFileAsDataUrl(file) {
+async function readFileAsDataUrl(file) {
+  if (file && file.type && file.type.startsWith('image/')) {
+    try {
+      const compressed = await compressImageFile(file, { maxWidth: 800, maxHeight: 800, quality: 0.82 });
+      if (compressed && compressed.dataUrl) {
+        return compressed.dataUrl;
+      }
+    } catch {
+      /* Fallback ke reader biasa */
+    }
+  }
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (ev) => resolve(String(ev.target?.result || ''));
