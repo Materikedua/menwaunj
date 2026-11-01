@@ -127,12 +127,12 @@ export function PageWayfinder({ path }) {
 
 export function FAQSection({ id, type='kc' }) {
   const data = type === 'kc' ? [
-    ['Kapan Ksatria Cendekia VIII dilaksanakan?', 'Kegiatan dijadwalkan pada 05–08 November 2026 dengan beberapa lokasi, termasuk Kampus A UNJ, GOR Otista, Batalyon Intai Tempur Cikarang, dan Ragunan.'],
+    ['Kapan Ksatria Cendekia VIII dilaksanakan?', 'Pelaksanaan kegiatan Ksatria Cendekia VIII saat ini resmi diundur. Tanggal pasti pelaksanaan akan diumumkan kembali oleh panitia melalui portal resmi dan Instagram @kc_menwaunj.'],
     ['Siapa yang dapat mendaftar sebagai peserta?', 'Peserta merupakan mahasiswa aktif dan anggota aktif Resimen Mahasiswa Indonesia. Setiap tim berisi dua peserta, dengan satu official opsional.'],
     ['Berapa biaya pendaftaran tim?', 'Biaya pendaftaran sebesar Rp2.000.000 per tim. Cek syarat administrasi dan tata cara pembayaran di informasi kegiatan resmi.'],
     ['Apakah jersey peserta berbayar?', 'Jersey peserta bertuliskan ATHLETE termasuk benefit pendaftaran. Pendataan jersey peserta menggunakan formulir khusus yang berbeda dari pre-order official.'],
     ['Berapa harga jersey official?', 'Jersey official ditawarkan melalui pre-order terpisah seharga Rp150.000.'],
-    ['Kapan batas pengumpulan karya?', 'Dalam juknis yang dilampirkan, batas pengumpulan esai dan video kreatif adalah 30 Oktober 2026 pukul 22.00 WIB.'],
+    ['Kapan batas pengumpulan karya?', 'Seiring dengan penundaan jadwal kegiatan, batas pengumpulan esai dan video kreatif disesuaikan dan akan diinformasikan kembali bersamaan dengan penetapan tanggal baru.'],
   ] : [
     ['Kapan Youth Spark National Seminar dilaksanakan?', 'Acara dijadwalkan pada 24 Oktober 2026 di Aula Latief Hendraningrat, Universitas Negeri Jakarta.'],
     ['Apa tema utamanya?', 'Seminar bertema “Empowering Youth, Elevating UMKM” dengan highlight “Pembinaan Aktivitas Pemuda”.'],

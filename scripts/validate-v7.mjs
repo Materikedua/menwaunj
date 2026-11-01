@@ -14,7 +14,7 @@ assert.match(app, /Flame, ArrowRight, Search as SearchIcon/, 'Mako membutuhkan A
 assert.match(app, /const MakoTab\s*=\s*\(\)\s*=>/, 'Komponen MakoTab harus tersedia');
 assert.match(app, /<Link to="\/administrasi"/, 'Tautan administrasi di halaman Mako wajib ada');
 assert.match(router, /mako:\s*'\/mako'/, 'Alamat /mako adalah route tab yang benar');
-assert.match(brand, /KOMANDO RESIMEN MAHASISWA<\/span><span>JAYAKARTA/, 'Headline beranda wajib dua baris khusus');
+assert.match(brand, /KOMANDO RESIMEN MAHASISWA<\/span>\s*<span>JAYAKARTA/, 'Headline beranda wajib dua baris khusus');
 assert.match(brand, /brand-legacy-motto/, 'Motto memakai kelas responsif khusus');
 assert.match(css, /\.brand-legacy-motto\s*\{[^}]*white-space:\s*nowrap/s, 'Motto satu baris pada desktop');
 assert.match(css, /\.brand-legacy-inner \.brand-legacy-scroll\s*\{[^}]*position:\s*static/s, 'Cue Sorotan tidak boleh absolute di atas tombol');

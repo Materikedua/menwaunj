@@ -1,9 +1,24 @@
 @import "tailwindcss";
 
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 2px solid #006569;
+  outline-offset: 2px;
+}
+.dark :focus-visible {
+  outline-color: #ffdd00;
 }
 body {
   margin: 0;
@@ -28,6 +43,14 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
 @media (max-width: 640px) {
   input, select, textarea {
     font-size: 16px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 img { max-width: 100%; }

@@ -521,3 +521,158 @@
     transition: none !important;
   }
 }
+
+/* ==========================================================================
+   Dark Mode & High-Contrast Visual Refinements (UI/UX Pro Max & Emil Standards)
+   ========================================================================== */
+.dark .portal-search-overlay {
+  background: rgba(2, 8, 12, 0.88);
+}
+
+.dark .portal-search-dialog {
+  background: linear-gradient(155deg, #092d32 0%, #031518 100%);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+}
+
+.dark .portal-search-input-row {
+  background: #062327;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  color: #ffdd00;
+}
+
+.dark .portal-search-input-row input {
+  color: #ffffff;
+}
+
+.dark .portal-search-input-row button {
+  background: #092d32;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  box-shadow: none;
+}
+
+.dark .portal-search-input-row button:hover {
+  background: #006569;
+  color: #ffdd00;
+}
+
+.dark .portal-search-head {
+  color: #94a3b8;
+}
+
+.dark .portal-search-item {
+  color: #e2e8f0;
+}
+
+.dark .portal-search-item.is-active,
+.dark .portal-search-item:hover {
+  background: rgba(0, 101, 105, 0.35);
+  border-color: rgba(255, 221, 0, 0.45);
+  box-shadow: none;
+}
+
+.dark .portal-search-item-icon {
+  background: #021a1d;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #ffdd00;
+}
+
+.dark .portal-search-item-text strong {
+  color: #ffffff;
+}
+
+.dark .portal-search-item-text small {
+  color: #94a3b8;
+}
+
+.dark .portal-search-item-meta {
+  color: #2dd4bf;
+}
+
+.dark .portal-search-empty strong {
+  color: #ffffff;
+}
+
+.dark .portal-search-empty p {
+  color: #94a3b8;
+}
+
+.dark .portal-search-bottom {
+  background: rgba(3, 21, 24, 0.85);
+  border-top-color: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+}
+
+.dark .portal-search-bottom button {
+  color: #ffdd00;
+}
+
+/* Dark Mode for Wayfinder */
+.dark .portal-wayfinder {
+  background: rgba(3, 19, 23, 0.94);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.dark .portal-wayfinder-title {
+  color: #f1f5f9;
+}
+
+.dark .portal-wayfinder-title span {
+  background: #ffdd00;
+}
+
+.dark .portal-wayfinder-links a {
+  background: #062327;
+  color: #94a3b8;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .portal-wayfinder-links a:hover {
+  color: #ffdd00;
+  border-color: rgba(255, 221, 0, 0.3);
+}
+
+.dark .portal-wayfinder-links a.is-active {
+  background: #006569;
+  color: #ffdd00;
+  border-color: #ffdd00;
+}
+
+/* Dark Mode for FAQ */
+.dark .portal-faq {
+  background: #02080c;
+}
+
+.dark .portal-faq-heading h2 {
+  color: #ffffff;
+}
+
+.dark .portal-faq-heading p {
+  color: #94a3b8;
+}
+
+.dark .portal-faq-item {
+  background: #062327;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .portal-faq-item summary {
+  color: #ffffff;
+}
+
+.dark .portal-faq-item summary:hover {
+  color: #ffdd00;
+}
+
+.dark .portal-faq-number {
+  background: #021a1d;
+  color: #ffdd00;
+  border-color: rgba(255, 221, 0, 0.25);
+}
+
+.dark .portal-faq-item p {
+  color: #cbd5e1;
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
