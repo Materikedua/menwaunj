@@ -441,7 +441,7 @@ export function RegistrationForm({
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Masukkan nama lengkap Anda..."
-                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-200 hover:border-slate-300 focus:border-[#006569] rounded-2xl text-slate-900 font-semibold text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs placeholder:text-slate-400 placeholder:font-normal"
+                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-300 hover:border-slate-400 focus:border-[#006569] rounded-2xl text-black font-bold text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs placeholder:text-slate-400 placeholder:font-normal"
               />
             </div>
           </div>
@@ -458,7 +458,7 @@ export function RegistrationForm({
                 value={institution}
                 onChange={(e) => setInstitution(e.target.value)}
                 placeholder="Contoh: Universitas Negeri Jakarta / SMAN 1"
-                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-200 hover:border-slate-300 focus:border-[#006569] rounded-2xl text-slate-900 font-semibold text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs placeholder:text-slate-400 placeholder:font-normal"
+                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-300 hover:border-slate-400 focus:border-[#006569] rounded-2xl text-black font-bold text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs placeholder:text-slate-400 placeholder:font-normal"
               />
             </div>
           </div>
@@ -475,7 +475,7 @@ export function RegistrationForm({
               <select
                 value={occupation}
                 onChange={(e) => setOccupation(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-200 hover:border-slate-300 focus:border-[#006569] rounded-2xl text-slate-900 font-semibold text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs cursor-pointer"
+                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-300 hover:border-slate-400 focus:border-[#006569] rounded-2xl text-black font-bold text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs cursor-pointer"
               >
                 <option value="Mahasiswa">Mahasiswa</option>
                 <option value="Pelajar">Pelajar (SMA/SMK/MA)</option>
@@ -497,7 +497,7 @@ export function RegistrationForm({
                 required
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-200 hover:border-slate-300 focus:border-[#006569] rounded-2xl text-slate-900 font-semibold text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs"
+                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-300 hover:border-slate-400 focus:border-[#006569] rounded-2xl text-black font-bold text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs"
               />
             </div>
           </div>
@@ -517,7 +517,7 @@ export function RegistrationForm({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="08xxxxxxxxxx"
-                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-200 hover:border-slate-300 focus:border-[#006569] rounded-2xl text-slate-900 font-semibold text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs placeholder:text-slate-400 placeholder:font-normal"
+                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-300 hover:border-slate-400 focus:border-[#006569] rounded-2xl text-black font-bold text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs placeholder:text-slate-400 placeholder:font-normal"
               />
             </div>
           </div>
@@ -533,7 +533,7 @@ export function RegistrationForm({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@email.com"
-                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-200 hover:border-slate-300 focus:border-[#006569] rounded-2xl text-slate-900 font-semibold text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs placeholder:text-slate-400 placeholder:font-normal"
+                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-300 hover:border-slate-400 focus:border-[#006569] rounded-2xl text-black font-bold text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs placeholder:text-slate-400 placeholder:font-normal"
               />
             </div>
           </div>
@@ -549,7 +549,7 @@ export function RegistrationForm({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Tuliskan keterangan detail, tujuan pendaftaran, atau waktu kegiatan yang diajukan..."
-            className="w-full px-4 py-3 bg-white border-2 border-slate-200 hover:border-slate-300 focus:border-[#006569] rounded-2xl text-slate-900 font-medium text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs placeholder:text-slate-400 resize-none"
+            className="w-full px-4 py-3 bg-white border-2 border-slate-300 hover:border-slate-400 focus:border-[#006569] rounded-2xl text-black font-bold text-sm focus:outline-none focus:ring-4 focus:ring-teal-500/10 transition shadow-xs placeholder:text-slate-400 placeholder:font-normal resize-none"
           />
         </div>
 

@@ -144,7 +144,51 @@ import { generateBukuPasukanHtml } from './OfficialBukuPasukanGenerator.jsx';
       iframe.contentWindow?.print();
     }, 350);
   };
-const handleAdminDeletePortal = async (slug, name) => { if (!confirm(`Hapus seluruh data subdomain dan berkas kontingen "${name}"?`)) return; await deleteOfficialPortal(slug); await loadAdminOfficialPortals(); setPortalActionMsg(`Subdomain /official/${slug} telah dihapus.`); setTimeout(() => setPortalActionMsg(''), 3000); }; const handleFirebaseGoogleSignIn = async () => { setAuthError(''); setAuthLoading(true); try { const loggedUser = await signInWithGoogle(); if (loggedUser?.email) { loginWithGoogle(loggedUser.email, userRole?.toUpperCase() || 'STAFF_ADMIN', loggedUser.displayName || 'Perwira Komando'); } } catch (err) { setAuthError(err.message || 'Gagal melakukan autentikasi Google Firebase.'); } finally { setAuthLoading(false); } }; const handleFirebaseEmailSignIn = async (e) => { e.preventDefault(); setAuthError(''); setAuthLoading(true); try { const loggedUser = await signInWithEmail(loginEmail.trim(), loginPassword); if (loggedUser?.email) { loginWithGoogle(loggedUser.email, userRole?.toUpperCase() || 'STAFF_ADMIN', loggedUser.displayName || 'Perwira Komando'); } } catch (err) { setAuthError('Email atau kata sandi tidak valid atau tidak memiliki hak akses RBAC.'); } finally { setAuthLoading(false); } }; const handlePromptSubmit = (e) => { e.preventDefault(); if (!promptText.trim()) return; proposeNaturalLanguage(promptText); setPromptText(''); }; /* Auto-Convert */ const handleNewImageUpload = async (e, replaceContentId = null, targetTabOverride = null) => { const file = e.target.files?.[0]; if (!file) return; setIsUploadingSvg(true); const existingItem = replaceContentId ? contentRegistry.find((i) => i.contentId === replaceContentId) : null; const targetTab = targetTabOverride || existingItem?.tabId || uploadTabId; const targetSection = existingItem?.sectionId || 'custom_svg_asset'; const targetTitle = uploadTitle.trim() || existingItem?.title || file.name.replace(/\.[^/.]+$/, ''); const targetCaption = uploadCaption.trim() || existingItem?.caption || `Dokumentasi resmi ${file.name}`; const reader = new FileReader(); reader.onload = async (ev) => { try { await uploadAndRegisterImage({ tabId: targetTab, sectionId: targetSection, title: targetTitle, caption: targetCaption, fileDataUrl: ev.target.result, fileName: file.name, replaceContentId, }); setUploadTitle(''); setUploadCaption(''); } finally { setIsUploadingSvg(false); if (e.target) e.target.value = ''; } }; reader.readAsDataURL(file); }; const [berandaSectionFilter, setBerandaSectionFilter] = useState('all'); const activeRegistryItems = useMemo(() => { let list = contentRegistry.filter((item) => item.isActive !== false); if (selectedTrackerTab !== 'all') { list = list.filter((item) => item.tabId === selectedTrackerTab); } if (selectedTrackerTab === 'beranda' && berandaSectionFilter !== 'all') { list = list.filter((item) => item.sectionId === berandaSectionFilter); } if (selectedTrackerTab === 'struktur' && strukturSubFilter !== 'all') { list = list.filter((item) => { const unit = (item.unitLabel || '').toLowerCase(); if (strukturSubFilter === 'pimpinan') return unit.includes('pimpinan'); if (strukturSubFilter === 'staf') return unit.includes('staf'); if (strukturSubFilter === 'pokpas') return unit.includes('kelompok') || unit.includes('anggota'); return true; }); } if (selectedTrackerTab === 'youth-spark' && youthSparkSubFilter !== 'all') { list = list.filter((item) => item.sectionId === youthSparkSubFilter); } if (onlyTempVisuals) { list = list.filter((item) => item.isTemporaryVisual); } if (trackerSearchQuery.trim()) { const q = trackerSearchQuery.trim().toLowerCase(); list = list.filter( (item) => (item.title || '').toLowerCase().includes(q) || (item.caption || '').toLowerCase().includes(q) || (item.contentId || '').toLowerCase().includes(q) || (item.memberName || '').toLowerCase().includes(q) || (item.roleLabel || '').toLowerCase().includes(q) ); } return list; }, [ contentRegistry, selectedTrackerTab, berandaSectionFilter, strukturSubFilter, youthSparkSubFilter, onlyTempVisuals, trackerSearchQuery, ]); 
+const handleAdminDeletePortal = async (slug, name) => { if (!confirm(`Hapus seluruh data subdomain dan berkas kontingen "${name}"?`)) return; await deleteOfficialPortal(slug); await loadAdminOfficialPortals(); setPortalActionMsg(`Subdomain /official/${slug} telah dihapus.`); setTimeout(() => setPortalActionMsg(''), 3000); }; const handleFirebaseGoogleSignIn = async () => { setAuthError(''); setAuthLoading(true); try { const loggedUser = await signInWithGoogle(); if (loggedUser?.email) { loginWithGoogle(loggedUser.email, userRole?.toUpperCase() || 'STAFF_ADMIN', loggedUser.displayName || 'Perwira Komando'); } } catch (err) { setAuthError(err.message || 'Gagal melakukan autentikasi Google Firebase.'); } finally { setAuthLoading(false); } }; const handleFirebaseEmailSignIn = async (e) => { e.preventDefault(); setAuthError(''); setAuthLoading(true); try { const loggedUser = await signInWithEmail(loginEmail.trim(), loginPassword); if (loggedUser?.email) { loginWithGoogle(loggedUser.email, userRole?.toUpperCase() || 'STAFF_ADMIN', loggedUser.displayName || 'Perwira Komando'); } } catch (err) { setAuthError('Email atau kata sandi tidak valid atau tidak memiliki hak akses RBAC.'); } finally { setAuthLoading(false); } }; const handlePromptSubmit = (e) => { e.preventDefault(); if (!promptText.trim()) return; proposeNaturalLanguage(promptText); setPromptText(''); }; /* Auto-Convert */   const handleNewImageUpload = async (e, replaceContentId = null, targetTabOverride = null) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingSvg(true);
+    const normReplaceId = replaceContentId ? replaceContentId.toUpperCase().replace(/_/g, '-') : null;
+    const existingItem = normReplaceId
+      ? contentRegistry.find(
+          (i) => i.contentId === replaceContentId || (i.contentId || '').toUpperCase().replace(/_/g, '-') === normReplaceId
+        )
+      : null;
+    const targetTab = targetTabOverride || existingItem?.tabId || uploadTabId;
+    const targetSection = existingItem?.sectionId || 'custom_svg_asset';
+    let targetTitle = uploadTitle.trim();
+    if (!targetTitle) {
+      if (existingItem?.title && !/^(DSC|IMG|PHOTO|FOTO)[\d_-]+/i.test(existingItem.title)) {
+        targetTitle = existingItem.title;
+      } else {
+        targetTitle = file.name.replace(/\.[^/.]+$/, '');
+      }
+    }
+    const targetCaption = uploadCaption.trim() || existingItem?.caption || `Dokumentasi resmi ${file.name}`;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        await uploadAndRegisterImage({
+          tabId: targetTab,
+          sectionId: targetSection,
+          title: targetTitle,
+          caption: targetCaption,
+          fileDataUrl: ev.target.result,
+          fileName: file.name,
+          replaceContentId: replaceContentId || existingItem?.contentId,
+        });
+        setUploadTitle('');
+        setUploadCaption('');
+        alert(`Foto "${targetTitle}" berhasil diunggah dan tersimpan di database Mako!`);
+      } catch (uploadErr) {
+        alert(`Pemberitahuan: Gambar berhasil disimpan lokal (${uploadErr.message || 'Offline mode'}).`);
+      } finally {
+        setIsUploadingSvg(false);
+        if (e.target) e.target.value = '';
+      }
+    };
+    reader.readAsDataURL(file);
+  }; const [berandaSectionFilter, setBerandaSectionFilter] = useState('all'); const activeRegistryItems = useMemo(() => { let list = contentRegistry.filter((item) => item.isActive !== false); if (selectedTrackerTab !== 'all') { list = list.filter((item) => item.tabId === selectedTrackerTab); } if (selectedTrackerTab === 'beranda' && berandaSectionFilter !== 'all') { list = list.filter((item) => item.sectionId === berandaSectionFilter); } if (selectedTrackerTab === 'struktur' && strukturSubFilter !== 'all') { list = list.filter((item) => { const unit = (item.unitLabel || '').toLowerCase(); if (strukturSubFilter === 'pimpinan') return unit.includes('pimpinan'); if (strukturSubFilter === 'staf') return unit.includes('staf'); if (strukturSubFilter === 'pokpas') return unit.includes('kelompok') || unit.includes('anggota'); return true; }); } if (selectedTrackerTab === 'youth-spark' && youthSparkSubFilter !== 'all') { list = list.filter((item) => item.sectionId === youthSparkSubFilter); } if (onlyTempVisuals) { list = list.filter((item) => item.isTemporaryVisual); } if (trackerSearchQuery.trim()) { const q = trackerSearchQuery.trim().toLowerCase(); list = list.filter( (item) => (item.title || '').toLowerCase().includes(q) || (item.caption || '').toLowerCase().includes(q) || (item.contentId || '').toLowerCase().includes(q) || (item.memberName || '').toLowerCase().includes(q) || (item.roleLabel || '').toLowerCase().includes(q) ); } return list; }, [ contentRegistry, selectedTrackerTab, berandaSectionFilter, strukturSubFilter, youthSparkSubFilter, onlyTempVisuals, trackerSearchQuery, ]); 
   const galleryGroups = useMemo(() => {
     const groupsMap = new Map();
     activeRegistryItems.forEach((item) => {

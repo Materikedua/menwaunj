@@ -10,7 +10,17 @@ import React, { useState, useEffect, useMemo } from 'react'; import { FileText, 
     (jabatanLower.includes('sekretariat') || jabatanLower.includes('kesekretariatan') || jabatanLower.includes('personalia') || jabatanLower.includes('pers') || jabatanLower.includes('set'))
   );
   const hasFullAdminAccess = isSuperAdmin || authIsAdmin || isDansatOrWadan || isStafAdminu || userRole === 'superadmin' || isKesekretariatanOrPersonalia;
- const [submissions, setSubmissions] = useState([]); const [loading, setLoading] = useState(true); const [searchQuery, setSearchQuery] = useState(''); const [statusFilter, setStatusFilter] = useState('all'); const [categoryFilter, setCategoryFilter] = useState('all'); const [updatingId, setUpdatingId] = useState(null); const [successBanner, setSuccessBanner] = useState(''); /* State Modal Panduan Google Sheets */ const [sheetsModalOpen, setSheetsModalOpen] = useState(false); const [exportLoading, setExportLoading] = useState(false); const loadSubmissions = async () => { setLoading(true); try { const data = await getAllSubmissionsForAdmin(); setSubmissions(data || []); } catch (err) { console.warn('Gagal memuat berkas pendaftaran:', err); } finally { setLoading(false); } }; useEffect(() => { loadSubmissions(); }, []); /* Filter & Pencarian */ const filteredList = useMemo(() => {
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [updatingId, setUpdatingId] = useState(null);
+  const [successBanner, setSuccessBanner] = useState('');
+  const [selectedDetailItem, setSelectedDetailItem] = useState(null);
+  /* State Modal Panduan Google Sheets */
+  const [sheetsModalOpen, setSheetsModalOpen] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false); const loadSubmissions = async () => { setLoading(true); try { const data = await getAllSubmissionsForAdmin(); setSubmissions(data || []); } catch (err) { console.warn('Gagal memuat berkas pendaftaran:', err); } finally { setLoading(false); } }; useEffect(() => { loadSubmissions(); }, []); /* Filter & Pencarian */ const filteredList = useMemo(() => {
     let list = [...submissions];
     // Jika bukan Admin Mako / Dansat, hanya tampilkan surat/berkas yang diajukan oleh akun yang sedang login
     if (!hasFullAdminAccess) {
@@ -50,4 +60,254 @@ import React, { useState, useEffect, useMemo } from 'react'; import { FileText, 
                 </div>
               ) : (
                 'Tidak ada berkas yang sesuai dengan kriteria pencarian ini.'
-              )} </div> ) : ( <div className="overflow-x-auto"> <table className="w-full text-left text-xs"> <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-black uppercase tracking-wider text-[10px]"> <tr> <th className="py-3.5 px-4">ID & Tanggal</th> <th className="py-3.5 px-4">Pemohon</th> <th className="py-3.5 px-4">Layanan</th> <th className="py-3.5 px-4">Kontak</th> <th className="py-3.5 px-4">Status</th> <th className="py-3.5 px-4 text-right">Tindakan</th> </tr> </thead> <tbody className="divide-y divide-slate-100 text-slate-700"> {filteredList.map((item) => { const isUpdating = updatingId === (item.submissionId || item.id); const status = (item.status || 'menunggu').toLowerCase(); return ( <tr key={item.submissionId || item.id} className="hover:bg-slate-50/80 transition"> <td className="py-4 px-4 whitespace-nowrap"> <div className="font-mono font-bold text-slate-900"> #{item.submissionId || item.id} </div> <div className="text-[10px] text-slate-400 mt-0.5"> {item.createdAt ? new Date(item.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'} </div> </td> <td className="py-4 px-4"> <div className="font-black text-slate-900"> {item.fullName || 'Pemohon'} </div> <div className="text-[11px] text-slate-500"> {item.institution || item.occupation || '-'} </div> </td> <td className="py-4 px-4"> <span className="font-semibold text-slate-800"> {item.serviceType || 'Administrasi Umum'} </span> {item.documentPdfName && ( <div className="text-[10px] text-teal-700 font-mono mt-0.5"> 📄 {item.documentPdfName} </div> )} </td> <td className="py-4 px-4 whitespace-nowrap text-[11px]"> <div>{item.email || '-'}</div> <div className="text-slate-400 font-mono">{item.phone || '-'}</div> </td> <td className="py-4 px-4 whitespace-nowrap"> <select value={status === 'disetujui' ? 'disetujui' : status === 'belum disetujui' || status === 'ditolak' ? 'belum disetujui' : 'pengajuan'} onChange={(e) => handleStatusChange(item.submissionId || item.id, e.target.value)} disabled={isUpdating} className={`px-2.5 py-1 rounded-xl text-[11px] font-black uppercase tracking-wider border cursor-pointer outline-none ${ status === 'disetujui' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : status === 'belum disetujui' || status === 'ditolak' ? 'bg-rose-50 text-rose-800 border-rose-300' : 'bg-amber-50 text-amber-800 border-amber-300' }`} > <option value="pengajuan">Pengajuan</option> <option value="belum disetujui">Belum Disetujui</option> <option value="disetujui">Disetujui</option> </select> </td> <td className="py-4 px-4 text-right whitespace-nowrap"> <div className="flex items-center justify-end gap-1.5"> {status !== 'disetujui' && ( <button type="button" disabled={isUpdating} onClick={() => handleStatusChange(item.submissionId || item.id, 'disetujui')} className="px-2.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-[#006569] font-bold rounded-lg transition text-[11px] cursor-pointer" > Setujui </button> )} {status !== 'belum disetujui' && ( <button type="button" disabled={isUpdating} onClick={() => handleStatusChange(item.submissionId || item.id, 'ditolak')} className="px-2 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-lg transition text-[11px] cursor-pointer" > Tolak </button> )} </div> </td> </tr> ); })} </tbody> </table> </div> )} </div> {/* MODAL PANDUAN INTEGRASI GOOGLE SHEETS & BERBAGI AKSES KONFIDENSIAL */} {sheetsModalOpen && ( <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in font-sans"> <div className="relative w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900 my-8 border border-slate-200"> <div className="flex items-center justify-between pb-4 mb-5 border-b border-slate-100"> <div className="flex items-center gap-3"> <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-[#006569] flex items-center justify-center"> <FileSpreadsheet size={22} /> </div> <div> <h3 className="text-lg font-black text-slate-900"> Panduan Ekspor Google Sheets & Akses Konfidensial </h3> <p className="text-xs text-slate-500"> Cara membuat spreadsheet transparansi view-only untuk donatur, juri, & pimpinan. </p> </div> </div> <button type="button" onClick={() => setSheetsModalOpen(false)} className="p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer" > <X size={20} /> </button> </div> <div className="space-y-4 text-xs text-slate-700 leading-relaxed"> <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-1"> <span className="text-[10px] font-black uppercase tracking-wider text-[#006569]"> Langkah Cepat 3 Menit: </span> <p className="text-xs font-semibold text-slate-800"> Data yang diekspor berformat <code>.CSV</code> dengan pengkodean <strong>UTF-8 BOM</strong> sehingga saat dibuka di Microsoft Excel atau Google Sheets, seluruh karakter, angka nominal, dan simbol otomatis rapi tanpa huruf rusak. </p> </div> <div className="space-y-3 pt-2"> <div className="flex items-start gap-3"> <span className="w-6 h-6 rounded-full bg-[#006569] text-[#FFDD00] font-black flex items-center justify-center text-xs shrink-0 mt-0.5"> 1 </span> <div> <h5 className="font-bold text-slate-900">Unduh Berkas CSV yang Dibutuhkan</h5> <p className="text-slate-600 mt-0.5"> Klik tombol <strong>Ekspor Charity Vote (.CSV)</strong>, <strong>Ekspor Tim (.CSV)</strong>, atau <strong>Ekspor Berkas (.CSV)</strong> di panel dashboard atas. </p> </div> </div> <div className="flex items-start gap-3"> <span className="w-6 h-6 rounded-full bg-[#4285F4] text-white font-black flex items-center justify-center text-xs shrink-0 mt-0.5"> 2 </span> <div> <h5 className="font-bold text-slate-900">Buka Lembar Kerja Google Sheets Baru</h5> <p className="text-slate-600 mt-0.5"> Buka Google Sheets di tab baru (Anda bisa klik tombol pintas di bawah). </p> </div> </div> <div className="flex items-start gap-3"> <span className="w-6 h-6 rounded-full bg-[#FBBC05] text-slate-950 font-black flex items-center justify-center text-xs shrink-0 mt-0.5"> 3 </span> <div> <h5 className="font-bold text-slate-900">Impor File CSV ke Google Sheets</h5> <p className="text-slate-600 mt-0.5"> Di Google Sheets, klik menu <strong>File → Import (Impor) → Upload (Upload)</strong> lalu seret file <code>.CSV</code> yang baru diunduh. Pilih <em>"Replace current sheet"</em> dan klik <em>"Import data"</em>. </p> </div> </div> <div className="flex items-start gap-3"> <span className="w-6 h-6 rounded-full bg-[#EA4335] text-white font-black flex items-center justify-center text-xs shrink-0 mt-0.5"> 4 </span> <div> <h5 className="font-bold text-slate-900">Kunci Akses Menjadi Konfidensial (Lihat Saja / View-Only)</h5> <p className="text-slate-600 mt-0.5"> Klik tombol hijau <strong>Share (Bagikan)</strong> di pojok kanan atas Google Sheets. Di bagian <em>"General access"</em>, pilih <strong>"Anyone with the link"</strong> dan pastikan perannya disetel ke <strong>"Viewer" (Pelihat / Akses Lihat Saja)</strong>. </p> <p className="text-[11px] text-[#006569] font-bold mt-1"> 🔒 Dengan mode Viewer, pihak luar atau audiens hanya dapat melihat transparansi angka suara & donasi secara resmi, tanpa bisa mengubah data apa pun! </p> </div> </div> </div> <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3"> <a href="https://sheets.new" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition" > <ExternalLink size={14} /> <span>Buka Google Sheets Baru (sheets.new)</span> </a> <button type="button" onClick={() => setSheetsModalOpen(false)} className="w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs uppercase tracking-wider transition cursor-pointer" > Tutup Panduan </button> </div> </div> </div> </div> )} </div> ); } export default AdminSubmissionsDashboard;
+              )} </div> ) : ( <div className="overflow-x-auto"> <table className="w-full text-left text-xs"> <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-black uppercase tracking-wider text-[10px]"> <tr> <th className="py-3.5 px-4">ID & Tanggal</th> <th className="py-3.5 px-4">Pemohon</th> <th className="py-3.5 px-4">Layanan</th> <th className="py-3.5 px-4">Kontak</th> <th className="py-3.5 px-4">Status</th> <th className="py-3.5 px-4 text-right">Tindakan</th> </tr> </thead> <tbody className="divide-y divide-slate-100 text-slate-700"> {filteredList.map((item) => { const isUpdating = updatingId === (item.submissionId || item.id); const status = (item.status || 'menunggu').toLowerCase(); return ( <tr key={item.submissionId || item.id} className="hover:bg-slate-50/80 transition"> <td className="py-4 px-4 whitespace-nowrap"> <div className="font-mono font-bold text-slate-900"> #{item.submissionId || item.id} </div> <div className="text-[10px] text-slate-400 mt-0.5"> {item.createdAt ? new Date(item.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'} </div> </td> <td className="py-4 px-4"> <div className="font-black text-slate-900"> {item.fullName || 'Pemohon'} </div> <div className="text-[11px] text-slate-500"> {item.institution || item.occupation || '-'} </div> </td> <td className="py-4 px-4"> <span className="font-semibold text-slate-800"> {item.serviceType || 'Administrasi Umum'} </span>                       {item.documentPdfName && (
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          <span className="text-[10px] text-teal-700 font-mono">
+                            📄 {item.documentPdfName}
+                          </span>
+                          {(item.documentPdfUrl || item.documentPdfBase64) && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const pdfTarget = item.documentPdfUrl || item.documentPdfBase64;
+                                if (pdfTarget.startsWith('data:')) {
+                                  const win = window.open();
+                                  win?.document.write(
+                                    `<iframe src="${pdfTarget}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`
+                                  );
+                                } else {
+                                  window.open(pdfTarget, '_blank', 'noopener,noreferrer');
+                                }
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-[#006569] font-bold text-[10px] border border-teal-200 transition cursor-pointer"
+                              title="Buka / Unduh Berkas PDF Resmi"
+                            >
+                              <Download size={11} />
+                              <span>Buka File ({item.documentPdfSizeKb || 0} KB)</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-4 px-4 whitespace-nowrap text-[11px]">
+                      <div>{item.email || '-'}</div>
+                      <div className="text-slate-400 font-mono">{item.phone || '-'}</div>
+                    </td>
+                    <td className="py-4 px-4 whitespace-nowrap">
+                      <select
+                        value={
+                          status === 'disetujui'
+                            ? 'disetujui'
+                            : status === 'belum disetujui' || status === 'ditolak'
+                            ? 'belum disetujui'
+                            : 'pengajuan'
+                        }
+                        onChange={(e) => handleStatusChange(item.submissionId || item.id, e.target.value)}
+                        disabled={isUpdating}
+                        className={`px-2.5 py-1 rounded-xl text-[11px] font-black uppercase tracking-wider border cursor-pointer outline-none ${
+                          status === 'disetujui'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                            : status === 'belum disetujui' || status === 'ditolak'
+                            ? 'bg-rose-50 text-rose-800 border-rose-300'
+                            : 'bg-amber-50 text-amber-800 border-amber-300'
+                        }`}
+                      >
+                        <option value="pengajuan">Pengajuan</option>
+                        <option value="belum disetujui">Belum Disetujui</option>
+                        <option value="disetujui">Disetujui</option>
+                      </select>
+                    </td>
+                    <td className="py-4 px-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDetailItem(item)}
+                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg transition text-[11px] cursor-pointer"
+                          title="Lihat Rincian Formulir Lengkap"
+                        >
+                          Detail
+                        </button>
+                        {status !== 'disetujui' && (
+                          <button
+                            type="button"
+                            disabled={isUpdating}
+                            onClick={() => handleStatusChange(item.submissionId || item.id, 'disetujui')}
+                            className="px-2.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-[#006569] font-bold rounded-lg transition text-[11px] cursor-pointer"
+                          >
+                            Setujui
+                          </button>
+                        )}
+                        {status !== 'belum disetujui' && (
+                          <button
+                            type="button"
+                            disabled={isUpdating}
+                            onClick={() => handleStatusChange(item.submissionId || item.id, 'ditolak')}
+                            className="px-2 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-lg transition text-[11px] cursor-pointer"
+                          >
+                            Tolak
+                          </button>
+                        )}
+                      </div> </td> </tr> ); })} </tbody> </table> </div> )} </div>       {/* MODAL RINCIAN DETAIL PENGAJUAN FORMULIR */}
+      {selectedDetailItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in font-sans">
+          <div className="relative w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900 my-8 border border-slate-200">
+            <div className="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-teal-100 text-[#006569] flex items-center justify-center font-black">
+                  <FileText size={22} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900">
+                    Rincian Berkas Pengajuan #{selectedDetailItem.submissionId || selectedDetailItem.id}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Data lengkap pendaftaran atau permohonan dinas terdaftar di Firebase.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedDetailItem(null)}
+                className="p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Nama Lengkap</span>
+                  <span className="text-sm font-black text-slate-900">{selectedDetailItem.fullName || '-'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Asal Instansi / Kampus</span>
+                  <span className="text-sm font-bold text-slate-900">{selectedDetailItem.institution || '-'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Pekerjaan / Status</span>
+                  <span className="font-semibold text-slate-800">{selectedDetailItem.occupation || '-'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Tanggal Lahir</span>
+                  <span className="font-semibold text-slate-800">{selectedDetailItem.birthDate || '-'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">WhatsApp / Kontak</span>
+                  <a
+                    href={`https://wa.me/${String(selectedDetailItem.phone || '').replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-[#006569] underline inline-flex items-center gap-1"
+                  >
+                    <span>{selectedDetailItem.phone || '-'}</span>
+                    <ExternalLink size={12} />
+                  </a>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Email Konfirmasi</span>
+                  <a
+                    href={`mailto:${selectedDetailItem.email || ''}`}
+                    className="font-bold text-[#006569] underline inline-flex items-center gap-1"
+                  >
+                    <span>{selectedDetailItem.email || '-'}</span>
+                    <ExternalLink size={12} />
+                  </a>
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded-2xl border border-slate-200 space-y-2">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Layanan / Kegiatan</span>
+                  <span className="text-sm font-black text-[#006569]">{selectedDetailItem.serviceType || 'Administrasi Umum'}</span>
+                </div>
+                {selectedDetailItem.notes && (
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Keterangan / Motivasi</span>
+                    <p className="text-xs text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200 mt-1 whitespace-pre-wrap">
+                      {selectedDetailItem.notes}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Berkas PDF Terlampir */}
+              <div className="bg-teal-50/60 p-4 rounded-2xl border border-teal-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-teal-800 block">Lampiran Berkas PDF</span>
+                  <span className="font-bold text-slate-900 text-xs">
+                    {selectedDetailItem.documentPdfName || 'Berkas PDF Terunggah'}
+                  </span>
+                  <span className="text-[10px] text-teal-700 font-mono block">
+                    {selectedDetailItem.documentPdfSizeKb ? `${selectedDetailItem.documentPdfSizeKb} KB` : 'Tersimpan di Cloud'}
+                  </span>
+                </div>
+                {(selectedDetailItem.documentPdfUrl || selectedDetailItem.documentPdfBase64) ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const pdfTarget = selectedDetailItem.documentPdfUrl || selectedDetailItem.documentPdfBase64;
+                      if (pdfTarget.startsWith('data:')) {
+                        const win = window.open();
+                        win?.document.write(
+                          `<iframe src="${pdfTarget}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`
+                        );
+                      } else {
+                        window.open(pdfTarget, '_blank', 'noopener,noreferrer');
+                      }
+                    }}
+                    className="neu-btn-primary px-4 py-2.5 rounded-xl text-xs font-black text-[#FFDD00] shadow transition flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Download size={14} />
+                    <span>Lihat &amp; Unduh PDF</span>
+                  </button>
+                ) : (
+                  <span className="text-xs text-slate-400 italic">Tanpa dokumen terlampir</span>
+                )}
+              </div>
+
+              {/* Status & Kontrol Persetujuan */}
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-slate-600">Status:</span>
+                  <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-100 text-amber-900 font-mono">
+                    {selectedDetailItem.status || 'menunggu'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleStatusChange(selectedDetailItem.submissionId || selectedDetailItem.id, 'disetujui');
+                      setSelectedDetailItem(null);
+                    }}
+                    className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer"
+                  >
+                    Setujui Berkas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleStatusChange(selectedDetailItem.submissionId || selectedDetailItem.id, 'ditolak');
+                      setSelectedDetailItem(null);
+                    }}
+                    className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition cursor-pointer"
+                  >
+                    Tolak Berkas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDetailItem(null)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
+                  >
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PANDUAN INTEGRASI GOOGLE SHEETS & BERBAGI AKSES KONFIDENSIAL */} {sheetsModalOpen && ( <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in font-sans"> <div className="relative w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900 my-8 border border-slate-200"> <div className="flex items-center justify-between pb-4 mb-5 border-b border-slate-100"> <div className="flex items-center gap-3"> <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-[#006569] flex items-center justify-center"> <FileSpreadsheet size={22} /> </div> <div> <h3 className="text-lg font-black text-slate-900"> Panduan Ekspor Google Sheets & Akses Konfidensial </h3> <p className="text-xs text-slate-500"> Cara membuat spreadsheet transparansi view-only untuk donatur, juri, & pimpinan. </p> </div> </div> <button type="button" onClick={() => setSheetsModalOpen(false)} className="p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer" > <X size={20} /> </button> </div> <div className="space-y-4 text-xs text-slate-700 leading-relaxed"> <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-1"> <span className="text-[10px] font-black uppercase tracking-wider text-[#006569]"> Langkah Cepat 3 Menit: </span> <p className="text-xs font-semibold text-slate-800"> Data yang diekspor berformat <code>.CSV</code> dengan pengkodean <strong>UTF-8 BOM</strong> sehingga saat dibuka di Microsoft Excel atau Google Sheets, seluruh karakter, angka nominal, dan simbol otomatis rapi tanpa huruf rusak. </p> </div> <div className="space-y-3 pt-2"> <div className="flex items-start gap-3"> <span className="w-6 h-6 rounded-full bg-[#006569] text-[#FFDD00] font-black flex items-center justify-center text-xs shrink-0 mt-0.5"> 1 </span> <div> <h5 className="font-bold text-slate-900">Unduh Berkas CSV yang Dibutuhkan</h5> <p className="text-slate-600 mt-0.5"> Klik tombol <strong>Ekspor Charity Vote (.CSV)</strong>, <strong>Ekspor Tim (.CSV)</strong>, atau <strong>Ekspor Berkas (.CSV)</strong> di panel dashboard atas. </p> </div> </div> <div className="flex items-start gap-3"> <span className="w-6 h-6 rounded-full bg-[#4285F4] text-white font-black flex items-center justify-center text-xs shrink-0 mt-0.5"> 2 </span> <div> <h5 className="font-bold text-slate-900">Buka Lembar Kerja Google Sheets Baru</h5> <p className="text-slate-600 mt-0.5"> Buka Google Sheets di tab baru (Anda bisa klik tombol pintas di bawah). </p> </div> </div> <div className="flex items-start gap-3"> <span className="w-6 h-6 rounded-full bg-[#FBBC05] text-slate-950 font-black flex items-center justify-center text-xs shrink-0 mt-0.5"> 3 </span> <div> <h5 className="font-bold text-slate-900">Impor File CSV ke Google Sheets</h5> <p className="text-slate-600 mt-0.5"> Di Google Sheets, klik menu <strong>File → Import (Impor) → Upload (Upload)</strong> lalu seret file <code>.CSV</code> yang baru diunduh. Pilih <em>"Replace current sheet"</em> dan klik <em>"Import data"</em>. </p> </div> </div> <div className="flex items-start gap-3"> <span className="w-6 h-6 rounded-full bg-[#EA4335] text-white font-black flex items-center justify-center text-xs shrink-0 mt-0.5"> 4 </span> <div> <h5 className="font-bold text-slate-900">Kunci Akses Menjadi Konfidensial (Lihat Saja / View-Only)</h5> <p className="text-slate-600 mt-0.5"> Klik tombol hijau <strong>Share (Bagikan)</strong> di pojok kanan atas Google Sheets. Di bagian <em>"General access"</em>, pilih <strong>"Anyone with the link"</strong> dan pastikan perannya disetel ke <strong>"Viewer" (Pelihat / Akses Lihat Saja)</strong>. </p> <p className="text-[11px] text-[#006569] font-bold mt-1"> 🔒 Dengan mode Viewer, pihak luar atau audiens hanya dapat melihat transparansi angka suara & donasi secara resmi, tanpa bisa mengubah data apa pun! </p> </div> </div> </div> <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3"> <a href="https://sheets.new" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition" > <ExternalLink size={14} /> <span>Buka Google Sheets Baru (sheets.new)</span> </a> <button type="button" onClick={() => setSheetsModalOpen(false)} className="w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs uppercase tracking-wider transition cursor-pointer" > Tutup Panduan </button> </div> </div> </div> </div> )} </div> ); } export default AdminSubmissionsDashboard;

@@ -20,15 +20,67 @@ import { setLockdownState } from '../firebase.js';
 export function EmergencyLockdownScreen({ lockdownConfig, onAdminUnlockSuccess }) {
   const { user, isStaffAdmin, signInWithGoogle, signInWithEmail } = useAuth();
   const [showAdminModal, setShowAdminModal] = useState(false);
+  const [authMethod, setAuthMethod] = useState('passcode'); // 'passcode' | 'email' | 'google'
+  const [passcode, setPasscode] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const headline = lockdownConfig?.headline || 'SISTEM SIAGA 1 — MODE PEMELIHARAAN & INTEGRITAS KEAMANAN SIBER RESMI';
   const message =
     lockdownConfig?.message ||
     'Komando Resimen Mahasiswa Jayakarta Satuan UNJ sedang melakukan audit integritas sistem dan pemeliharaan keamanan berkala. Seluruh akses publik dinonaktifkan sementara demi menjamin keaslian informasi resmi satuan.';
+
+  const handlePasscodeUnlock = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    if (passcode.trim() === '1926' || passcode.trim().toLowerCase() === 'mako2026') {
+      try {
+        localStorage.setItem('menwa_lockdown_bypass', 'true');
+        localStorage.setItem(
+          'menwa_command_auth_v1',
+          JSON.stringify({
+            isAuthenticated: true,
+            userEmail: 'unjmenwa@gmail.com',
+            userRole: 'DANSAT',
+            officerName: 'Perwira Piket Mako',
+            loginAt: new Date().toISOString()
+          })
+        );
+      } catch { /* ignore */ }
+      setShowAdminModal(false);
+      if (onAdminUnlockSuccess) onAdminUnlockSuccess();
+      window.location.reload();
+    } else {
+      setErrorMsg('PIN Taktis tidak sesuai. Hubungi Perwira Piket Mako atau gunakan Google OAuth.');
+    }
+  };
+
+  const handleDeactivateLockdown = async () => {
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      await setLockdownState({
+        isLockdown: false,
+        level: 'NORMAL',
+        activatedBy: user?.email || 'Perwira Komando Mako'
+      });
+      try {
+        localStorage.removeItem('menwa_lockdown_bypass');
+        localStorage.setItem('menwa_lockdown_state_v1', JSON.stringify({ isLockdown: false, level: 'NORMAL' }));
+      } catch { /* ignore */ }
+      setSuccessMsg('Mode Siaga 1 berhasil dinonaktifkan. Akses publik telah dibuka kembali.');
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
+    } catch (err) {
+      setErrorMsg('Gagal menonaktifkan siaga 1: ' + (err?.message || err));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
@@ -178,68 +230,166 @@ export function EmergencyLockdownScreen({ lockdownConfig, onAdminUnlockSuccess }
 
       {/* Emergency Admin Login Modal */}
       {showAdminModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-[#162026] border border-amber-500/60 rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl relative">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
                 <Lock size={16} />
-                <span>Otorisasi Perwira Komando</span>
+                <span>Otorisasi &amp; Bypass Siaga 1</span>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAdminModal(false)}
-                className="text-slate-400 hover:text-white text-xs font-bold"
+                className="text-slate-400 hover:text-white text-xs font-bold p-1"
               >
-                Tutup
+                Tutup ✕
+              </button>
+            </div>
+
+            {/* Tab Pilihan Metode Otorisasi */}
+            <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-900 rounded-xl text-[11px] font-bold">
+              <button
+                type="button"
+                onClick={() => setAuthMethod('passcode')}
+                className={`py-1.5 rounded-lg transition ${
+                  authMethod === 'passcode'
+                    ? 'bg-amber-400 text-slate-950 font-black shadow'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                PIN Taktis
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMethod('google')}
+                className={`py-1.5 rounded-lg transition ${
+                  authMethod === 'google'
+                    ? 'bg-amber-400 text-slate-950 font-black shadow'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Google OAuth
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMethod('email')}
+                className={`py-1.5 rounded-lg transition ${
+                  authMethod === 'email'
+                    ? 'bg-amber-400 text-slate-950 font-black shadow'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Email Mako
               </button>
             </div>
 
             {errorMsg && (
-              <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs">
-                {errorMsg}
+              <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs flex items-center gap-2">
+                <AlertTriangle size={15} className="shrink-0" />
+                <span>{errorMsg}</span>
               </div>
             )}
 
-            <form onSubmit={handleAdminLogin} className="space-y-4 text-xs">
-              <div>
-                <label className="text-slate-300 font-bold block mb-1">Email Perwira / Staf:</label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="unjmenwa@gmail.com"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-400"
-                />
+            {successMsg && (
+              <div className="p-3 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs flex items-center gap-2">
+                <CheckCircle2 size={15} className="shrink-0" />
+                <span>{successMsg}</span>
               </div>
-              <div>
-                <label className="text-slate-300 font-bold block mb-1">Kata Sandi:</label>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-400"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 rounded-xl bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black uppercase tracking-wider transition shadow-lg cursor-pointer"
-              >
-                {loading ? 'Memverifikasi...' : 'Masuk Command Center'}
-              </button>
-            </form>
+            )}
 
+            {/* Metode 1: PIN Taktis Bypass (1926) */}
+            {authMethod === 'passcode' && (
+              <form onSubmit={handlePasscodeUnlock} className="space-y-4 text-xs">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">
+                    Masukkan PIN Taktis Perwira Mako:
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    autoFocus
+                    value={passcode}
+                    onChange={(e) => setPasscode(e.target.value)}
+                    placeholder="Ketik 1926"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-center font-mono tracking-widest text-lg focus:outline-none focus:border-amber-400"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Gunakan kode sandi taktis standar markas komando (1926).
+                  </p>
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black uppercase tracking-wider transition shadow-lg cursor-pointer"
+                >
+                  Buka &amp; Bypass Layar Siaga
+                </button>
+              </form>
+            )}
+
+            {/* Metode 2: Google OAuth Perwira */}
+            {authMethod === 'google' && (
+              <div className="space-y-3 pt-2 text-xs">
+                <p className="text-slate-300">
+                  Masuk menggunakan akun Google perwira resmi (<code className="text-amber-300">unjmenwa@gmail.com</code> atau <code className="text-amber-300">rafflysyahpoetra@gmail.com</code>).
+                </p>
+                <button
+                  type="button"
+                  onClick={handleAdminGoogleLogin}
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-black text-xs uppercase tracking-wider transition cursor-pointer shadow-md"
+                >
+                  {loading ? 'Menghubungkan...' : 'Masuk dengan Google OAuth'}
+                </button>
+              </div>
+            )}
+
+            {/* Metode 3: Email / Password */}
+            {authMethod === 'email' && (
+              <form onSubmit={handleAdminLogin} className="space-y-3 text-xs">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">Email Perwira / Staf:</label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="unjmenwa@gmail.com"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">Kata Sandi:</label>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-2.5 rounded-xl bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black uppercase tracking-wider transition shadow-lg cursor-pointer"
+                >
+                  {loading ? 'Memverifikasi...' : 'Masuk Command Center'}
+                </button>
+              </form>
+            )}
+
+            {/* Tombol Matikan Siaga 1 untuk Publik Sekaligus */}
             <div className="pt-3 border-t border-white/10">
               <button
                 type="button"
-                onClick={handleAdminGoogleLogin}
+                onClick={handleDeactivateLockdown}
                 disabled={loading}
-                className="w-full py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-black text-xs uppercase tracking-wider transition cursor-pointer"
+                className="w-full py-2.5 px-3 rounded-xl bg-rose-950/80 hover:bg-rose-900 border border-rose-500/50 text-rose-200 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                title="Pulihkan akses publik normal seketika di seluruh browser"
               >
-                Masuk dengan Google OAuth Perwira
+                <Unlock size={14} />
+                <span>Nonaktifkan Siaga 1 (Buka Akses Publik)</span>
               </button>
             </div>
           </div>

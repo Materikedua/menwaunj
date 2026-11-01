@@ -67,9 +67,9 @@ const primaryGuides = [
     icon: Users,
   },
   {
-    title: 'Markas Komando & Denah',
+    title: 'Markas Komando & Rute',
     category: 'Lokasi & kontak',
-    description: 'Blueprint Mako Gedung G R.107, nomor piket, dan panduan rute transportasi.',
+    description: 'Lokasi Mako Gedung G R.107, nomor piket, dan panduan rute transportasi.',
     to: '/mako',
     icon: MapPin,
   },

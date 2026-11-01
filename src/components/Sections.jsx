@@ -30,21 +30,51 @@ export function useKegiatan() {
   return useMemo(() => {
     const allRegistry = (registry || []).filter((r) => r && r.isActive !== false);
     return items.map((k, idx) => {
-      const expectedId = `CNT-BERANDA-GIAT-${idx + 1}`;
-      let regItem = allRegistry.find((r) => r.contentId === expectedId);
+      const targetNum = idx + 1;
+      const expectedHyphen = `CNT-BERANDA-GIAT-${targetNum}`;
+      
+      // 1. Cari exact match atau normalisasi hyphen / underscore
+      let regItem = allRegistry.find((r) => {
+        if (!r.contentId) return false;
+        const norm = r.contentId.toUpperCase().replace(/_/g, '-');
+        return norm === expectedHyphen;
+      });
+
+      // 2. Cari berdasarkan section dan urutan order
       if (!regItem) {
         regItem = allRegistry.find(
-          (r) => r.tabId === 'beranda' && (r.sectionId === 'sorotan_giat' || r.sectionId === 'custom_svg_asset') && r.order === (idx + 1)
+          (r) => r.tabId === 'beranda' &&
+                 (r.sectionId === 'sorotan_giat' || r.sectionId === 'custom_svg_asset') &&
+                 (r.order === targetNum || r.order === (targetNum + 2))
         );
       }
-      if (!regItem && k.program) {
-        regItem = allRegistry.find(
-          (r) => r.tabId === 'beranda' && (r.contentId?.toLowerCase().includes(k.program.toLowerCase()) || r.title?.toLowerCase().includes(k.program.toLowerCase()))
-        );
+
+      // 3. Cari berdasarkan pencocokan konteks kegiatan khusus (Cianjur, Paskibra, KC, dll)
+      if (!regItem) {
+        const kStr = `${k.id} ${k.program || ''} ${k.title || ''}`.toLowerCase();
+        regItem = allRegistry.find((r) => {
+          if (r.tabId !== 'beranda') return false;
+          const rStr = `${r.contentId || ''} ${r.title || ''} ${r.caption || ''}`.toLowerCase();
+          if (kStr.includes('cianjur') && rStr.includes('cianjur')) return true;
+          if (kStr.includes('paskibra') && (rStr.includes('paskibra') || rStr.includes('geranat'))) return true;
+          if (kStr.includes('kc-viii') && (rStr.includes('kc-viii') || rStr.includes('cendekia'))) return true;
+          if (kStr.includes('kds') && rStr.includes('kds')) return true;
+          if (kStr.includes('anjangsana') && rStr.includes('anjangsana')) return true;
+          if (kStr.includes('hut-ri') && (rStr.includes('hut') || rStr.includes('ri-81'))) return true;
+          if (kStr.includes('studi-banding') && (rStr.includes('ipb') || rStr.includes('studi-banding'))) return true;
+          return false;
+        });
       }
+
       if (!regItem) return k;
+
+      const cleanTitle = (regItem.title && !/^DSC\d+$/i.test(regItem.title) && !/^IMG_\d+$/i.test(regItem.title))
+        ? regItem.title
+        : k.title;
+
       return {
         ...k,
+        title: cleanTitle,
         image: regItem.imageUrl || k.image,
         excerpt: regItem.caption || k.excerpt,
       };

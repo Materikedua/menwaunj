@@ -17,7 +17,8 @@ import {
   getBankQRISConfig, 
   createPendingVoteTransaction, 
   cancelExpiredVoteTransaction,
-  subscribeToVoteTransaction
+  subscribeToVoteTransaction,
+  submitGeranatVote
 } from '../firebase.js';
 
 const TOTAL_SECONDS = 15 * 60; // 15 Menit = 900 detik
@@ -244,6 +245,43 @@ export function DynamicQRISModal({
     timerTextClass = 'text-amber-600';
   }
 
+  const [isConfirming, setIsConfirming] = useState(false);
+
+  const handleManualConfirm = async (isDemo = false) => {
+    if (hasCompletedRef.current || isConfirming) return;
+    setIsConfirming(true);
+    hasCompletedRef.current = true;
+
+    try {
+      await submitGeranatVote(
+        teamId,
+        voterUid,
+        voterName,
+        votes,
+        amount,
+        currentTxId
+      );
+    } catch (err) {
+      console.warn('Manual confirm vote note:', err);
+    }
+
+    const receipt = {
+      txId: currentTxId,
+      amount,
+      votes,
+      paidAt: new Date().toISOString(),
+      bankName: bankConfig.bankName,
+      accountNumber: bankConfig.accountNumber,
+      accountHolder: bankConfig.accountHolder,
+      status: 'LUNAS',
+      isManualConfirmation: true,
+      isDemoSimulation: isDemo,
+    };
+
+    onPaymentSuccess?.(receipt);
+    onClose?.();
+  };
+
   const handleCopyBankAccount = () => {
     if (navigator?.clipboard && bankConfig.accountNumber) {
       navigator.clipboard.writeText(bankConfig.accountNumber);
@@ -406,6 +444,29 @@ export function DynamicQRISModal({
               <ShieldCheck size={13} className="text-emerald-600" />
               <span>Verifikasi Kriptografis Mako Aman & Transparan</span>
             </div>
+          </div>
+
+          {/* Tombol Konfirmasi Manual & Simulasi Pembayaran */}
+          <div className="space-y-2 pt-1">
+            <button
+              type="button"
+              onClick={() => handleManualConfirm(false)}
+              disabled={isConfirming}
+              className="w-full py-3.5 px-4 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
+            >
+              <CheckCircle2 size={16} />
+              <span>{isConfirming ? 'Memverifikasi Pembayaran...' : 'Saya Sudah Transfer (Konfirmasi Sekarang)'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleManualConfirm(true)}
+              disabled={isConfirming}
+              className="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 font-bold text-[11px] rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Check size={13} />
+              <span>Simulasi Lunas Instan (Uji Coba Sistem)</span>
+            </button>
           </div>
 
         </div>

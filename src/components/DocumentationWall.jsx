@@ -263,13 +263,13 @@ export function DocumentationWall({ apiUrl = null, customData = null, onOpenAuth
     );
 
     return list.map((post) => {
-      const normalizedProkerId = post.prokerId === 'gps-viii' ? 'geranat-viii' : post.prokerId;
+      const normalizedProkerId = (post.prokerId === 'gps-viii' || post.prokerId === 'geranat-viii') ? 'geranat-vii' : post.prokerId;
       const normalizedProkerName =
-        post.prokerName === 'GPS VIII'
-          ? 'GERANAT VIII'
+        (post.prokerName === 'GPS VIII' || post.prokerName === 'GERANAT VIII' || post.prokerName === 'GERANAT VIII (LKBB)')
+          ? 'GERANAT VII (LFPB)'
           : post.prokerName === 'GPS VII'
           ? 'GERANAT VII'
-          : post.prokerName;
+          : (post.prokerName === 'Ksatria Cendekia IX' ? 'Ksatria Cendekia VIII' : post.prokerName);
 
       const regAlbum =
         albumRegistryMap.get(post.id) ||

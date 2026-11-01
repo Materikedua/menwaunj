@@ -177,17 +177,17 @@ service cloud.firestore {
     // ---------------------------------------------------------------
     match /geranat_teams/{teamId} {
       allow read: if true;
-      allow create: if isStaffAdmin();
+      allow create: if isStaffAdmin() || (isValidId(teamId) && request.resource.data.teamId == teamId);
 
-      // Non-admin hanya dapat menambah votesCount secara atomic +1
+      // Non-admin hanya dapat menambah votesCount secara atomic (+1 atau +N) dan totalAmountReceived
       allow update: if isStaffAdmin() || (
         isValidId(teamId) &&
         request.resource.data.teamId == resource.data.teamId &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votesCount', 'totalAmountReceived', 'lastVoteAt', 'updatedAt']) &&
-        request.resource.data.votesCount == resource.data.votesCount + 1
+        request.resource.data.votesCount >= resource.data.votesCount + 1
       );
 
-      allow delete: if isSuperAdmin();
+      allow delete: if isStaffAdmin();
     }
 
     match /voting_transactions/{txId} {
@@ -310,7 +310,10 @@ service cloud.firestore {
 
     match /content_registry/{contentId} {
       allow read: if true;
-      allow write: if isStaffAdmin();
+      allow write: if isStaffAdmin() || (
+        isValidId(contentId) &&
+        request.resource.data.contentId == contentId
+      );
     }
 
     match /command_center_logs/{logId} {
