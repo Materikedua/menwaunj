@@ -49,54 +49,67 @@ export async function getSubmissionById(queryId) {
   if (!queryId || !String(queryId).trim()) return null;
   const cleanId = String(queryId).trim();
   const safeDocId = cleanId.replace(/\//g, '_');
-  try {
-    // 1. Cek langsung ke safeDocId
+  const upperSafeDocId = cleanId.toUpperCase().replace(/\//g, '_');
+  
+  // 1. Cek langsung ke doc ID via getDoc (Dapat diakses oleh publik tanpa membocorkan daftar surat lain)
+  const candidateDocIds = Array.from(new Set([
+    safeDocId,
+    upperSafeDocId,
+    cleanId,
+    cleanId.toUpperCase(),
+    cleanId.replace(/[\/\s-]/g, '_'),
+    cleanId.toUpperCase().replace(/[\/\s-]/g, '_')
+  ]));
+
+  for (const docId of candidateDocIds) {
     try {
-      const docSnap = await getDoc(doc(firestore, 'forms_submissions', safeDocId));
+      const docSnap = await getDoc(doc(firestore, 'forms_submissions', docId));
       if (docSnap.exists()) {
         return { id: docSnap.id, ...docSnap.data() };
       }
     } catch {
-      /* ignore invalid path if any */
+      /* ignore individual invalid paths */
+    }
+  }
+
+  try {
+    // 2. Query fallback berdasarkan field submissionId (Jika memiliki izin list)
+    try {
+      const qSub = query(collection(firestore, 'forms_submissions'), where('submissionId', '==', cleanId), limit(1));
+      const snapSub = await getDocs(qSub);
+      if (!snapSub.empty) {
+        const d = snapSub.docs[0];
+        return { id: d.id, ...d.data() };
+      }
+    } catch {
+      /* ignore if list query denied for anonymous visitors */
     }
 
-    // Jika cleanId tidak mengandung slash, coba cek doc langsung juga
-    if (!cleanId.includes('/')) {
+    // 2b. Dukung variasi pencarian slash vs dash
+    const altSlashId = cleanId.replace(/-/g, '/');
+    if (altSlashId !== cleanId) {
       try {
-        const directSnap = await getDoc(doc(firestore, 'forms_submissions', cleanId));
-        if (directSnap.exists()) {
-          return { id: directSnap.id, ...directSnap.data() };
+        const qAlt = query(collection(firestore, 'forms_submissions'), where('submissionId', '==', altSlashId), limit(1));
+        const snapAlt = await getDocs(qAlt);
+        if (!snapAlt.empty) {
+          const d = snapAlt.docs[0];
+          return { id: d.id, ...d.data() };
         }
       } catch {
         /* ignore */
       }
     }
 
-    // 2. Query berdasarkan field submissionId
-    const qSub = query(collection(firestore, 'forms_submissions'), where('submissionId', '==', cleanId), limit(1));
-    const snapSub = await getDocs(qSub);
-    if (!snapSub.empty) {
-      const d = snapSub.docs[0];
-      return { id: d.id, ...d.data() };
-    }
-
-    // 2b. Dukung variasi pencarian slash vs dash
-    const altSlashId = cleanId.replace(/-/g, '/');
-    if (altSlashId !== cleanId) {
-      const qAlt = query(collection(firestore, 'forms_submissions'), where('submissionId', '==', altSlashId), limit(1));
-      const snapAlt = await getDocs(qAlt);
-      if (!snapAlt.empty) {
-        const d = snapAlt.docs[0];
+    // 3. Query berdasarkan field participantToken
+    try {
+      const qTok = query(collection(firestore, 'forms_submissions'), where('participantToken', '==', cleanId), limit(1));
+      const snapTok = await getDocs(qTok);
+      if (!snapTok.empty) {
+        const d = snapTok.docs[0];
         return { id: d.id, ...d.data() };
       }
-    }
-
-    // 3. Query berdasarkan field participantToken
-    const qTok = query(collection(firestore, 'forms_submissions'), where('participantToken', '==', cleanId), limit(1));
-    const snapTok = await getDocs(qTok);
-    if (!snapTok.empty) {
-      const d = snapTok.docs[0];
-      return { id: d.id, ...d.data() };
+    } catch {
+      /* ignore */
     }
 
     // 4. Cek ke koleksi participant_portals (jika token berupa token portal peserta)
@@ -164,7 +177,120 @@ export async function getSubmissionById(queryId) {
   } catch (error) {
     handleFirestoreError(error, 'update', path);
   }
-} /* Simpan Sertifikat Kursus Pelatihan Pelatih Youth Spark */ export async function saveCertificate(uid, certData) { if (!uid || !certData) return null; const certId = certData.certId || `CERT-YSP-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`; const path = `users/${uid}/certificates/${certId}`; try { const certRef = doc(firestore, 'users', uid, 'certificates', certId); const payload = { ...certData, certId, issuedAt: certData.issuedAt || new Date().toISOString() }; await setDoc(certRef, payload); return payload; } catch (error) { handleFirestoreError(error, 'create', path); } } /* Ambil riwayat sertifikat pengguna */ export async function getUserCertificates(uid) { if (!uid) return []; const path = `users/${uid}/certificates`; try { const snap = await getDocs(collection(firestore, 'users', uid, 'certificates')); return snap.docs.map(d => d.data()); } catch (error) { console.warn('Certificate fetch warning:', error); return []; } } /* Rekam dan perbarui login streak berturut-turut */ export async function recordUserStreak(uid) { if (!uid) return; const path = `users/${uid}`; try { const userRef = doc(firestore, 'users', uid); const snap = await getDoc(userRef); if (!snap.exists()) return; const data = snap.data(); const today = new Date().toISOString().split('T')[0]; const lastDate = data.lastStreakDate || ''; /* Sudah login dan tercatat hari ini */ if (lastDate === today) { return { currentStreak: data.currentStreak || 1, longestStreak: data.longestStreak || 1, streakFreezesCount: data.streakFreezesCount ?? 1 }; } const todayDateObj = new Date(today); const yesterdayDateObj = new Date(todayDateObj); yesterdayDateObj.setDate(yesterdayDateObj.getDate() - 1); const yesterday = yesterdayDateObj.toISOString().split('T')[0]; let newStreak = 1; let freezeUsed = false; let streakReset = false; let currentFreezes = data.streakFreezesCount ?? 1; /* Rekrut baru default punya 1 freeze */ if (lastDate === yesterday) { /* Login berturut-turut hari berikutnya */ newStreak = (data.currentStreak || 0) + 1; } else if (lastDate && lastDate !== '') { /* Melewatkan lebih dari 1 hari! */ if (currentFreezes > 0) { /* Selamat berkat Perlindungan Streak Freeze! */ currentFreezes -= 1; newStreak = Math.max(1, data.currentStreak || 1); freezeUsed = true; } else { /* Reset kembali ke Hari 1 */ newStreak = 1; streakReset = true; } } const newLongest = Math.max(data.longestStreak || 0, newStreak); const claimed = data.streakMilestonesClaimed || []; const isNewMilestone = (newStreak % 7 === 0) && !claimed.includes(newStreak); await updateDoc(userRef, { currentStreak: newStreak, longestStreak: newLongest, lastStreakDate: today, streakFreezesCount: currentFreezes, updatedAt: new Date().toISOString() }); return { currentStreak: newStreak, longestStreak: newLongest, streakFreezesCount: currentFreezes, freezeUsed, streakReset, milestoneReached: isNewMilestone ? newStreak : null }; } catch (error) { console.warn('Streak update warning:', error); } } /* Klaim bonus EXP milestone 7-hari */ export async function claimStreakMilestoneBonus(uid, milestoneDays, bonusExp) { if (!uid || !milestoneDays) return; const path = `users/${uid}`; try { const userRef = doc(firestore, 'users', uid); const snap = await getDoc(userRef); const data = snap.exists() ? snap.data() : {}; const claimed = data.streakMilestonesClaimed || []; if (claimed.includes(milestoneDays)) return; const newClaimed = [...claimed, milestoneDays]; const currentPoints = data.tacticalPoints || 0; const newPoints = currentPoints + bonusExp; /* Hadiahi tambahan 1 Streak Freeze di milestone 7 dan 21 hari */ const currentFreezes = data.streakFreezesCount ?? 1; const extraFreeze = (milestoneDays === 7 || milestoneDays === 21) ? 1 : 0; await updateDoc(userRef, { streakMilestonesClaimed: newClaimed, tacticalPoints: newPoints, streakFreezesCount: currentFreezes + extraFreeze, updatedAt: new Date().toISOString() }); return { newPoints, streakFreezesCount: currentFreezes + extraFreeze }; } catch (error) { handleFirestoreError(error, 'update', path); } } /* Ambil daftar tim GERANAT untuk E-Voting Juara Terfavorit */ export async function getGeranatTeams() { const path = 'geranat_teams'; try { const snap = await getDocs(collection(firestore, 'geranat_teams')); if (!snap.empty) { return snap.docs.map(d => ({ ...d.data(), id: d.id })); } return []; } catch (error) { console.warn('Geranat teams fetch warning:', error); return []; } } /* Tambah / Simpan Tim GERANAT (Admin Mako) */ export async function saveGeranatTeam(teamData) { const teamId = teamData.teamId || `TEAM-${Date.now().toString(36).toUpperCase()}`; const path = `geranat_teams/${teamId}`; try { const payload = { ...teamData, teamId, votesCount: teamData.votesCount || 0, updatedAt: new Date().toISOString() }; await setDoc(doc(firestore, 'geranat_teams', teamId), payload); return payload; } catch (error) { handleFirestoreError(error, 'create', path); } } /* Submit vote */ export async function submitGeranatVote(teamId, voterUid, voterName, votes, amount, txId) { const finalTxId = txId || `VOTE-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`; const addedVotes = Math.max(1, Number(votes) || 1); const addedAmount = Number(amount) || (addedVotes * 1000); const nowIso = new Date().toISOString(); const txPayload = { txId: finalTxId, teamId, voterUid: voterUid || 'anonymous', voterName: voterName || 'Pendukung Setia', votes: addedVotes, amount: addedAmount, paymentMethod: 'QRIS Statis Mako', status: 'lunas', verifiedAt: nowIso, verifiedVia: 'server_verified_idempotent', createdAt: nowIso }; try { const txRef = doc(firestore, 'voting_transactions', finalTxId); const existingTx = await getDoc(txRef); if (existingTx.exists() && existingTx.data()?.status === 'lunas') { return existingTx.data(); } await setDoc(txRef, txPayload, { merge: true }); const teamRef = doc(firestore, 'geranat_teams', teamId); const teamSnap = await getDoc(teamRef); if (teamSnap.exists()) { const currentVotes = Number(teamSnap.data().votesCount) || 0; const currentAmount = Number(teamSnap.data().totalAmountReceived) || (currentVotes * 1000); await updateDoc(teamRef, { votesCount: currentVotes + addedVotes, totalAmountReceived: currentAmount + addedAmount, lastVoteAt: nowIso, updatedAt: nowIso }); } return txPayload; } catch (error) { console.warn('submitGeranatVote note:', error); return txPayload; } } /* Buat transaksi voting berstatus PENDING saat modal QRIS dibuka (Batas 15 Menit) */ export async function createPendingVoteTransaction({ txId, teamId, teamName, voterUid, voterName, votes, amount }) { const finalTxId = txId || `VOTE-${Date.now().toString(36).toUpperCase()}`; const now = Date.now(); const expiresAt = new Date(now + 15 * 60 * 1000).toISOString(); const payload = { txId: finalTxId, teamId: teamId || 'team-1', teamName: teamName || 'Tim Kontingen GERANAT', voterUid: voterUid || auth.currentUser?.uid || 'anonymous', voterName: voterName || auth.currentUser?.displayName || 'Pendukung Setia', votes: Number(votes) || 1, amount: Number(amount) || 1000, paymentMethod: 'QRIS Statis Mako', status: 'pending', expiresAt, createdAt: new Date(now).toISOString() }; try { await setDoc(doc(firestore, 'voting_transactions', finalTxId), payload); return payload; } catch (err) { console.warn('Create pending vote transaction note:', err); return payload; } } /* Cancel vote */ export async function cancelExpiredVoteTransaction(txId, cancelReason = 'timeout_15min') { if (!txId) return null; try { const txRef = doc(firestore, 'voting_transactions', txId); const snap = await getDoc(txRef); if (snap.exists() && snap.data().status === 'lunas') { return snap.data(); /* Sudah lunas, jangan batalkan */ } const updateData = { status: 'batal', cancelReason, cancelledAt: new Date().toISOString() }; await setDoc(txRef, updateData, { merge: true }); return updateData; } catch (err) { console.warn('Cancel expired vote transaction warning:', err); return null; } } /* Sub vote */ export function subscribeToVoteTransaction(txId, onUpdate) { if (!txId || typeof onUpdate !== 'function') return () => {}; const txRef = doc(firestore, 'voting_transactions', txId); return onSnapshot( txRef, (snap) => { if (snap.exists()) { onUpdate({ id: snap.id, ...snap.data() }); } }, (err) => console.warn('Vote transaction listener warning:', err) ); } /* Sub teams */ export function subscribeToGeranatTeams(onUpdate) { if (typeof onUpdate !== 'function') return () => {}; const colRef = collection(firestore, 'geranat_teams'); return onSnapshot( colRef, (snap) => { if (!snap.empty) { const list = snap.docs.map(d => ({ ...d.data(), id: d.id })); onUpdate(list); } else { onUpdate([]); } }, (err) => console.warn('Geranat teams realtime listener warning:', err) ); } /* Sub recent */ export function subscribeToRecentVotes(onUpdate, maxCount = 10) { if (typeof onUpdate !== 'function') return () => {}; const colRef = collection(firestore, 'voting_transactions'); return onSnapshot( colRef, (snap) => { const items = snap.docs .map(d => ({ ...d.data(), id: d.id })) .filter(tx => tx.status === 'lunas') .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()) .slice(0, maxCount); onUpdate(items); }, (err) => console.warn('Recent votes ticker listener warning:', err) ); } /* Ambil seluruh riwayat transaksi voting untuk ekspor Spreadsheet / CSV Admin */ export async function getAllVotingTransactionsForAdmin() { const path = 'voting_transactions'; try { const snap = await getDocs(collection(firestore, 'voting_transactions')); return snap.docs.map(d => ({ ...d.data(), id: d.id })); } catch (error) { console.warn('All voting transactions fetch warning:', error); return []; } } /* Konfigurasi Charity Voting (Buka/Tutup, Target Dana, Mode Siaga) */ export const DEFAULT_CHARITY_CONFIG = { isVotingOpen: false, /* Default tertutup (Mode Siaga) sesuai instruksi user */ programName: 'Charity Vote: Beasiswa Menwa & Bantuan Kemanusiaan', headline: 'Pintu Donasi Charity Vote Sedang Disiapkan', subheadline: 'Dukungan untuk Beasiswa Taruna Menwa, Bantuan Logistik Bencana Kemanusiaan, & Aksi Cepat Karhutla', scheduledOpenAt: '2026-11-01T08:00:00+07:00', targetGoalAmount: 25000000, pricePerVote: 1000, updatedAt: new Date().toISOString() }; export async function getCharityVotingConfig() { try { const snap = await getDoc(doc(firestore, 'settings', 'charity_voting_config')); if (snap.exists()) { return { ...DEFAULT_CHARITY_CONFIG, ...snap.data() }; } return DEFAULT_CHARITY_CONFIG; } catch (err) { console.warn('Charity voting config fetch warning:', err); return DEFAULT_CHARITY_CONFIG; } } export async function setCharityVotingConfig(newConfig) { try { const payload = { ...DEFAULT_CHARITY_CONFIG, ...newConfig, updatedAt: new Date().toISOString() }; await setDoc(doc(firestore, 'settings', 'charity_voting_config'), payload, { merge: true }); return payload; } catch (err) { handleFirestoreError(err, 'update', 'settings/charity_voting_config'); } } export function subscribeToCharityVotingConfig(onUpdate) { if (typeof onUpdate !== 'function') return () => {}; const cfgRef = doc(firestore, 'settings', 'charity_voting_config'); return onSnapshot( cfgRef, (snap) => { if (snap.exists()) { onUpdate({ ...DEFAULT_CHARITY_CONFIG, ...snap.data() }); } else { onUpdate(DEFAULT_CHARITY_CONFIG); } }, (err) => console.warn('Charity voting config snapshot warning:', err) ); } /* Hapus tim tertentu */ export async function deleteGeranatTeam(teamId) { if (!teamId) return; try { await deleteDoc(doc(firestore, 'geranat_teams', teamId)); return true; } catch (err) { handleFirestoreError(err, 'delete', `geranat_teams/${teamId}`); } } /* Reset votes */ export async function resetCharityVotingData() { try { const teamsSnap = await getDocs(collection(firestore, 'geranat_teams')); const deletePromises = teamsSnap.docs.map(d => deleteDoc(d.ref)); await Promise.all(deletePromises); return true; } catch (err) { console.warn('Reset charity voting data warning:', err); throw err; } } /* Reset Skor Gamifikasi */ export async function resetGamificationLeaderboard() { try { const usersSnap = await getDocs(collection(firestore, 'users')); const resetPromises = usersSnap.docs.map(userDoc => updateDoc(userDoc.ref, { tacticalPoints: 0, weeklyPoints: 0, monthlyPoints: 0, currentStreak: 0, streakMilestonesClaimed: [], updatedAt: new Date().toISOString() }).catch(err => console.warn(`Skip user ${userDoc.id}:`, err)) ); await Promise.all(resetPromises); return true; } catch (err) { console.warn('Reset gamification leaderboard warning:', err); throw err; } } /* Ambil data Portal Peserta berdasarkan Token Unik */ export async function getParticipantPortal(token) { if (!token) return null; const path = `participant_portals/${token}`; try { const snap = await getDoc(doc(firestore, 'participant_portals', token)); if (snap.exists()) { return snap.data(); } return null; } catch (error) { console.warn('Participant portal get warning:', error); return null; } } /* Simpan / Perbarui data Portal Peserta */ export async function saveParticipantPortal(portalData) { if (!portalData || !portalData.token) return; const path = `participant_portals/${portalData.token}`; try { const payload = { ...portalData, updatedAt: new Date().toISOString() }; await setDoc(doc(firestore, 'participant_portals', portalData.token), payload); return payload; } catch (error) { handleFirestoreError(error, 'create', path); } } /* Perbarui berkas peserta di Portal Peserta */ export async function updateParticipantDocument(token, docId, updates) { if (!token || !docId) return; const path = `participant_portals/${token}`; try { const docRef = doc(firestore, 'participant_portals', token); const snap = await getDoc(docRef); if (!snap.exists()) return; const currentDocs = snap.data().documents || []; const updatedDocs = currentDocs.map(d => d.id === docId ? { ...d, ...updates } : d); await updateDoc(docRef, { documents: updatedDocs, updatedAt: new Date().toISOString() }); return updatedDocs; } catch (error) { handleFirestoreError(error, 'update', path); } } /* Daftar Akun Admin yang berwenang mengubah rekening bank Mako */ export const AUTHORIZED_BANK_ADMINS = ['unjmenwa@gmail.com', 'rafflysyahpoetra@gmail.com']; /* Ambil konfigurasi rekening bank resmi & status verifikasi 2-admin */ export async function getBankConfigWithProposal() { try { const configSnap = await getDoc(doc(firestore, 'settings', 'bank_account_config')); const proposalSnap = await getDoc(doc(firestore, 'settings', 'bank_verification_proposal')); const activeConfig = configSnap.exists() ? configSnap.data() : null; const pendingProposal = proposalSnap.exists() ? proposalSnap.data() : null; return { activeConfig, pendingProposal }; } catch (error) { console.warn('Bank config & proposal fetch warning:', error); return { activeConfig: null, pendingProposal: null }; } } /* Get bank config */ export async function getBankQRISConfig() { try { /* 1. Cek bank_qris */ const bankQrisSnap = await getDoc(doc(firestore, 'settings', 'bank_qris')); if (bankQrisSnap.exists() && bankQrisSnap.data()?.accountNumber) { return bankQrisSnap.data(); } /* 2. Cek bank_account_config */ const snap = await getDoc(doc(firestore, 'settings', 'bank_account_config')); if (snap.exists() && snap.data()?.accountNumber) { return snap.data(); } /* 3. Fallback ke qris_bank_config */ const legacySnap = await getDoc(doc(firestore, 'settings', 'qris_bank_config')); if (legacySnap.exists()) { return legacySnap.data(); } return null; } catch (error) { console.warn('Bank QRIS config fetch warning:', error); return null; } } /* Catat Audit Log ke koleksi /audit_logs/{logId} */ export async function createAuditLog({ actorEmail, actorUid, action, targetCollection, targetDocId, previousValue = null, newValue = null }) { try { const logId = `AUDIT-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`; const payload = { logId, actorEmail: actorEmail || auth.currentUser?.email || 'system@menwa.unj', actorUid: actorUid || auth.currentUser?.uid || 'system', action, targetCollection, targetDocId, previousValue, newValue, timestamp: new Date().toISOString(), userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Server' }; await setDoc(doc(firestore, 'audit_logs', logId), payload); return payload; } catch (err) { console.warn('Audit log write warning:', err); return null; } } export async function getAuditLogs() { try { const snap = await getDocs(collection(firestore, 'audit_logs')); return snap.docs .map(d => ({ ...d.data(), id: d.id })) .sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime()); } catch (err) { console.warn('Audit logs fetch warning:', err); return []; } } /* Propose bank config */ export async function proposeBankConfigUpdate({ bankName, accountNumber, accountHolder, qrisPayload, userEmail }) { if (!userEmail || !AUTHORIZED_BANK_ADMINS.includes(userEmail.toLowerCase())) { throw new Error('Hanya akun unjmenwa@gmail.com dan rafflysyahpoetra@gmail.com yang berhak mengajukan perubahan bank.'); } const changeId = `BANK-PROP-${Date.now()}`; const proposalData = { changeId, type: 'BANK_ACCOUNT_UPDATE', proposedBankName: bankName.trim(), proposedAccountNumber: accountNumber.trim(), proposedAccountHolder: accountHolder.trim(), proposedQrisPayload: qrisPayload || `00020101021126610014ID.CO.BANKMANDIRI.WWW01189360000801123456780215${accountNumber.trim()}0303UMI5204541153033605802ID5921${accountHolder.trim().substring(0, 21)}6007JAKARTA6105132206304A1B2`, proposedBy: userEmail.toLowerCase(), proposedAt: new Date().toISOString(), status: 'PENDING_APPROVAL' }; /* Simpan ke koleksi PendingChanges */ await setDoc(doc(firestore, 'PendingChanges', changeId), proposalData); /* Simpan juga ke pointer aktif di settings/bank_verification_proposal */ await setDoc(doc(firestore, 'settings', 'bank_verification_proposal'), proposalData); await createAuditLog({ actorEmail: userEmail.toLowerCase(), action: 'BANK_CHANGE_PROPOSED', targetCollection: 'PendingChanges', targetDocId: changeId, newValue: proposalData }); return proposalData; } /* Approve bank config */ export async function approveBankConfigProposal(approverEmail) { if (!approverEmail || !AUTHORIZED_BANK_ADMINS.includes(approverEmail.toLowerCase())) { throw new Error('Hanya akun unjmenwa@gmail.com dan rafflysyahpoetra@gmail.com yang dapat menyetujui.'); } const proposalRef = doc(firestore, 'settings', 'bank_verification_proposal'); const proposalSnap = await getDoc(proposalRef); if (!proposalSnap.exists()) { throw new Error('Tidak ada pengajuan perubahan rekening yang menunggu persetujuan.'); } const proposal = proposalSnap.data(); if (proposal.status !== 'PENDING_APPROVAL') { throw new Error('Pengajuan ini sudah tidak dalam status menunggu persetujuan.'); } /* Verifikasi 2 akun berbeda: Admin yang menginput TIDAK BISA menyetujui sendiri */ if (proposal.proposedBy.toLowerCase() === approverEmail.toLowerCase()) { throw new Error('Verifikasi 2 Admin (2-Verification): Anda tidak dapat menyetujui pengajuan Anda sendiri. Persetujuan harus dilakukan oleh akun admin lainnya.'); } const newActiveConfig = { bankName: proposal.proposedBankName, accountNumber: proposal.proposedAccountNumber, accountHolder: proposal.proposedAccountHolder, qrisPayload: proposal.proposedQrisPayload || `00020101021126610014ID.CO.BANKMANDIRI.WWW01189360000801123456780215${proposal.proposedAccountNumber}0303UMI5204541153033605802ID5921${proposal.proposedAccountHolder.substring(0, 21)}6007JAKARTA6105132206304A1B2`, updatedAt: new Date().toISOString(), proposedBy: proposal.proposedBy, lastApprovedBy: approverEmail.toLowerCase(), status: 'ACTIVE' }; /* Set bank_qris */ await setDoc(doc(firestore, 'settings', 'bank_qris'), newActiveConfig, { merge: true }); await setDoc(doc(firestore, 'settings', 'bank_account_config'), newActiveConfig); await setDoc(doc(firestore, 'settings', 'qris_bank_config'), newActiveConfig, { merge: true }); /* Update status proposal menjadi APPROVED di settings */ await updateDoc(proposalRef, { status: 'APPROVED', approvedBy: approverEmail.toLowerCase(), approvedAt: new Date().toISOString() }); /* Update juga status di koleksi PendingChanges */ if (proposal.changeId) { try { await updateDoc(doc(firestore, 'PendingChanges', proposal.changeId), { status: 'APPROVED', approvedBy: approverEmail.toLowerCase(), approvedAt: new Date().toISOString() }); } catch (e) { console.warn('PendingChanges update warning:', e); } } await createAuditLog({ actorEmail: approverEmail.toLowerCase(), action: 'BANK_CHANGE_APPROVED', targetCollection: 'settings', targetDocId: 'bank_qris', previousValue: proposal, newValue: newActiveConfig }); return newActiveConfig; } /* Reject bank config */ export async function rejectBankConfigProposal(rejecterEmail, reason = '') { if (!rejecterEmail || !AUTHORIZED_BANK_ADMINS.includes(rejecterEmail.toLowerCase())) { throw new Error('Akses ditolak.'); } const proposalRef = doc(firestore, 'settings', 'bank_verification_proposal'); const proposalSnap = await getDoc(proposalRef); if (!proposalSnap.exists()) return; const proposal = proposalSnap.data(); if (proposal.proposedBy.toLowerCase() === rejecterEmail.toLowerCase()) { await updateDoc(proposalRef, { status: 'CANCELLED_BY_PROPOSER', cancelledAt: new Date().toISOString() }); if (proposal.changeId) { await updateDoc(doc(firestore, 'PendingChanges', proposal.changeId), { status: 'CANCELLED_BY_PROPOSER', cancelledAt: new Date().toISOString() }).catch(() => {}); } return; } await updateDoc(proposalRef, { status: 'REJECTED', rejectedBy: rejecterEmail.toLowerCase(), rejectedAt: new Date().toISOString(), rejectReason: reason }); if (proposal.changeId) { await updateDoc(doc(firestore, 'PendingChanges', proposal.changeId), { status: 'REJECTED', rejectedBy: rejecterEmail.toLowerCase(), rejectedAt: new Date().toISOString(), rejectReason: reason }).catch(() => {}); } await createAuditLog({ actorEmail: rejecterEmail.toLowerCase(), action: 'BANK_CHANGE_REJECTED', targetCollection: 'PendingChanges', targetDocId: proposal.changeId || 'bank_verification_proposal', previousValue: proposal, newValue: { status: 'REJECTED', reason } }); } /* Get pending changes */ export async function getPendingChangesList() { try { const snap = await getDocs(collection(firestore, 'PendingChanges')); return snap.docs.map(d => ({ ...d.data(), id: d.id })); } catch (error) { console.warn('PendingChanges list fetch warning:', error); return []; } } /* Save bank QRIS */ export async function saveBankQRISConfig(config) { const path = 'settings/bank_account_config'; try { const payload = { ...config, updatedAt: new Date().toISOString() }; await setDoc(doc(firestore, 'settings', 'bank_qris'), payload, { merge: true }); await setDoc(doc(firestore, 'settings', 'bank_account_config'), payload, { merge: true }); await setDoc(doc(firestore, 'settings', 'qris_bank_config'), payload, { merge: true }); return payload; } catch (error) { handleFirestoreError(error, 'write', path); } } /* === */ /* KOLEKSI V8 BARU: Content Registry, Command Center Logs, Notifications, Tasks */ /* === */ /**
+} /* Simpan Sertifikat Kursus Pelatihan Pelatih Youth Spark */ export async function saveCertificate(uid, certData) { if (!uid || !certData) return null; const certId = certData.certId || `CERT-YSP-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`; const path = `users/${uid}/certificates/${certId}`; try { const certRef = doc(firestore, 'users', uid, 'certificates', certId); const payload = { ...certData, certId, issuedAt: certData.issuedAt || new Date().toISOString() }; await setDoc(certRef, payload); return payload; } catch (error) { handleFirestoreError(error, 'create', path); } } /* Ambil riwayat sertifikat pengguna */ export async function getUserCertificates(uid) { if (!uid) return []; const path = `users/${uid}/certificates`; try { const snap = await getDocs(collection(firestore, 'users', uid, 'certificates')); return snap.docs.map(d => d.data()); } catch (error) { console.warn('Certificate fetch warning:', error); return []; } } /* Rekam dan perbarui login streak berturut-turut */ export async function recordUserStreak(uid) { if (!uid) return; const path = `users/${uid}`; try { const userRef = doc(firestore, 'users', uid); const snap = await getDoc(userRef); if (!snap.exists()) return; const data = snap.data(); const today = new Date().toISOString().split('T')[0]; const lastDate = data.lastStreakDate || ''; /* Sudah login dan tercatat hari ini */ if (lastDate === today) { return { currentStreak: data.currentStreak || 1, longestStreak: data.longestStreak || 1, streakFreezesCount: data.streakFreezesCount ?? 1 }; } const todayDateObj = new Date(today); const yesterdayDateObj = new Date(todayDateObj); yesterdayDateObj.setDate(yesterdayDateObj.getDate() - 1); const yesterday = yesterdayDateObj.toISOString().split('T')[0]; let newStreak = 1; let freezeUsed = false; let streakReset = false; let currentFreezes = data.streakFreezesCount ?? 1; /* Rekrut baru default punya 1 freeze */ if (lastDate === yesterday) { /* Login berturut-turut hari berikutnya */ newStreak = (data.currentStreak || 0) + 1; } else if (lastDate && lastDate !== '') { /* Melewatkan lebih dari 1 hari! */ if (currentFreezes > 0) { /* Selamat berkat Perlindungan Streak Freeze! */ currentFreezes -= 1; newStreak = Math.max(1, data.currentStreak || 1); freezeUsed = true; } else { /* Reset kembali ke Hari 1 */ newStreak = 1; streakReset = true; } } const newLongest = Math.max(data.longestStreak || 0, newStreak); const claimed = data.streakMilestonesClaimed || []; const isNewMilestone = (newStreak % 7 === 0) && !claimed.includes(newStreak); await updateDoc(userRef, { currentStreak: newStreak, longestStreak: newLongest, lastStreakDate: today, streakFreezesCount: currentFreezes, updatedAt: new Date().toISOString() }); return { currentStreak: newStreak, longestStreak: newLongest, streakFreezesCount: currentFreezes, freezeUsed, streakReset, milestoneReached: isNewMilestone ? newStreak : null }; } catch (error) { console.warn('Streak update warning:', error); } } /* Klaim bonus EXP milestone 7-hari */ export async function claimStreakMilestoneBonus(uid, milestoneDays, bonusExp) { if (!uid || !milestoneDays) return; const path = `users/${uid}`; try { const userRef = doc(firestore, 'users', uid); const snap = await getDoc(userRef); const data = snap.exists() ? snap.data() : {}; const claimed = data.streakMilestonesClaimed || []; if (claimed.includes(milestoneDays)) return; const newClaimed = [...claimed, milestoneDays]; const currentPoints = data.tacticalPoints || 0; const newPoints = currentPoints + bonusExp; /* Hadiahi tambahan 1 Streak Freeze di milestone 7 dan 21 hari */ const currentFreezes = data.streakFreezesCount ?? 1; const extraFreeze = (milestoneDays === 7 || milestoneDays === 21) ? 1 : 0; await updateDoc(userRef, { streakMilestonesClaimed: newClaimed, tacticalPoints: newPoints, streakFreezesCount: currentFreezes + extraFreeze, updatedAt: new Date().toISOString() }); return { newPoints, streakFreezesCount: currentFreezes + extraFreeze }; } catch (error) { handleFirestoreError(error, 'update', path); } } /* Ambil daftar tim GERANAT untuk E-Voting Juara Terfavorit */ export async function getGeranatTeams() { const path = 'geranat_teams'; try { const snap = await getDocs(collection(firestore, 'geranat_teams')); if (!snap.empty) { return snap.docs.map(d => ({ ...d.data(), id: d.id })); } return []; } catch (error) { console.warn('Geranat teams fetch warning:', error); return []; } } /* Tambah / Simpan Tim GERANAT (Admin Mako) */ export async function saveGeranatTeam(teamData) { const teamId = teamData.teamId || `TEAM-${Date.now().toString(36).toUpperCase()}`; const path = `geranat_teams/${teamId}`; try { const payload = { ...teamData, teamId, votesCount: teamData.votesCount || 0, updatedAt: new Date().toISOString() }; await setDoc(doc(firestore, 'geranat_teams', teamId), payload); return payload; } catch (error) { handleFirestoreError(error, 'create', path); } } /* Submit vote */ export async function submitGeranatVote(teamId, voterUid, voterName, votes, amount, txId) {
+  const finalTxId = txId || `VOTE-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+  const addedVotes = Math.max(1, Number(votes) || 1);
+  const addedAmount = Number(amount) || (addedVotes * 1000);
+  const nowIso = new Date().toISOString();
+  const txPayload = {
+    txId: finalTxId,
+    teamId,
+    voterUid: voterUid || 'anonymous',
+    voterName: voterName || 'Pendukung Setia',
+    votes: addedVotes,
+    amount: addedAmount,
+    paymentMethod: 'QRIS Statis Mako',
+    status: 'lunas',
+    verifiedAt: nowIso,
+    verifiedVia: 'server_verified_idempotent',
+    createdAt: nowIso
+  };
+  try {
+    const txRef = doc(firestore, 'voting_transactions', finalTxId);
+    const existingTx = await getDoc(txRef);
+    if (existingTx.exists() && existingTx.data()?.status === 'lunas') {
+      return existingTx.data();
+    }
+    await setDoc(txRef, txPayload, { merge: true });
+
+    const teamRef = doc(firestore, 'geranat_teams', teamId);
+    const teamSnap = await getDoc(teamRef);
+    if (teamSnap.exists()) {
+      const currentVotes = Number(teamSnap.data().votesCount) || 0;
+      const currentAmount = Number(teamSnap.data().totalAmountReceived) || (currentVotes * 1000);
+      await updateDoc(teamRef, {
+        votesCount: currentVotes + addedVotes,
+        totalAmountReceived: currentAmount + addedAmount,
+        lastVoteAt: nowIso,
+        updatedAt: nowIso
+      });
+    } else {
+      let customTeamData = null;
+      try {
+        const customs = JSON.parse(localStorage.getItem('menwa_custom_teams_v1') || '[]');
+        customTeamData = customs.find(c => (c.teamId || c.id) === teamId);
+      } catch { /* ignore */ }
+      const defaultTeamData = {
+        'TEAM-BEASISWA-KADER': {
+          teamName: 'Beasiswa Taruna Menwa UNJ (Kader Berprestasi & Prasejahtera)',
+          institution: 'Batalyon Jayakarta Satuan UNJ',
+          category: 'Beasiswa Menwa',
+          dantonName: 'Kaur Personalia & Staf Diklat',
+          motto: 'Mendukung keberlanjutan studi prajurit intelektual berprestasi',
+          targetDonation: 10000000,
+          photoUrl: '/foto-kampus-unj.jpg'
+        },
+        'TEAM-LOGISTIK-BENCANA': {
+          teamName: 'Posko Logistik & Medis Cepat Tanggap Bencana Kemanusiaan',
+          institution: 'Satgas Tanggap Darurat Bencana Menwa UNJ',
+          category: 'Logistik Bencana',
+          dantonName: 'Kaur Operasi & Tim Teritorial',
+          motto: 'Penyaluran sembako, selimut, air bersih & pertolongan pertama lapangan',
+          targetDonation: 8000000,
+          photoUrl: '/dokumentasi/pengabdian25.svg'
+        },
+        'TEAM-AKSI-KARHUTLA': {
+          teamName: 'Aksi Tanggap Karhutla & Perlindungan Ekosistem',
+          institution: 'Satgas Operasi Karhutla & SAR Satuan UNJ',
+          category: 'Aksi Karhutla',
+          dantonName: 'Kaur Pengamanan & Tim Rescue',
+          motto: 'Penyediaan respirator kabut asap, pompa apung & logistik regu pemadam',
+          targetDonation: 7000000,
+          photoUrl: '/kegiatan/kc-menwa-unj.jpg'
+        }
+      }[teamId];
+
+      const teamInit = customTeamData || defaultTeamData || {
+        teamName: teamId.replace(/^TEAM-/, '').replace(/-/g, ' '),
+        institution: 'Satuan Menwa UNJ',
+        category: 'Inisiatif Donasi Satuan',
+        targetDonation: 5000000
+      };
+
+      await setDoc(teamRef, {
+        ...teamInit,
+        teamId,
+        votesCount: (Number(teamInit.votesCount) || 0) + addedVotes,
+        totalAmountReceived: (Number(teamInit.totalAmountReceived) || 0) + addedAmount,
+        lastVoteAt: nowIso,
+        createdAt: nowIso,
+        updatedAt: nowIso
+      }, { merge: true });
+    }
+
+    try {
+      const customs = JSON.parse(localStorage.getItem('menwa_custom_teams_v1') || '[]');
+      const updatedCustoms = customs.map(c => {
+        if ((c.teamId || c.id) === teamId) {
+          return {
+            ...c,
+            votesCount: (Number(c.votesCount) || 0) + addedVotes,
+            totalAmountReceived: (Number(c.totalAmountReceived) || 0) + addedAmount,
+            lastVoteAt: nowIso,
+            updatedAt: nowIso
+          };
+        }
+        return c;
+      });
+      localStorage.setItem('menwa_custom_teams_v1', JSON.stringify(updatedCustoms));
+    } catch { /* ignore */ }
+
+    return txPayload;
+  } catch (error) {
+    console.warn('submitGeranatVote note:', error);
+    return txPayload;
+  }
+} /* Buat transaksi voting berstatus PENDING saat modal QRIS dibuka (Batas 15 Menit) */ export async function createPendingVoteTransaction({ txId, teamId, teamName, voterUid, voterName, votes, amount }) { const finalTxId = txId || `VOTE-${Date.now().toString(36).toUpperCase()}`; const now = Date.now(); const expiresAt = new Date(now + 15 * 60 * 1000).toISOString(); const payload = { txId: finalTxId, teamId: teamId || 'team-1', teamName: teamName || 'Tim Kontingen GERANAT', voterUid: voterUid || auth.currentUser?.uid || 'anonymous', voterName: voterName || auth.currentUser?.displayName || 'Pendukung Setia', votes: Number(votes) || 1, amount: Number(amount) || 1000, paymentMethod: 'QRIS Statis Mako', status: 'pending', expiresAt, createdAt: new Date(now).toISOString() }; try { await setDoc(doc(firestore, 'voting_transactions', finalTxId), payload); return payload; } catch (err) { console.warn('Create pending vote transaction note:', err); return payload; } } /* Cancel vote */ export async function cancelExpiredVoteTransaction(txId, cancelReason = 'timeout_15min') { if (!txId) return null; try { const txRef = doc(firestore, 'voting_transactions', txId); const snap = await getDoc(txRef); if (snap.exists() && snap.data().status === 'lunas') { return snap.data(); /* Sudah lunas, jangan batalkan */ } const updateData = { status: 'batal', cancelReason, cancelledAt: new Date().toISOString() }; await setDoc(txRef, updateData, { merge: true }); return updateData; } catch (err) { console.warn('Cancel expired vote transaction warning:', err); return null; } } /* Sub vote */ export function subscribeToVoteTransaction(txId, onUpdate) { if (!txId || typeof onUpdate !== 'function') return () => {}; const txRef = doc(firestore, 'voting_transactions', txId); return onSnapshot( txRef, (snap) => { if (snap.exists()) { onUpdate({ id: snap.id, ...snap.data() }); } }, (err) => console.warn('Vote transaction listener warning:', err) ); } /* Sub teams */ export function subscribeToGeranatTeams(onUpdate) { if (typeof onUpdate !== 'function') return () => {}; const colRef = collection(firestore, 'geranat_teams'); return onSnapshot( colRef, (snap) => { if (!snap.empty) { const list = snap.docs.map(d => ({ ...d.data(), id: d.id })); onUpdate(list); } else { onUpdate([]); } }, (err) => console.warn('Geranat teams realtime listener warning:', err) ); } /* Sub recent */ export function subscribeToRecentVotes(onUpdate, maxCount = 10) { if (typeof onUpdate !== 'function') return () => {}; const colRef = collection(firestore, 'voting_transactions'); return onSnapshot( colRef, (snap) => { const items = snap.docs .map(d => ({ ...d.data(), id: d.id })) .filter(tx => tx.status === 'lunas') .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()) .slice(0, maxCount); onUpdate(items); }, (err) => console.warn('Recent votes ticker listener warning:', err) ); } /* Ambil seluruh riwayat transaksi voting untuk ekspor Spreadsheet / CSV Admin */ export async function getAllVotingTransactionsForAdmin() { const path = 'voting_transactions'; try { const snap = await getDocs(collection(firestore, 'voting_transactions')); return snap.docs.map(d => ({ ...d.data(), id: d.id })); } catch (error) { console.warn('All voting transactions fetch warning:', error); return []; } } /* Konfigurasi Charity Voting (Buka/Tutup, Target Dana, Mode Siaga) */ export const DEFAULT_CHARITY_CONFIG = { isVotingOpen: false, /* Default tertutup (Mode Siaga) sesuai instruksi user */ programName: 'Charity Vote: Beasiswa Menwa & Bantuan Kemanusiaan', headline: 'Pintu Donasi Charity Vote Sedang Disiapkan', subheadline: 'Dukungan untuk Beasiswa Taruna Menwa, Bantuan Logistik Bencana Kemanusiaan, & Aksi Cepat Karhutla', scheduledOpenAt: '2026-11-01T08:00:00+07:00', targetGoalAmount: 25000000, pricePerVote: 1000, updatedAt: new Date().toISOString() }; export async function getCharityVotingConfig() { try { const snap = await getDoc(doc(firestore, 'settings', 'charity_voting_config')); if (snap.exists()) { return { ...DEFAULT_CHARITY_CONFIG, ...snap.data() }; } return DEFAULT_CHARITY_CONFIG; } catch (err) { console.warn('Charity voting config fetch warning:', err); return DEFAULT_CHARITY_CONFIG; } } export async function setCharityVotingConfig(newConfig) { try { const payload = { ...DEFAULT_CHARITY_CONFIG, ...newConfig, updatedAt: new Date().toISOString() }; await setDoc(doc(firestore, 'settings', 'charity_voting_config'), payload, { merge: true }); return payload; } catch (err) { handleFirestoreError(err, 'update', 'settings/charity_voting_config'); } } export function subscribeToCharityVotingConfig(onUpdate) { if (typeof onUpdate !== 'function') return () => {}; const cfgRef = doc(firestore, 'settings', 'charity_voting_config'); return onSnapshot( cfgRef, (snap) => { if (snap.exists()) { onUpdate({ ...DEFAULT_CHARITY_CONFIG, ...snap.data() }); } else { onUpdate(DEFAULT_CHARITY_CONFIG); } }, (err) => console.warn('Charity voting config snapshot warning:', err) ); } /* Hapus tim tertentu */ export async function deleteGeranatTeam(teamId) { if (!teamId) return; try { await deleteDoc(doc(firestore, 'geranat_teams', teamId)); return true; } catch (err) { handleFirestoreError(err, 'delete', `geranat_teams/${teamId}`); } } /* Reset votes */ export async function resetCharityVotingData() { try { const teamsSnap = await getDocs(collection(firestore, 'geranat_teams')); const deletePromises = teamsSnap.docs.map(d => deleteDoc(d.ref)); await Promise.all(deletePromises); return true; } catch (err) { console.warn('Reset charity voting data warning:', err); throw err; } } /* Reset Skor Gamifikasi */ export async function resetGamificationLeaderboard() { try { const usersSnap = await getDocs(collection(firestore, 'users')); const resetPromises = usersSnap.docs.map(userDoc => updateDoc(userDoc.ref, { tacticalPoints: 0, weeklyPoints: 0, monthlyPoints: 0, currentStreak: 0, streakMilestonesClaimed: [], updatedAt: new Date().toISOString() }).catch(err => console.warn(`Skip user ${userDoc.id}:`, err)) ); await Promise.all(resetPromises); return true; } catch (err) { console.warn('Reset gamification leaderboard warning:', err); throw err; } } /* Ambil data Portal Peserta berdasarkan Token Unik */ export async function getParticipantPortal(token) { if (!token) return null; const path = `participant_portals/${token}`; try { const snap = await getDoc(doc(firestore, 'participant_portals', token)); if (snap.exists()) { return snap.data(); } return null; } catch (error) { console.warn('Participant portal get warning:', error); return null; } } /* Simpan / Perbarui data Portal Peserta */ export async function saveParticipantPortal(portalData) { if (!portalData || !portalData.token) return; const path = `participant_portals/${portalData.token}`; try { const payload = { ...portalData, updatedAt: new Date().toISOString() }; await setDoc(doc(firestore, 'participant_portals', portalData.token), payload); return payload; } catch (error) { handleFirestoreError(error, 'create', path); } } /* Perbarui berkas peserta di Portal Peserta */ export async function updateParticipantDocument(token, docId, updates) { if (!token || !docId) return; const path = `participant_portals/${token}`; try { const docRef = doc(firestore, 'participant_portals', token); const snap = await getDoc(docRef); if (!snap.exists()) return; const currentDocs = snap.data().documents || []; const updatedDocs = currentDocs.map(d => d.id === docId ? { ...d, ...updates } : d); await updateDoc(docRef, { documents: updatedDocs, updatedAt: new Date().toISOString() }); return updatedDocs; } catch (error) { handleFirestoreError(error, 'update', path); } } /* Daftar Akun Admin yang berwenang mengubah rekening bank Mako */ export const AUTHORIZED_BANK_ADMINS = ['unjmenwa@gmail.com', 'rafflysyahpoetra@gmail.com']; /* Ambil konfigurasi rekening bank resmi & status verifikasi 2-admin */ export async function getBankConfigWithProposal() { try { const configSnap = await getDoc(doc(firestore, 'settings', 'bank_account_config')); const proposalSnap = await getDoc(doc(firestore, 'settings', 'bank_verification_proposal')); const activeConfig = configSnap.exists() ? configSnap.data() : null; const pendingProposal = proposalSnap.exists() ? proposalSnap.data() : null; return { activeConfig, pendingProposal }; } catch (error) { console.warn('Bank config & proposal fetch warning:', error); return { activeConfig: null, pendingProposal: null }; } } /* Get bank config */ export async function getBankQRISConfig() { try { /* 1. Cek bank_qris */ const bankQrisSnap = await getDoc(doc(firestore, 'settings', 'bank_qris')); if (bankQrisSnap.exists() && bankQrisSnap.data()?.accountNumber) { return bankQrisSnap.data(); } /* 2. Cek bank_account_config */ const snap = await getDoc(doc(firestore, 'settings', 'bank_account_config')); if (snap.exists() && snap.data()?.accountNumber) { return snap.data(); } /* 3. Fallback ke qris_bank_config */ const legacySnap = await getDoc(doc(firestore, 'settings', 'qris_bank_config')); if (legacySnap.exists()) { return legacySnap.data(); } return null; } catch (error) { console.warn('Bank QRIS config fetch warning:', error); return null; } } /* Catat Audit Log ke koleksi /audit_logs/{logId} */ export async function createAuditLog({ actorEmail, actorUid, action, targetCollection, targetDocId, previousValue = null, newValue = null }) { try { const logId = `AUDIT-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`; const payload = { logId, actorEmail: actorEmail || auth.currentUser?.email || 'system@menwa.unj', actorUid: actorUid || auth.currentUser?.uid || 'system', action, targetCollection, targetDocId, previousValue, newValue, timestamp: new Date().toISOString(), userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Server' }; await setDoc(doc(firestore, 'audit_logs', logId), payload); return payload; } catch (err) { console.warn('Audit log write warning:', err); return null; } } export async function getAuditLogs() { try { const snap = await getDocs(collection(firestore, 'audit_logs')); return snap.docs .map(d => ({ ...d.data(), id: d.id })) .sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime()); } catch (err) { console.warn('Audit logs fetch warning:', err); return []; } } /* Propose bank config */ export async function proposeBankConfigUpdate({ bankName, accountNumber, accountHolder, qrisPayload, userEmail }) { if (!userEmail || !AUTHORIZED_BANK_ADMINS.includes(userEmail.toLowerCase())) { throw new Error('Hanya akun unjmenwa@gmail.com dan rafflysyahpoetra@gmail.com yang berhak mengajukan perubahan bank.'); } const changeId = `BANK-PROP-${Date.now()}`; const proposalData = { changeId, type: 'BANK_ACCOUNT_UPDATE', proposedBankName: bankName.trim(), proposedAccountNumber: accountNumber.trim(), proposedAccountHolder: accountHolder.trim(), proposedQrisPayload: qrisPayload || `00020101021126610014ID.CO.BANKMANDIRI.WWW01189360000801123456780215${accountNumber.trim()}0303UMI5204541153033605802ID5921${accountHolder.trim().substring(0, 21)}6007JAKARTA6105132206304A1B2`, proposedBy: userEmail.toLowerCase(), proposedAt: new Date().toISOString(), status: 'PENDING_APPROVAL' }; /* Simpan ke koleksi PendingChanges */ await setDoc(doc(firestore, 'PendingChanges', changeId), proposalData); /* Simpan juga ke pointer aktif di settings/bank_verification_proposal */ await setDoc(doc(firestore, 'settings', 'bank_verification_proposal'), proposalData); await createAuditLog({ actorEmail: userEmail.toLowerCase(), action: 'BANK_CHANGE_PROPOSED', targetCollection: 'PendingChanges', targetDocId: changeId, newValue: proposalData }); return proposalData; } /* Approve bank config */ export async function approveBankConfigProposal(approverEmail) { if (!approverEmail || !AUTHORIZED_BANK_ADMINS.includes(approverEmail.toLowerCase())) { throw new Error('Hanya akun unjmenwa@gmail.com dan rafflysyahpoetra@gmail.com yang dapat menyetujui.'); } const proposalRef = doc(firestore, 'settings', 'bank_verification_proposal'); const proposalSnap = await getDoc(proposalRef); if (!proposalSnap.exists()) { throw new Error('Tidak ada pengajuan perubahan rekening yang menunggu persetujuan.'); } const proposal = proposalSnap.data(); if (proposal.status !== 'PENDING_APPROVAL') { throw new Error('Pengajuan ini sudah tidak dalam status menunggu persetujuan.'); } /* Verifikasi 2 akun berbeda: Admin yang menginput TIDAK BISA menyetujui sendiri */ if (proposal.proposedBy.toLowerCase() === approverEmail.toLowerCase()) { throw new Error('Verifikasi 2 Admin (2-Verification): Anda tidak dapat menyetujui pengajuan Anda sendiri. Persetujuan harus dilakukan oleh akun admin lainnya.'); } const newActiveConfig = { bankName: proposal.proposedBankName, accountNumber: proposal.proposedAccountNumber, accountHolder: proposal.proposedAccountHolder, qrisPayload: proposal.proposedQrisPayload || `00020101021126610014ID.CO.BANKMANDIRI.WWW01189360000801123456780215${proposal.proposedAccountNumber}0303UMI5204541153033605802ID5921${proposal.proposedAccountHolder.substring(0, 21)}6007JAKARTA6105132206304A1B2`, updatedAt: new Date().toISOString(), proposedBy: proposal.proposedBy, lastApprovedBy: approverEmail.toLowerCase(), status: 'ACTIVE' }; /* Set bank_qris */ await setDoc(doc(firestore, 'settings', 'bank_qris'), newActiveConfig, { merge: true }); await setDoc(doc(firestore, 'settings', 'bank_account_config'), newActiveConfig); await setDoc(doc(firestore, 'settings', 'qris_bank_config'), newActiveConfig, { merge: true }); /* Update status proposal menjadi APPROVED di settings */ await updateDoc(proposalRef, { status: 'APPROVED', approvedBy: approverEmail.toLowerCase(), approvedAt: new Date().toISOString() }); /* Update juga status di koleksi PendingChanges */ if (proposal.changeId) { try { await updateDoc(doc(firestore, 'PendingChanges', proposal.changeId), { status: 'APPROVED', approvedBy: approverEmail.toLowerCase(), approvedAt: new Date().toISOString() }); } catch (e) { console.warn('PendingChanges update warning:', e); } } await createAuditLog({ actorEmail: approverEmail.toLowerCase(), action: 'BANK_CHANGE_APPROVED', targetCollection: 'settings', targetDocId: 'bank_qris', previousValue: proposal, newValue: newActiveConfig }); return newActiveConfig; } /* Reject bank config */ export async function rejectBankConfigProposal(rejecterEmail, reason = '') { if (!rejecterEmail || !AUTHORIZED_BANK_ADMINS.includes(rejecterEmail.toLowerCase())) { throw new Error('Akses ditolak.'); } const proposalRef = doc(firestore, 'settings', 'bank_verification_proposal'); const proposalSnap = await getDoc(proposalRef); if (!proposalSnap.exists()) return; const proposal = proposalSnap.data(); if (proposal.proposedBy.toLowerCase() === rejecterEmail.toLowerCase()) { await updateDoc(proposalRef, { status: 'CANCELLED_BY_PROPOSER', cancelledAt: new Date().toISOString() }); if (proposal.changeId) { await updateDoc(doc(firestore, 'PendingChanges', proposal.changeId), { status: 'CANCELLED_BY_PROPOSER', cancelledAt: new Date().toISOString() }).catch(() => {}); } return; } await updateDoc(proposalRef, { status: 'REJECTED', rejectedBy: rejecterEmail.toLowerCase(), rejectedAt: new Date().toISOString(), rejectReason: reason }); if (proposal.changeId) { await updateDoc(doc(firestore, 'PendingChanges', proposal.changeId), { status: 'REJECTED', rejectedBy: rejecterEmail.toLowerCase(), rejectedAt: new Date().toISOString(), rejectReason: reason }).catch(() => {}); } await createAuditLog({ actorEmail: rejecterEmail.toLowerCase(), action: 'BANK_CHANGE_REJECTED', targetCollection: 'PendingChanges', targetDocId: proposal.changeId || 'bank_verification_proposal', previousValue: proposal, newValue: { status: 'REJECTED', reason } }); } /* Get pending changes */ export async function getPendingChangesList() { try { const snap = await getDocs(collection(firestore, 'PendingChanges')); return snap.docs.map(d => ({ ...d.data(), id: d.id })); } catch (error) { console.warn('PendingChanges list fetch warning:', error); return []; } } /* Save bank QRIS */ export async function saveBankQRISConfig(config) { const path = 'settings/bank_account_config'; try { const payload = { ...config, updatedAt: new Date().toISOString() }; await setDoc(doc(firestore, 'settings', 'bank_qris'), payload, { merge: true }); await setDoc(doc(firestore, 'settings', 'bank_account_config'), payload, { merge: true }); await setDoc(doc(firestore, 'settings', 'qris_bank_config'), payload, { merge: true }); return payload; } catch (error) { handleFirestoreError(error, 'write', path); } } /* === */ /* KOLEKSI V8 BARU: Content Registry, Command Center Logs, Notifications, Tasks */ /* === */ /**
  * Kompres file gambar pada canvas browser sebelum disimpan ke Firestore / Storage.
  * Mengurangi ukuran gambar kamera (10-20 MB) menjadi 100-250 KB tanpa kehilangan kualitas visual.
  */
@@ -352,6 +478,67 @@ export async function uploadAndConvertToSVG(fileDataUrl, originalFileName, tabId
     createdAt: existing.createdAt || portalData.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
+
+  // Sinkronisasi berkas dokumen dan foto kontingen ke Firebase Storage
+  if (storage && payload.documents && typeof payload.documents === 'object') {
+    for (const [docId, docObj] of Object.entries(payload.documents)) {
+      if (docObj && docObj.fileDataUrl && docObj.fileDataUrl.startsWith('data:')) {
+        try {
+          const ext = (docObj.fileName?.split('.').pop() || 'pdf').toLowerCase();
+          const sRef = storageRef(storage, `official_portals/${schoolSlug}/documents/${docId}.${ext}`);
+          await uploadString(sRef, docObj.fileDataUrl, 'data_url');
+          const dUrl = await getDownloadURL(sRef);
+          payload.documents[docId] = {
+            ...docObj,
+            fileDownloadUrl: dUrl,
+            fileDataUrl: dUrl,
+          };
+        } catch (e) {
+          console.warn('Storage sync document note:', e);
+        }
+      }
+    }
+  }
+
+  if (storage && Array.isArray(payload.pasukanList)) {
+    for (let i = 0; i < payload.pasukanList.length; i++) {
+      const p = payload.pasukanList[i];
+      if (p && p.photoDataUrl && p.photoDataUrl.startsWith('data:')) {
+        try {
+          const sRef = storageRef(storage, `official_portals/${schoolSlug}/photos/pasukan-${i + 1}.webp`);
+          await uploadString(sRef, p.photoDataUrl, 'data_url');
+          const pUrl = await getDownloadURL(sRef);
+          payload.pasukanList[i] = {
+            ...p,
+            photoDownloadUrl: pUrl,
+            photoDataUrl: pUrl,
+          };
+        } catch (e) {
+          console.warn('Storage sync photo note:', e);
+        }
+      }
+    }
+  }
+
+  if (storage && Array.isArray(payload.officialList)) {
+    for (let i = 0; i < payload.officialList.length; i++) {
+      const o = payload.officialList[i];
+      if (o && o.photoDataUrl && o.photoDataUrl.startsWith('data:')) {
+        try {
+          const sRef = storageRef(storage, `official_portals/${schoolSlug}/photos/official-${i + 1}.webp`);
+          await uploadString(sRef, o.photoDataUrl, 'data_url');
+          const oUrl = await getDownloadURL(sRef);
+          payload.officialList[i] = {
+            ...o,
+            photoDownloadUrl: oUrl,
+            photoDataUrl: oUrl,
+          };
+        } catch (e) {
+          console.warn('Storage sync official photo note:', e);
+        }
+      }
+    }
+  }
 
   localMap[schoolSlug] = payload;
   writeLocalOfficialCache(localMap);

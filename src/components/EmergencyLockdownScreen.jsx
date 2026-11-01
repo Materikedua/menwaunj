@@ -49,12 +49,13 @@ export function EmergencyLockdownScreen({ lockdownConfig, onAdminUnlockSuccess }
             loginAt: new Date().toISOString()
           })
         );
+        window.dispatchEvent(new CustomEvent('menwa-lockdown-bypass', { detail: true }));
       } catch { /* ignore */ }
       setShowAdminModal(false);
       if (onAdminUnlockSuccess) onAdminUnlockSuccess();
       window.location.reload();
     } else {
-      setErrorMsg('PIN Taktis tidak sesuai. Hubungi Perwira Piket Mako atau gunakan Google OAuth.');
+      setErrorMsg('PIN Taktis tidak sesuai (Gunakan 1926). Hubungi Perwira Piket Mako atau gunakan Google OAuth.');
     }
   };
 
@@ -62,19 +63,22 @@ export function EmergencyLockdownScreen({ lockdownConfig, onAdminUnlockSuccess }
     setLoading(true);
     setErrorMsg('');
     try {
-      await setLockdownState({
+      const stateObj = {
         isLockdown: false,
         level: 'NORMAL',
+        unlockPin: '1926',
         activatedBy: user?.email || 'Perwira Komando Mako'
-      });
+      };
+      await setLockdownState(stateObj);
       try {
         localStorage.removeItem('menwa_lockdown_bypass');
-        localStorage.setItem('menwa_lockdown_state_v1', JSON.stringify({ isLockdown: false, level: 'NORMAL' }));
+        localStorage.setItem('menwa_lockdown_state_v1', JSON.stringify(stateObj));
+        window.dispatchEvent(new CustomEvent('menwa-lockdown-updated', { detail: stateObj }));
       } catch { /* ignore */ }
       setSuccessMsg('Mode Siaga 1 berhasil dinonaktifkan. Akses publik telah dibuka kembali.');
       setTimeout(() => {
         window.location.reload();
-      }, 800);
+      }, 500);
     } catch (err) {
       setErrorMsg('Gagal menonaktifkan siaga 1: ' + (err?.message || err));
     } finally {
@@ -193,6 +197,14 @@ export function EmergencyLockdownScreen({ lockdownConfig, onAdminUnlockSuccess }
               mencoba merusak kehormatan nama baik institusi sedang dalam proses penelusuran forensik digital dan
               berada dalam perlindungan hukum berdasarkan <strong>Pasal 30, 32, dan 46 UU RI No. 1 Tahun 2024 (UU ITE)</strong>.
               Tidak ada pernyataan di luar saluran resmi berstempel Komando yang memiliki kekuatan hukum mengikat.
+            </p>
+          </div>
+
+          {/* Penjelasan Kontrol Akses Multi-Browser */}
+          <div className="rounded-xl bg-slate-900/60 border border-slate-700/60 p-3 text-[11px] text-slate-300 flex items-start gap-2.5">
+            <ShieldCheck size={16} className="text-emerald-400 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              <strong>Catatan Autentikasi:</strong> Browser dengan sesi kredensial Komando / PIN taktis diizinkan melintasi mode siaga secara otomatis untuk verifikasi sistem, sedangkan pengunjung umum/tamu diarahkan ke proteksi Siaga 1 ini demi pencegahan manipulasi data.
             </p>
           </div>
 

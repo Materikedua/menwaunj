@@ -1,4 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react'; import { FileText, Download, Search, Filter, CheckCircle2, Clock, XCircle, AlertCircle, RefreshCw, ExternalLink, ChevronDown, Building, User, Phone, Mail, Calendar, ShieldCheck, ArrowUpDown, FileSpreadsheet, Share2, Heart, Vote, Trash2, Sparkles, HelpCircle, X, GraduationCap } from 'lucide-react'; import { useAuth } from '../hooks/useAuth.jsx'; import { getAllSubmissionsForAdmin, updateSubmissionStatus, getAllVotingTransactionsForAdmin, getGeranatTeams, resetCharityVotingData, resetGamificationLeaderboard } from '../firebase.js'; export function AdminSubmissionsDashboard() { const { user, isAdmin: authIsAdmin, isSuperAdmin: authIsSuperAdmin, userRole, profile } = useAuth();
+import React, { useState, useEffect, useMemo } from 'react'; import { FileText, Download, Search, Filter, CheckCircle2, Clock, XCircle, AlertCircle, RefreshCw, ExternalLink, ChevronDown, Building, User, Phone, Mail, Calendar, ShieldCheck, ArrowUpDown, FileSpreadsheet, Share2, Heart, Vote, Trash2, Sparkles, HelpCircle, X, GraduationCap } from 'lucide-react'; import { useAuth } from '../hooks/useAuth.jsx'; import { getAllSubmissionsForAdmin, updateSubmissionStatus, getAllVotingTransactionsForAdmin, getGeranatTeams, resetCharityVotingData, resetGamificationLeaderboard } from '../firebase.js';
+import { openOrDownloadPdf } from '../lib/pdfUtils.js';
+
+export { openOrDownloadPdf };
+
+export function AdminSubmissionsDashboard() { const { user, isAdmin: authIsAdmin, isSuperAdmin: authIsSuperAdmin, userRole, profile } = useAuth();
   const userEmail = user?.email?.toLowerCase();
   const isSuperAdmin = !!(user && (userEmail === 'unjmenwa@gmail.com' || userEmail === 'rafflysyahpoetra@gmail.com' || authIsSuperAdmin));
   
@@ -71,14 +76,7 @@ import React, { useState, useEffect, useMemo } from 'react'; import { FileText, 
                               onClick={(e) => {
                                 e.stopPropagation();
                                 const pdfTarget = item.documentPdfUrl || item.documentPdfBase64;
-                                if (pdfTarget.startsWith('data:')) {
-                                  const win = window.open();
-                                  win?.document.write(
-                                    `<iframe src="${pdfTarget}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`
-                                  );
-                                } else {
-                                  window.open(pdfTarget, '_blank', 'noopener,noreferrer');
-                                }
+                                openOrDownloadPdf(pdfTarget, item.documentPdfName || `surat_${item.submissionId || item.id}.pdf`);
                               }}
                               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-[#006569] font-bold text-[10px] border border-teal-200 transition cursor-pointer"
                               title="Buka / Unduh Berkas PDF Resmi"
@@ -248,14 +246,7 @@ import React, { useState, useEffect, useMemo } from 'react'; import { FileText, 
                     type="button"
                     onClick={() => {
                       const pdfTarget = selectedDetailItem.documentPdfUrl || selectedDetailItem.documentPdfBase64;
-                      if (pdfTarget.startsWith('data:')) {
-                        const win = window.open();
-                        win?.document.write(
-                          `<iframe src="${pdfTarget}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`
-                        );
-                      } else {
-                        window.open(pdfTarget, '_blank', 'noopener,noreferrer');
-                      }
+                      openOrDownloadPdf(pdfTarget, selectedDetailItem.documentPdfName || `surat_${selectedDetailItem.submissionId || selectedDetailItem.id}.pdf`);
                     }}
                     className="neu-btn-primary px-4 py-2.5 rounded-xl text-xs font-black text-[#FFDD00] shadow transition flex items-center justify-center gap-2 cursor-pointer"
                   >

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { getSubmissionById } from '../firebase.js';
 import { playTactileClick } from '../lib/tactileAudio.js';
+import { openOrDownloadPdf } from '../lib/pdfUtils.js';
 
 export function LetterProgressSection({ initialId = '', onClose }) {
   const [searchId, setSearchId] = useState(initialId);
@@ -381,17 +382,18 @@ export function LetterProgressSection({ initialId = '', onClose }) {
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
             <div>
               {letter.documentPdfUrl || letter.documentPdfBase64 ? (
-                <a
-                  href={letter.documentPdfUrl || letter.documentPdfBase64}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download={`Surat_${letter.submissionId || 'Menwa_UNJ'}.pdf`}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const pdfTarget = letter.documentPdfUrl || letter.documentPdfBase64;
+                    openOrDownloadPdf(pdfTarget, letter.documentPdfName || `Surat_${letter.submissionId || 'Menwa_UNJ'}.pdf`);
+                  }}
                   className="neu-btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black text-[#FFDD00] shadow-sm cursor-pointer"
                 >
                   <FileText size={15} />
                   <span>Unduh Berkas Surat (PDF)</span>
                   <ExternalLink size={13} />
-                </a>
+                </button>
               ) : (
                 <span className="text-xs text-slate-500 italic">
                   Berkas lampiran fisik surat sedang dalam verifikasi arsip.

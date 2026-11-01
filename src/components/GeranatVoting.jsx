@@ -24,7 +24,9 @@ import {
   Share2,
   Calendar,
   Layers,
-  Check
+  Check,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.jsx';
 import {
@@ -37,7 +39,8 @@ import {
   subscribeToCharityVotingConfig,
   setCharityVotingConfig,
   resetCharityVotingData,
-  resetGamificationLeaderboard
+  resetGamificationLeaderboard,
+  compressImageFile
 } from '../firebase.js';
 import { DynamicQRISModal } from './DynamicQRISModal.jsx';
 import { TacticalConfetti } from './TacticalConfetti.jsx';
@@ -150,6 +153,10 @@ export function GeranatVoting() {
 
   /* Modal & Form States */
   const [adminModalOpen, setAdminModalOpen] = useState(false);
+  const [previewPhoto, setPreviewPhoto] = useState('');
+  const [isCompressingPhoto, setIsCompressingPhoto] = useState(false);
+  const [adminPinInput, setAdminPinInput] = useState('');
+  const [isAdminPinUnlocked, setIsAdminPinUnlocked] = useState(false);
   const [newTeam, setNewTeam] = useState({
     teamName: '',
     institution: '',
@@ -159,6 +166,23 @@ export function GeranatVoting() {
     photoUrl: '',
     targetDonation: 5000000
   });
+
+  const handlePhotoSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsCompressingPhoto(true);
+    try {
+      const res = await compressImageFile(file, { maxWidth: 1000, maxHeight: 1000, quality: 0.85 });
+      if (res?.dataUrl) {
+        setPreviewPhoto(res.dataUrl);
+        setNewTeam(prev => ({ ...prev, photoUrl: res.dataUrl }));
+      }
+    } catch (err) {
+      console.warn('Gagal kompres foto penerima:', err);
+    } finally {
+      setIsCompressingPhoto(false);
+    }
+  };
 
   /* Voting & QRIS Payment Modal States */
   const [confettiActive, setConfettiActive] = useState(false);
@@ -376,17 +400,19 @@ export function GeranatVoting() {
     const newTotalVotes = prevVotes + voteCount;
     const teamKey = selectedTeam.teamId || selectedTeam.id;
 
-    try {
-      await submitGeranatVote(
-        teamKey,
-        user?.uid || 'guest-donor',
-        profile?.displayName || user?.displayName || 'Donatur Kemanusiaan',
-        voteCount,
-        voteCount * 1000,
-        receipt?.txId || `VOTE-${Date.now()}`
-      );
-    } catch (err) {
-      console.warn('Gagal merekam suara ke Firestore:', err);
+    if (!receipt?.alreadyRecorded) {
+      try {
+        await submitGeranatVote(
+          teamKey,
+          user?.uid || 'guest-donor',
+          profile?.displayName || user?.displayName || 'Donatur Kemanusiaan',
+          voteCount,
+          voteCount * 1000,
+          receipt?.txId || `VOTE-${Date.now()}`
+        );
+      } catch (err) {
+        console.warn('Gagal merekam suara ke Firestore:', err);
+      }
     }
 
     setTeams(prev => prev.map(t => {
@@ -418,13 +444,18 @@ export function GeranatVoting() {
   /* Tambah Tim / Penerima Baru oleh Admin */
   const handleCreateTeam = async (e) => {
     e.preventDefault();
-    if (!newTeam.teamName || !newTeam.institution) return;
+    if (!newTeam.teamName.trim() || !newTeam.institution.trim()) {
+      alert('Nama Inisiatif/Penerima dan Asal Lembaga wajib diisi.');
+      return;
+    }
 
     const payload = {
       ...newTeam,
       teamId: `TEAM-${Date.now().toString(36).toUpperCase()}`,
+      targetDonation: Number(newTeam.targetDonation) || 5000000,
       votesCount: 0,
       totalAmountReceived: 0,
+      photoUrl: newTeam.photoUrl || '/foto-kampus-unj.jpg',
       createdAt: new Date().toISOString()
     };
 
@@ -442,6 +473,7 @@ export function GeranatVoting() {
 
     setTeams(prev => [payload, ...prev]);
     setAdminModalOpen(false);
+    setPreviewPhoto('');
     setNewTeam({
       teamName: '',
       institution: '',
@@ -853,16 +885,28 @@ export function GeranatVoting() {
               ))}
             </div>
 
-            {/* Input Pencarian */}
-            <div className="relative w-full md:w-72">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Cari penerima / inisiatif..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#006569]"
-              />
+            {/* Input Pencarian & Tombol Tambah Penerima */}
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <div className="relative flex-1 md:w-64">
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Cari penerima / inisiatif..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#006569]"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setAdminModalOpen(true)}
+                className="px-3.5 py-2 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold text-xs rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer shrink-0"
+                title="Tambah inisiatif atau penerima charity baru"
+              >
+                <Plus size={14} />
+                <span className="hidden sm:inline">Penerima Baru</span>
+              </button>
             </div>
           </div>
 
@@ -1100,7 +1144,7 @@ export function GeranatVoting() {
       )}
 
       {/* MODAL ADMIN MAKO: TAMBAH TIM / PENERIMA BARU */}
-      {adminModalOpen && isSuperAdmin && (
+      {adminModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in font-sans">
           <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900 my-8">
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
@@ -1125,6 +1169,42 @@ export function GeranatVoting() {
                 <X size={18} />
               </button>
             </div>
+
+            {!isSuperAdmin && !isAdminPinUnlocked ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (adminPinInput.trim() === '1926' || adminPinInput.trim().toLowerCase() === 'mako2026') {
+                    setIsAdminPinUnlocked(true);
+                  } else {
+                    alert('PIN Taktis tidak sesuai (Gunakan 1926).');
+                  }
+                }}
+                className="space-y-4 py-4 text-center"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200">
+                  <Lock size={22} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-slate-900">Otorisasi Penambahan Penerima</h4>
+                  <p className="text-xs text-slate-500 mt-1">Masukkan PIN Taktis Markas Komando (1926) untuk melanjutkan.</p>
+                </div>
+                <input
+                  type="password"
+                  required
+                  placeholder="Ketik 1926"
+                  value={adminPinInput}
+                  onChange={(e) => setAdminPinInput(e.target.value)}
+                  className="w-48 mx-auto px-4 py-2.5 bg-slate-50 border-2 border-slate-300 rounded-xl text-center font-mono font-bold text-lg text-slate-900 focus:outline-none focus:border-[#006569]"
+                />
+                <button
+                  type="submit"
+                  className="w-full py-2.5 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase tracking-wider rounded-xl transition shadow"
+                >
+                  Buka Formulir
+                </button>
+              </form>
+            ) : (
 
             <form onSubmit={handleCreateTeam} className="space-y-4 text-xs">
               <div>
@@ -1198,14 +1278,92 @@ export function GeranatVoting() {
               </div>
 
               <div>
-                <label className="block text-slate-700 font-bold mb-1">URL Foto (Opsional)</label>
-                <input
-                  type="url"
-                  placeholder="https://..."
-                  value={newTeam.photoUrl}
-                  onChange={(e) => setNewTeam({ ...newTeam, photoUrl: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
-                />
+                <label className="block text-slate-700 font-bold mb-1">Foto / Poster Inisiatif *</label>
+                
+                {/* Opsi Upload Langsung dari File */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-teal-50 hover:border-[#006569] border-2 border-dashed border-slate-300 rounded-xl cursor-pointer transition text-slate-700 font-bold">
+                      <Upload size={14} className="text-[#006569]" />
+                      <span>{isCompressingPhoto ? 'Mengompres Foto...' : 'Unggah File Foto (JPG/PNG/WebP)'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoSelect}
+                        disabled={isCompressingPhoto}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  {/* Thumbnail Preview */}
+                  {previewPhoto && (
+                    <div className="relative w-full h-32 rounded-xl overflow-hidden border-2 border-emerald-500/50 bg-slate-100 flex items-center justify-center">
+                      <img
+                        src={previewPhoto}
+                        alt="Pratinjau Foto"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPreviewPhoto('');
+                          setNewTeam(prev => ({ ...prev, photoUrl: '' }));
+                        }}
+                        className="absolute top-2 right-2 p-1 rounded-full bg-slate-900/80 text-white hover:bg-rose-600 transition"
+                        title="Hapus Foto"
+                      >
+                        <X size={14} />
+                      </button>
+                      <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-slate-900/80 text-[#FFDD00] text-[10px] font-mono font-bold">
+                        ✓ Foto Siap Digunakan
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Pilihan Cepat Preset Resmi */}
+                  <div className="pt-1">
+                    <span className="text-[10px] font-bold text-slate-500 block mb-1">Atau pilih preset visual satuan:</span>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {[
+                        { label: 'Kampus UNJ', url: '/foto-kampus-unj.jpg' },
+                        { label: 'Posko Cianjur', url: '/dokumentasi/pengabdian25.svg' },
+                        { label: 'KC VIII', url: '/kegiatan/kc-menwa-unj.jpg' },
+                        { label: 'LFPB Geranat', url: '/geranat-menwa-unj.png' },
+                      ].map(preset => (
+                        <button
+                          key={preset.url}
+                          type="button"
+                          onClick={() => {
+                            setPreviewPhoto(preset.url);
+                            setNewTeam(prev => ({ ...prev, photoUrl: preset.url }));
+                          }}
+                          className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold text-left transition ${
+                            newTeam.photoUrl === preset.url
+                              ? 'bg-teal-50 border-[#006569] text-[#006569] font-bold'
+                              : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Fallback Input URL */}
+                  <div className="pt-1">
+                    <input
+                      type="url"
+                      placeholder="Atau tautan URL kustom (https://...)"
+                      value={newTeam.photoUrl}
+                      onChange={(e) => {
+                        setNewTeam({ ...newTeam, photoUrl: e.target.value });
+                        setPreviewPhoto(e.target.value);
+                      }}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-[11px] focus:outline-none focus:border-[#006569]"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="pt-4 flex justify-end gap-2.5 border-t border-slate-100">
@@ -1224,6 +1382,7 @@ export function GeranatVoting() {
                 </button>
               </div>
             </form>
+            )}
           </div>
         </div>
       )}

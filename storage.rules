@@ -37,6 +37,22 @@ service firebase.storage {
       allow write: if isValidImageOrPdf();
     }
 
+    match /official_portals/{allPaths=**} {
+      allow read: if true;
+      allow write: if isValidImageOrPdf();
+    }
+
+    // Berkas surat masuk & pengajuan administrasi umum (Adminu)
+    match /adminu_submissions/{allPaths=**} {
+      allow read: if true;
+      allow write: if isValidImageOrPdf();
+    }
+
+    match /surat_masuk/{allPaths=**} {
+      allow read: if true;
+      allow write: if isValidImageOrPdf();
+    }
+
     // Default Fallback
     match /{allPaths=**} {
       allow read: if true;

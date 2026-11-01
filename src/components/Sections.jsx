@@ -34,25 +34,29 @@ export function useKegiatan() {
       const expectedHyphen = `CNT-BERANDA-GIAT-${targetNum}`;
       
       // 1. Cari exact match atau normalisasi hyphen / underscore
-      let regItem = allRegistry.find((r) => {
+      // Prioritaskan aset yang memiliki foto ril (data URL, blob, atau bukan placeholder .svg bawaan)
+      const matchingCandidates = allRegistry.filter((r) => {
         if (!r.contentId) return false;
         const norm = r.contentId.toUpperCase().replace(/_/g, '-');
         return norm === expectedHyphen;
       });
 
+      let regItem = matchingCandidates.find((r) => r.imageUrl && (r.imageUrl.startsWith('data:') || r.imageUrl.startsWith('blob:') || !r.imageUrl.endsWith('.svg'))) || matchingCandidates[matchingCandidates.length - 1];
+
       // 2. Cari berdasarkan section dan urutan order
       if (!regItem) {
-        regItem = allRegistry.find(
+        const orderCandidates = allRegistry.filter(
           (r) => r.tabId === 'beranda' &&
                  (r.sectionId === 'sorotan_giat' || r.sectionId === 'custom_svg_asset') &&
                  (r.order === targetNum || r.order === (targetNum + 2))
         );
+        regItem = orderCandidates.find((r) => r.imageUrl && (r.imageUrl.startsWith('data:') || r.imageUrl.startsWith('blob:') || !r.imageUrl.endsWith('.svg'))) || orderCandidates[orderCandidates.length - 1];
       }
 
       // 3. Cari berdasarkan pencocokan konteks kegiatan khusus (Cianjur, Paskibra, KC, dll)
       if (!regItem) {
         const kStr = `${k.id} ${k.program || ''} ${k.title || ''}`.toLowerCase();
-        regItem = allRegistry.find((r) => {
+        const contextCandidates = allRegistry.filter((r) => {
           if (r.tabId !== 'beranda') return false;
           const rStr = `${r.contentId || ''} ${r.title || ''} ${r.caption || ''}`.toLowerCase();
           if (kStr.includes('cianjur') && rStr.includes('cianjur')) return true;
@@ -64,6 +68,7 @@ export function useKegiatan() {
           if (kStr.includes('studi-banding') && (rStr.includes('ipb') || rStr.includes('studi-banding'))) return true;
           return false;
         });
+        regItem = contextCandidates.find((r) => r.imageUrl && (r.imageUrl.startsWith('data:') || r.imageUrl.startsWith('blob:') || !r.imageUrl.endsWith('.svg'))) || contextCandidates[contextCandidates.length - 1];
       }
 
       if (!regItem) return k;

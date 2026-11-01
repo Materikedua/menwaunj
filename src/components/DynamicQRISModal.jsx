@@ -141,7 +141,8 @@ export function DynamicQRISModal({
           bankName: bankConfig.bankName,
           accountNumber: bankConfig.accountNumber,
           accountHolder: bankConfig.accountHolder,
-          status: 'LUNAS'
+          status: 'LUNAS',
+          alreadyRecorded: true,
         };
         setTimeout(() => {
           onPaymentSuccess?.(receipt);
@@ -171,7 +172,8 @@ export function DynamicQRISModal({
               bankName: bankConfig.bankName,
               accountNumber: bankConfig.accountNumber,
               accountHolder: bankConfig.accountHolder,
-              status: 'LUNAS'
+              status: 'LUNAS',
+              alreadyRecorded: true,
             };
             onPaymentSuccess?.(receipt);
             onClose?.();
@@ -276,6 +278,7 @@ export function DynamicQRISModal({
       status: 'LUNAS',
       isManualConfirmation: true,
       isDemoSimulation: isDemo,
+      alreadyRecorded: true,
     };
 
     onPaymentSuccess?.(receipt);
