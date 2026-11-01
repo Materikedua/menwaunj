@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#062b36"/><stop offset=".55" stop-color="#006569"/><stop offset="1" stop-color="#013238"/></linearGradient><radialGradient id="shine"><stop stop-color="#fbe57b" stop-opacity=".16"/><stop offset="1" stop-color="#fbe57b" stop-opacity="0"/></radialGradient></defs>
+    <rect width="1200" height="760" rx="28" fill="url(#bg)"/>
+    <circle cx="915" cy="320" r="385" fill="url(#shine)"/>
+    <circle cx="960" cy="360" r="300" fill="none" stroke="#ebd768" stroke-opacity=".2" stroke-width="2"/>
+    <circle cx="960" cy="360" r="240" fill="none" stroke="#ebd768" stroke-opacity=".18" stroke-width="2" stroke-dasharray="4 14"/>
+    <path d="M675 0L1200 510V760H1115L470 0Z" fill="#fff" opacity=".03"/>
+    <path d="M1030 64L1094 104V194L1030 241L966 194V104Z" fill="none" stroke="#ffdd00" stroke-width="11" stroke-opacity=".78"/>
+    <text x="1030" y="171" text-anchor="middle" fill="#ffdd00" font-family="Arial,sans-serif" font-weight="900" font-size="57">✦</text>
+    <rect x="80" y="89" width="70" height="7" rx="3" fill="#ffdd00"/>
+    <text x="80" y="147" fill="#f6e5ac" font-family="Arial,sans-serif" font-size="22" font-weight="700" letter-spacing="6">PROGRAM MENWA UNJ</text>
+    <text x="80" y="355" fill="#fff" font-family="Arial,sans-serif" font-size="70" font-weight="900" letter-spacing="-2">Pendidikan &amp;</text>
+    <text x="80" y="437" fill="#ffdd00" font-family="Arial,sans-serif" font-size="70" font-weight="900" letter-spacing="-2">Pelatihan</text>
+    <text x="80" y="522" fill="#b9d4d1" font-family="Arial,sans-serif" font-size="26">Pembinaan, karakter, dan kepemimpinan</text>
+    <rect x="80" y="641" width="495" height="1" fill="#fff" opacity=".25"/>
+    <text x="80" y="681" fill="#fff" opacity=".75" font-family="Arial,sans-serif" font-size="21" font-weight="700" letter-spacing="4">WIDYA CASTRENA DHARMA SIDDHA</text>
+    </svg>

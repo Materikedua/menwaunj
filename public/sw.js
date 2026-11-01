@@ -7,11 +7,17 @@
  * - Stale-While-Revalidate untuk aset visual & CSS
  */
 
-const CACHE_NAME = 'menwa-v1-tactical';
+const CACHE_NAME = 'menwa-v2-tactical';
 const STATIC_ASSETS = [
   '/',
   '/offline.html',
   '/manifest.json',
+  '/favicon.ico',
+  '/favicon.svg',
+  '/favicon-48x48.png',
+  '/favicon-96x96.png',
+  '/favicon-192x192.png',
+  '/apple-touch-icon.png',
   '/logo-menwa-unj.png',
   '/foto-kampus-unj.jpg'
 ];

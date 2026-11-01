@@ -85,6 +85,27 @@ const primaryGuides = [
 export const informationIndex = [
   ...primaryGuides,
   {
+    title: 'E-Voting Juara Terfavorit & Charity GERANAT VII',
+    category: 'Voting & Donasi',
+    description: 'Dukung kontingen favoritmu secara real-time via QRIS resmi satuan dengan verifikasi audit.',
+    to: '/geranat/voting',
+    icon: Trophy,
+  },
+  {
+    title: 'Portal Official Kontingen',
+    category: 'Layanan Kontingen',
+    description: 'Login khusus official tim lomba: unduh buku pasukan, pemberkasan, dan rekap nilai.',
+    to: '/portal-peserta',
+    icon: Users,
+  },
+  {
+    title: 'Verifikasi E-Dispensasi Resmi',
+    category: 'Layanan Administrasi',
+    description: 'Verifikasi keaslian naskah dinas, barcode dispensasi kuliah, dan surat komando.',
+    to: '/verifikasi-surat',
+    icon: ShieldCheck,
+  },
+  {
     title: 'Cari Progres Surat Masuk',
     category: 'Layanan administrasi',
     description: 'Lacak status disposisi surat, verifikasi berkas, dan nomor registrasi permohonan dinas.',
