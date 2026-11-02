@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import {
   X,
@@ -7,63 +7,62 @@ import {
   ShieldCheck,
   QrCode,
   User,
-  Check,
-  Eye,
   Sliders,
   ChevronDown,
-  Layers,
-  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../lib/authContext.jsx';
 import { playTactileClick } from '../lib/tactileAudio.js';
 import { PANCA_DHARMA_SATYA, TEKAD_DAN_PENDIRIAN } from '../data/siteData.js';
 
 /**
- * Komponen Latar Belakang Pola Geometris Lingkaran Berpotongan (Sacred Intersecting Circles)
- * Menghasilkan visual rosetta lingkaran konsentris presisi tinggi sesuai dokumen resmi Ksatria Cendekia VIII.
+ * Latar Belakang Pola Geometris Lingkaran Berpotongan (Sacred Intersecting Circles)
+ * Mengikuti referensi estetika lanyard badge resmi:
+ * - Warna dasar: Royal Deep Blue Gradient (#0262d2 -> #0050bc -> #00388e)
+ * - Pola lingkaran berpotongan (Flower of Life / Rosetta Grid) dengan garis halus
+ * - Radial soft light di tengah
  */
 function SacredGeometryBackground() {
   return (
     <>
       {/* Gradien Dasar Biru Royal */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0262d2] via-[#0050bc] to-[#00388e] -z-20" />
-      
-      {/* Radial Glow Halus di Tengah */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(56,189,248,0.22)_0%,transparent_68%)] pointer-events-none -z-10" />
+
+      {/* Radial Glow Halus di Bagian Tengah */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(56,189,248,0.25)_0%,transparent_70%)] pointer-events-none -z-10" />
 
       {/* SVG Pola Geometris Lingkaran Berpotongan */}
       <svg
-        className="absolute inset-0 w-full h-full pointer-events-none -z-10 opacity-40 mix-blend-screen"
+        className="absolute inset-0 w-full h-full pointer-events-none -z-10 opacity-35 mix-blend-screen"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <pattern id="sacredCirclesPattern" width="56" height="56" patternUnits="userSpaceOnUse">
-            <circle cx="28" cy="28" r="28" fill="none" stroke="#FFFFFF" strokeWidth="1" opacity="0.3" />
-            <circle cx="0" cy="0" r="28" fill="none" stroke="#FFFFFF" strokeWidth="1" opacity="0.3" />
-            <circle cx="56" cy="0" r="28" fill="none" stroke="#FFFFFF" strokeWidth="1" opacity="0.3" />
-            <circle cx="0" cy="56" r="28" fill="none" stroke="#FFFFFF" strokeWidth="1" opacity="0.3" />
-            <circle cx="56" cy="56" r="28" fill="none" stroke="#FFFFFF" strokeWidth="1" opacity="0.3" />
+          <pattern id="ktaSacredCircles" width="56" height="56" patternUnits="userSpaceOnUse">
+            <circle cx="28" cy="28" r="28" fill="none" stroke="#FFFFFF" strokeWidth="1" opacity="0.32" />
+            <circle cx="0" cy="0" r="28" fill="none" stroke="#FFFFFF" strokeWidth="1" opacity="0.32" />
+            <circle cx="56" cy="0" r="28" fill="none" stroke="#FFFFFF" strokeWidth="1" opacity="0.32" />
+            <circle cx="0" cy="56" r="28" fill="none" stroke="#FFFFFF" strokeWidth="1" opacity="0.32" />
+            <circle cx="56" cy="56" r="28" fill="none" stroke="#FFFFFF" strokeWidth="1" opacity="0.32" />
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill="url(#sacredCirclesPattern)" />
+        <rect width="100%" height="100%" fill="url(#ktaSacredCircles)" />
       </svg>
     </>
   );
 }
 
 /**
- * Lubang Pengait Tali Lanyard di Atas Kartu
+ * Lubang Pengait Tali Lanyard di Atas Kartu (Portrait Lanyard Slot)
  */
 function LanyardSlot() {
   return (
-    <div className="w-16 h-3 mx-auto rounded-full bg-slate-950/80 border border-white/20 shadow-inner flex items-center justify-center mb-4 shrink-0">
+    <div className="w-16 h-3 mx-auto rounded-full bg-slate-950/80 border border-white/25 shadow-inner flex items-center justify-center mb-3 shrink-0">
       <div className="w-9 h-1 rounded-full bg-black/60" />
     </div>
   );
 }
 
 /**
- * Aksen Geometris Sudut (Lingkaran Cyan & Coral di kiri-bawah, Busur Oranye di kanan-atas)
+ * Aksen Geometris Sudut (Busur Konsentris Cyan & Dot Merah di Kiri Bawah, Busur Oranye di Kanan Atas)
  */
 function CornerAccents() {
   return (
@@ -90,14 +89,11 @@ function CornerAccents() {
 export function TacticalKTACardModal({ isOpen, onClose }) {
   const { user, profile } = useAuth();
 
-  // Tab Tampilan Statis: 'both' | 'front' | 'back'
+  // Tab Tampilan Statis: 'both' (Berdampingan) | 'front' (Depan) | 'back' (Belakang)
   const [activeSideTab, setActiveSideTab] = useState('both');
-  
-  // Tipe Kartu: 'lencana' (Desain Murni Sesuai Gambar) | 'personel' (Dengan Foto & Biodata Anggota)
-  const [cardVariant, setCardVariant] = useState('personel');
   const [showCustomizer, setShowCustomizer] = useState(false);
 
-  // Data Anggota untuk Preview
+  // Data Anggota untuk Isi KTA
   const [cardName, setCardName] = useState(() => {
     return profile?.displayName || user?.displayName || 'KSATRIA MENWA UNJ';
   });
@@ -113,11 +109,11 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
 
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
 
-  // Generate QR Code Statis untuk Sisi Belakang
+  // Generate QR Code Statis untuk Sisi Belakang KTA
   useEffect(() => {
     let isMounted = true;
     QRCode.toDataURL(
-      `https://www.menwaunj.or.id/kc?nbp=${encodeURIComponent(cardNbp)}&auth=verified`,
+      `https://www.menwaunj.or.id/mako?nbp=${encodeURIComponent(cardNbp)}&kta=verified`,
       {
         width: 160,
         margin: 1,
@@ -177,14 +173,14 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-100 text-[#0050bc] border border-blue-200">
-                  DESAIN STATIS RESMI
+                  PORTRAIT ID CARD
                 </span>
                 <span className="text-[11px] font-mono text-slate-500 font-bold hidden sm:inline">
-                  KARTU TANDA PENGENAL (ID BADGE)
+                  KARTU TANDA ANGGOTA (KTA) STATIS
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-black text-[#092D32] mt-0.5">
-                Kartu Tanda Pengenal &amp; KTA Resmi
+                Kartu Tanda Anggota (KTA) Digital
               </h2>
             </div>
           </div>
@@ -236,40 +232,11 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
           </div>
         </div>
 
-        {/* Pilihan Gaya Kartu: Lencana Murni (Sesuai Desain PDF) vs KTA Personel */}
+        {/* Bar Penyesuaian Data KTA */}
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-white border border-slate-200 text-xs font-bold">
-          <div className="flex items-center gap-2">
-            <span className="text-slate-500">Varian Kartu:</span>
-            <div className="inline-flex rounded-xl p-0.5 bg-slate-100 border border-slate-200">
-              <button
-                type="button"
-                onClick={() => {
-                  playTactileClick('pill');
-                  setCardVariant('personel');
-                }}
-                className={`px-3 py-1 rounded-lg text-xs font-black transition cursor-pointer ${
-                  cardVariant === 'personel'
-                    ? 'bg-[#006569] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                KTA Personel (Foto &amp; Data)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  playTactileClick('pill');
-                  setCardVariant('lencana');
-                }}
-                className={`px-3 py-1 rounded-lg text-xs font-black transition cursor-pointer ${
-                  cardVariant === 'lencana'
-                    ? 'bg-[#006569] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Lencana Resmi KC VIII
-              </button>
-            </div>
+          <div className="flex items-center gap-2 text-slate-700">
+            <ShieldCheck size={16} className="text-[#006569]" />
+            <span>Format: <strong>Portrait Lanyard Badge</strong> (Referensi Visual Royal Blue &amp; Intersecting Circles)</span>
           </div>
 
           <button
@@ -281,16 +248,16 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
             className="inline-flex items-center gap-1.5 text-slate-700 hover:text-[#006569] text-xs font-bold cursor-pointer"
           >
             <Sliders size={14} />
-            <span>{showCustomizer ? 'Sembunyikan Pengaturan Data' : 'Sesuaikan Data Kartu'}</span>
+            <span>{showCustomizer ? 'Sembunyikan Pengaturan Biodata' : 'Sesuaikan Biodata Anggota'}</span>
             <ChevronDown size={14} className={`transition-transform ${showCustomizer ? 'rotate-180' : ''}`} />
           </button>
         </div>
 
-        {/* Formulir Penyesuaian Data Kartu (Bisa Ditampilkan/Disembunyikan) */}
+        {/* Input Edit Data Kartu (Bila Diperlukan) */}
         {showCustomizer && (
           <div className="rounded-2xl p-4 bg-white border border-slate-200 space-y-3 animate-fade-in text-xs font-bold">
             <span className="text-xs font-black uppercase tracking-wider text-[#006569] block">
-              Sesuaikan Data Anggota untuk Dicetak:
+              Sesuaikan Biodata Prajurit pada KTA:
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
@@ -324,7 +291,7 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
                 />
               </div>
               <div>
-                <label className="text-slate-600 block mb-1">Asal Lembaga / Kampus:</label>
+                <label className="text-slate-600 block mb-1">Fakultas / Kampus:</label>
                 <input
                   type="text"
                   value={cardFaculty}
@@ -337,7 +304,7 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
           </div>
         )}
 
-        {/* CONTAINER KARTU STATIS (TAMPILAN DEPAN & BELAKANG) */}
+        {/* CONTAINER KTA PORTRAIT STATIS (DEPAN & BELAKANG) */}
         <div className="py-2 flex justify-center items-center">
           <div
             id="kta-print-area"
@@ -346,89 +313,104 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
             }`}
           >
             {/* ════════════════════════════════════════════════════════════════
-                KARTU 1: SISI DEPAN (FRONT)
+                KARTU 1: SISI DEPAN (FRONT - PORTRAIT KTA)
             ════════════════════════════════════════════════════════════════ */}
             {(activeSideTab === 'front' || activeSideTab === 'both') && (
               <div className="relative w-full max-w-[360px] aspect-[1/1.62] rounded-[28px] overflow-hidden shadow-2xl border-2 border-white/40 p-5 flex flex-col justify-between text-white select-none shrink-0 transition-transform hover:shadow-[0_20px_50px_rgba(2,98,210,0.35)]">
-                {/* Latar Belakang Pola Geometri Geometris Sesuai Gambar */}
+                {/* Latar Belakang Pola Geometris Biru Royal */}
                 <SacredGeometryBackground />
                 <CornerAccents />
 
-                {/* Bagian Atas: Lanyard Slot & Badge Pills */}
+                {/* Bagian Atas: Lanyard Slot, Pills & KOP Satuan Menwa UNJ */}
                 <div className="relative z-10">
                   <LanyardSlot />
 
-                  <div className="flex items-center justify-center gap-3 pt-1">
-                    <span className="px-3.5 py-1 rounded-full text-[10px] sm:text-[11px] font-black tracking-wider uppercase bg-white/15 border border-white/40 text-white backdrop-blur-sm shadow-sm">
-                      KC VIII
+                  {/* Badges / Pills */}
+                  <div className="flex items-center justify-center gap-2.5 pt-0.5 mb-3">
+                    <span className="px-3.5 py-1 rounded-full text-[10px] font-black tracking-wider uppercase bg-white/15 border border-white/40 text-white backdrop-blur-sm shadow-sm">
+                      MENWA UNJ
                     </span>
-                    <span className="px-3.5 py-1 rounded-full text-[10px] sm:text-[11px] font-black tracking-wider uppercase bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 shadow-md">
-                      TINGKAT NASIONAL
+                    <span className="px-3.5 py-1 rounded-full text-[10px] font-black tracking-wider uppercase bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 shadow-md">
+                      KARTU TANDA ANGGOTA
                     </span>
                   </div>
-                </div>
 
-                {/* Bagian Tengah: Emblem Emas 3D Ksatria Cendekia */}
-                <div className="relative z-10 my-auto flex flex-col items-center justify-center text-center px-2">
-                  <div className="relative">
-                    <img
-                      src="/logo-kc-viii.png"
-                      alt="Emblem Ksatria Cendekia VIII"
-                      className={`object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)] transition-all ${
-                        cardVariant === 'personel' ? 'w-28 h-28 sm:w-32 sm:h-32 mb-2' : 'w-48 h-48 sm:w-56 sm:h-56'
-                      }`}
-                    />
-                  </div>
-
-                  {/* Jika Varian Personel Aktif: Tampilkan Foto Profil & Info Anggota */}
-                  {cardVariant === 'personel' && (
-                    <div className="w-full mt-1 space-y-2">
-                      <div className="flex items-center justify-center gap-3 bg-slate-950/40 backdrop-blur-md rounded-2xl p-2.5 border border-white/20 shadow-inner">
-                        {/* Foto Anggota */}
-                        <div className="w-14 h-16 rounded-xl border-2 border-amber-400 bg-slate-900 overflow-hidden shrink-0 flex items-center justify-center shadow-md">
-                          {profile?.photoURL || user?.photoURL ? (
-                            <img
-                              src={profile?.photoURL || user?.photoURL}
-                              alt={cardName}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex flex-col items-center justify-center text-amber-300 p-1 text-center">
-                              <User size={22} />
-                              <span className="text-[7px] font-mono font-bold mt-0.5">RESMI</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Biodata */}
-                        <div className="min-w-0 flex-1 text-left">
-                          <span className="text-[8px] font-mono uppercase tracking-widest text-cyan-300 font-bold block">
-                            KARTU IDENTITAS ANGGOTA
-                          </span>
-                          <h4 className="text-xs sm:text-sm font-black truncate text-white leading-tight">
-                            {cardName}
-                          </h4>
-                          <div className="font-mono text-[10px] font-black text-[#FFDD00]">
-                            {cardNbp}
-                          </div>
-                          <div className="text-[9px] font-semibold text-slate-200 truncate">
-                            {cardRole}
-                          </div>
-                          <div className="text-[8.5px] text-slate-300 truncate">
-                            {cardFaculty}
-                          </div>
-                        </div>
+                  {/* KOP Satuan Resmi Menwa UNJ */}
+                  <div className="flex items-center gap-2.5 bg-slate-950/45 backdrop-blur-md rounded-2xl p-2 border border-white/20 shadow-sm">
+                    <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/30 p-1 flex items-center justify-center shrink-0">
+                      <img
+                        src="/logo-menwa-unj.png"
+                        alt="Logo Menwa UNJ"
+                        className="w-full h-full object-contain drop-shadow"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[8.5px] font-black tracking-widest text-[#FFDD00] uppercase truncate">
+                        RESIMEN MAHASISWA JAYAKARTA
+                      </div>
+                      <div className="text-[11px] font-black tracking-tight text-white leading-tight truncate">
+                        SATUAN UNIVERSITAS NEGERI JAKARTA
                       </div>
                     </div>
-                  )}
+                    <div className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-[#FFDD00] shrink-0">
+                      <ShieldCheck size={16} />
+                    </div>
+                  </div>
                 </div>
 
-                {/* Bagian Bawah: Teks Identitas Resmi Satuan Sesuai Gambar */}
-                <div className="relative z-10 text-center space-y-1 pt-2 border-t border-white/20">
-                  <h3 className="text-xs sm:text-sm font-black tracking-wide text-white uppercase drop-shadow-sm">
-                    KC VIII Menwa UNJ Tahun 2026
-                  </h3>
-                  <p className="text-[10px] sm:text-[11px] font-bold text-blue-100 tracking-[0.25em] uppercase">
+                {/* Bagian Tengah: Foto Resmi Prajurit & Biodata KTA */}
+                <div className="relative z-10 my-auto flex flex-col items-center justify-center text-center px-1 py-1">
+                  {/* Bingkai Foto Resmi Portrait Bergaris Emas */}
+                  <div className="w-24 h-32 sm:w-28 sm:h-36 rounded-2xl border-2 border-amber-400 bg-slate-950/80 overflow-hidden shrink-0 shadow-xl flex items-center justify-center mb-3 relative group">
+                    {profile?.photoURL || user?.photoURL ? (
+                      <img
+                        src={profile.photoURL || user.photoURL}
+                        alt={cardName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-amber-300 p-2 text-center">
+                        <User size={34} />
+                        <span className="text-[8px] font-mono font-bold mt-1 tracking-wider">FOTO RESMI</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent py-1">
+                      <span className="text-[7.5px] font-mono font-black text-amber-300 uppercase tracking-widest">
+                        TERVERIFIKASI
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Biodata Anggota */}
+                  <div className="w-full space-y-1 bg-slate-950/45 backdrop-blur-md rounded-2xl p-3 border border-white/20 shadow-inner">
+                    <span className="text-[8px] font-mono uppercase tracking-[0.2em] text-cyan-300 font-bold block">
+                      KARTU TANDA ANGGOTA RESMI
+                    </span>
+                    <h3 className="text-sm sm:text-base font-black truncate text-white leading-tight">
+                      {cardName}
+                    </h3>
+                    <div className="font-mono text-xs font-black text-[#FFDD00] tracking-wider">
+                      {cardNbp}
+                    </div>
+                    <div className="text-[10.5px] font-bold text-slate-200 truncate">
+                      {cardRole}
+                    </div>
+                    <div className="text-[9.5px] text-slate-300 truncate">
+                      {cardFaculty}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bagian Bawah: Semboyan & Footer Satuan */}
+                <div className="relative z-10 pt-2 border-t border-white/20 text-center space-y-1">
+                  <div className="flex items-center justify-between text-[8px] font-mono">
+                    <span className="text-slate-300">KODE KEHORMATAN</span>
+                    <span className="text-slate-300">BERLAKU: <strong className="text-white">2026 – 2028</strong></span>
+                  </div>
+                  <div className="text-[10px] font-black tracking-widest text-[#FFDD00] uppercase">
+                    WIDYA CASTRENA DHARMA SIDDHA
+                  </div>
+                  <p className="text-[10px] font-bold text-blue-100 tracking-[0.25em] uppercase">
                     State Univ. of Jakarta
                   </p>
                 </div>
@@ -436,41 +418,41 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
             )}
 
             {/* ════════════════════════════════════════════════════════════════
-                KARTU 2: SISI BELAKANG (BACK)
+                KARTU 2: SISI BELAKANG (BACK - DOKTRIN & KETENTUAN KTA)
             ════════════════════════════════════════════════════════════════ */}
             {(activeSideTab === 'back' || activeSideTab === 'both') && (
               <div className="relative w-full max-w-[360px] aspect-[1/1.62] rounded-[28px] overflow-hidden shadow-2xl border-2 border-white/40 p-4 sm:p-5 flex flex-col justify-between text-white select-none shrink-0 transition-transform hover:shadow-[0_20px_50px_rgba(2,98,210,0.35)]">
-                {/* Latar Belakang Pola Geometri Geometris Sesuai Gambar */}
+                {/* Latar Belakang Pola Geometris Biru Royal */}
                 <SacredGeometryBackground />
                 <CornerAccents />
 
-                {/* Watermark Emblem Tipis di Belakang Konten */}
+                {/* Watermark Logo Menwa UNJ Tipis di Belakang Konten */}
                 <img
-                  src="/logo-kc-viii.png"
+                  src="/logo-menwa-unj.png"
                   alt=""
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 object-contain opacity-[0.08] pointer-events-none -z-10"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-60 h-60 object-contain opacity-[0.09] pointer-events-none -z-10"
                 />
 
-                {/* Bagian Atas: Lanyard Slot, Pill Ketentuan & Header Resmi */}
+                {/* Bagian Atas: Lanyard Slot, Pill & Header Resmi */}
                 <div className="relative z-10 text-center">
                   <LanyardSlot />
 
                   <div className="inline-block px-3.5 py-0.5 rounded-full text-[9px] font-black tracking-[0.18em] uppercase border border-amber-400/60 bg-amber-400/10 text-amber-300 shadow-sm mb-1.5">
-                    KETENTUAN &amp; TATA TERTIB
+                    KODE KEHORMATAN &amp; TATA TERTIB
                   </div>
 
                   <h3 className="text-xs sm:text-[13px] font-black tracking-[0.15em] text-white uppercase">
-                    KARTU TANDA PENGENAL RESMI
+                    KARTU TANDA ANGGOTA RESMI
                   </h3>
                   <p className="text-[10px] text-blue-100 font-semibold mt-0.5">
-                    Ksatria Cendekia VIII Tahun 2026
+                    Resimen Mahasiswa Jayakarta Satuan UNJ
                   </p>
                 </div>
 
                 {/* Bagian Tengah: PANCA DHARMA SATYA & TEKAD DAN PENDIRIAN */}
-                <div className="relative z-10 space-y-2.5 my-auto overflow-y-auto max-h-[340px] pr-0.5">
+                <div className="relative z-10 space-y-2 my-auto overflow-y-auto max-h-[350px] pr-0.5">
                   {/* Blok 1: Panca Dharma Satya Resimen Mahasiswa Indonesia */}
-                  <div className="rounded-xl p-2.5 bg-slate-950/40 backdrop-blur-sm border border-white/15 space-y-1.5">
+                  <div className="rounded-xl p-2.5 bg-slate-950/45 backdrop-blur-sm border border-white/15 space-y-1">
                     <div className="flex items-center justify-between border-b border-white/15 pb-1">
                       <span className="text-[8.5px] font-black tracking-wider text-[#FFDD00] uppercase">
                         PANCA DHARMA SATYA MENWA INDONESIA
@@ -488,7 +470,7 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
                   </div>
 
                   {/* Blok 2: Tekad dan Pendirian Resimen Mahasiswa Indonesia */}
-                  <div className="rounded-xl p-2.5 bg-slate-950/40 backdrop-blur-sm border border-white/15 space-y-1.5">
+                  <div className="rounded-xl p-2.5 bg-slate-950/45 backdrop-blur-sm border border-white/15 space-y-1">
                     <div className="flex items-center justify-between border-b border-white/15 pb-1">
                       <span className="text-[8.5px] font-black tracking-wider text-cyan-300 uppercase">
                         TEKAD DAN PENDIRIAN MENWA INDONESIA
@@ -506,8 +488,8 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
                   </div>
                 </div>
 
-                {/* Bagian Bawah: QR Code Keabsahan & Footer Lembaga */}
-                <div className="relative z-10 pt-2 border-t border-white/20 flex items-center justify-between gap-2">
+                {/* Bagian Bawah: QR Code Keabsahan & Alamat Mako Satuan */}
+                <div className="relative z-10 pt-2 border-t border-white/20 flex items-center justify-between gap-2.5">
                   <div className="flex items-center gap-2">
                     {qrCodeDataUrl ? (
                       <div className="w-10 h-10 rounded-lg bg-white p-0.5 shrink-0 shadow-sm">
@@ -519,12 +501,12 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
                       </div>
                     )}
                     <div className="text-[7.5px] text-slate-200 leading-tight">
-                      <span className="font-bold text-[#FFDD00] block">VALIDASI MAKO SATUAN</span>
-                      <span>Scan untuk autentikasi data kepesertaan &amp; status aktif.</span>
+                      <span className="font-bold text-[#FFDD00] block">MAKO MENWA SATUAN UNJ</span>
+                      <span>Gedung G R.107 Kampus A UNJ Rawamangun Jakarta</span>
                     </div>
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <p className="text-[9px] sm:text-[10px] font-bold text-white tracking-[0.22em] uppercase">
                       State Univ. of Jakarta
                     </p>
@@ -536,10 +518,10 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
           </div>
         </div>
 
-        {/* Petunjuk Penggunaan & Tombol Aksi */}
+        {/* Petunjuk Penggunaan & Tombol Cetak */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200">
           <p className="text-xs text-slate-500 font-medium text-center sm:text-left">
-            💡 <em>Desain KTA statis resmi berstandar lanyard badge nasional. Siap dicetak langsung via printer format PVC atau kertas tebal A4.</em>
+            💡 <em>Kartu Tanda Anggota (KTA) resmi format Portrait berstandar lanyard badge. Siap dicetak langsung pada material PVC ID Card atau kertas tebal A4.</em>
           </p>
 
           <div className="flex items-center gap-2.5 shrink-0">
@@ -549,7 +531,7 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
               className="neu-btn-strong-blue rounded-full py-2.5 px-6 text-xs font-black flex items-center gap-2 shadow-md cursor-pointer hover:scale-105 transition"
             >
               <Printer size={16} />
-              <span>Cetak Kartu Fisik (PVC / A4)</span>
+              <span>Cetak KTA Fisik (PVC / A4)</span>
             </button>
             <button
               type="button"
