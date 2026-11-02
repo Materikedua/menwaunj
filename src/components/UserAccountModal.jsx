@@ -714,7 +714,7 @@ export function UserAccountModal({ isOpen, onClose, onOpenKTA = null }) {
                         className="w-full neu-btn-strong-blue rounded-2xl py-3 px-4 text-xs font-black text-white flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                       >
                         <CreditCard size={16} />
-                        <span>Lihat &amp; Cetak E-KTA Digital 3D (Kartu Tanda Anggota)</span>
+                        <span>Lihat &amp; Cetak KTA &amp; ID Card Resmi (E-KTA)</span>
                       </button>
                     )}
 

@@ -222,7 +222,7 @@ export function GamesPage({ onOpenAuth }) {
             </div>
           </div>
 
-          {/* Card 2: E-KTA 3D Virtual Card */}
+          {/* Card 2: E-KTA Resmi */}
           <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm flex flex-col justify-between hover:border-amber-500/40 transition">
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
@@ -231,19 +231,19 @@ export function GamesPage({ onOpenAuth }) {
                   Identitas Korps Digital
                 </span>
                 <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                  Holographic 3D Tilt
+                  Standar Badge Nasional
                 </span>
               </div>
               <h3 className="text-lg font-black text-slate-900">
-                Kartu Tanda Anggota Virtual 3D (E-KTA)
+                Kartu Tanda Pengenal &amp; KTA Resmi
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Inspeksi kartu tanda anggota resmi dalam sudut pandang 3D interaktif. Dilengkapi pita hologram bercahaya, QR Code verifikasi keabsahan, dan teks Panca Dharma Satya di sisi belakang.
+                Kartu tanda pengenal dan KTA resmi berlatar pola geometris biru nasional. Memuat Panca Dharma Satya dan Tekad &amp; Pendirian Resimen Mahasiswa Indonesia, siap dicetak fisik.
               </p>
             </div>
             <div className="pt-5 mt-4 border-t border-slate-100 flex items-center justify-between">
               <span className="text-[11px] font-semibold text-slate-500">
-                Bolak-balik 360° & Cetak ID Card
+                Sisi Depan &amp; Belakang • Siap Cetak
               </span>
               <button
                 type="button"
@@ -254,7 +254,7 @@ export function GamesPage({ onOpenAuth }) {
                 className="neu-btn-gold px-4 py-2.5 rounded-full text-xs font-black inline-flex items-center gap-2 cursor-pointer text-slate-950"
               >
                 <CreditCard size={14} />
-                <span>Buka E-KTA 3D</span>
+                <span>Buka KTA Resmi</span>
               </button>
             </div>
           </div>
