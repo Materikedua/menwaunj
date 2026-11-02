@@ -18,6 +18,8 @@
     ],
     facts: [
       { label: 'Status Pelaksanaan', value: 'Diundur (Menunggu Tanggal Baru)' },
+      { label: 'Estimasi Baru', value: 'Awal Desember 2026' },
+      { label: 'Surat Keputusan', value: 'B-159/Sat-UNJ/XI/2026' },
       { label: 'Biaya pendaftaran', value: 'Rp2.000.000 / tim' },
       { label: 'Komposisi tim', value: '2 peserta + 1 official opsional' },
       { label: 'Kuota per satuan', value: 'Maksimal 3 tim' },
@@ -53,13 +55,14 @@
         ]
       },
       {
-        title: 'Jadwal & Lokasi',
+        title: 'Jadwal & Pemberitahuan Penundaan Resmi',
         items: [
-          'Status Kegiatan — Pelaksanaan kegiatan Ksatria Cendekia VIII resmi diundur; tanggal definitif akan ditetapkan dan disiarkan kemudian.',
-          'Seminar Nasional di Aula Latief, Kampus A UNJ; presentasi esai; renang di GOR Otista, Jakarta Timur.',
-          'T.H.O.R. dan menembak di Batalyon Intai Tempur, Cikarang.',
-          'Pesiar ke Taman Margasatwa Ragunan, Jakarta Selatan.',
-          'Informasi jadwal definitif akan disiarkan secara resmi melalui portal dan akun Instagram @kc_menwaunj.',
+          'Surat Resmi Nomor: B-159/Sat-UNJ/XI/2026 tanggal 02 November 2026 resmi diterbitkan Komando Satuan Menwa UNJ.',
+          'Pelaksanaan yang semula dijadwalkan 05–08 November 2026 untuk sementara waktu ditangguhkan guna sinkronisasi jadwal bersama pihak terkait.',
+          'Estimasi waktu pelaksanaan terbaru direncanakan pada awal Desember 2026, dengan tanggal pasti diumumkan selambat-lambatnya 08 November 2026.',
+          'Kompensasi Peserta Bertahan: 1 (satu) buah Jersey Official gratis dan Cashback biaya pendaftaran sebesar Rp250.000.',
+          'Kebijakan Refund: Panitia memfasilitasi pengembalian dana pendaftaran penuh bagi peserta yang berhalangan hadir pada jadwal baru.',
+          'Prosedur Klaim & Konfirmasi: Hubungi Wakil Komandan / Putra di 0815-2582-3503 (WhatsApp) selambat-lambatnya 08 November 2026.',
         ]
       },
       {
@@ -76,6 +79,13 @@
     ],
     docs: [
       {
+        label: 'Surat Pemberitahuan Penundaan Kegiatan KC VIII (Resmi)',
+        desc: 'Surat resmi Komando Menwa UNJ Nomor: B-159/Sat-UNJ/XI/2026 perihal penundaan waktu pelaksanaan, kompensasi gratis jersey & cashback, serta kebijakan refund.',
+        file: '/dokumen/surat-pemberitahuan-pengunduran-kc-viii.pdf',
+        badge: 'Surat Resmi Komando',
+        date: '02 November 2026',
+      },
+      {
         label: 'Proposal KC VIII 2026 (terbaru)',
         desc: 'Proposal Latihan Integrasi Pemuda Nusantara, diselaraskan dengan dokumen yang disediakan panitia.',
         file: '/dokumen/proposal-kc-viii-menwa-unj.pdf',
@@ -88,7 +98,7 @@
         drive: 'https://drive.google.com/drive/folders/1LBWHxr1mJezqBGhaRrTZ5ol9U0c3d_5I?usp=sharing'
       },
     ],
-    docsButton: 'Lihat Proposal dan Juknis',
+    docsButton: 'Lihat Proposal, Juknis & Surat Resmi',
     cta: {
       label: 'Daftarkan Tim Kalian',
       url: 'https://bit.ly/PendaftaranKCVIII'

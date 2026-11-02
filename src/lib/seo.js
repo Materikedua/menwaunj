@@ -14,12 +14,12 @@ export const ROUTE_METADATA = {
     keywords: 'Menwa UNJ, Resimen Mahasiswa, Universitas Negeri Jakarta, Bela Negara, KC VIII, Youth Spark, GERANAT VII',
   },
   '/kc': {
-    title: 'Ksatria Cendekia VIII — Lomba Nasional & Jersey Atlet | Menwa UNJ',
-    description: 'Pusat informasi resmi Ksatria Cendekia VIII: lima cabang lomba bergengsi, juknis, dan jersey official. Pelaksanaan kegiatan resmi diundur (menunggu penetapan tanggal baru).',
-    ogTitle: 'Ksatria Cendekia VIII — Lomba Ketangkasan Nasional Menwa UNJ',
-    ogDescription: 'Informasi resmi Ksatria Cendekia VIII Menwa UNJ. Jadwal pelaksanaan diundur dan tanggal baru akan diumumkan segera.',
+    title: 'Ksatria Cendekia VIII — Unduh Surat Resmi & Info Lomba | Menwa UNJ',
+    description: 'Pusat informasi resmi Ksatria Cendekia VIII: unduh surat pemberitahuan penundaan resmi (B-159/Sat-UNJ/XI/2026), juknis lima cabang lomba, dan jersey official.',
+    ogTitle: 'Ksatria Cendekia VIII — Informasi & Unduh Surat Resmi Penundaan',
+    ogDescription: 'Surat resmi penundaan kegiatan Ksatria Cendekia VIII Menwa UNJ Nomor: B-159/Sat-UNJ/XI/2026. Estimasi jadwal baru awal Desember 2026 dan opsi kompensasi/refund.',
     ogImage: 'https://menwaunj.or.id/logo-kc-viii.png',
-    keywords: 'Ksatria Cendekia VIII, KC VIII, Lomba Menwa UNJ, Lomba Ketangkasan, Menwa Indonesia',
+    keywords: 'Ksatria Cendekia VIII, KC VIII, Surat Penundaan KC VIII, Lomba Menwa UNJ, Lomba Ketangkasan, Menwa Indonesia',
   },
   '/geranat': {
     title: 'GERANAT VII (LFPB) & Podium Juara — Gerakan Paskibra Semangat | Menwa UNJ',

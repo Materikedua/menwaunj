@@ -127,12 +127,13 @@ export function PageWayfinder({ path }) {
 
 export function FAQSection({ id, type='kc' }) {
   const data = type === 'kc' ? [
-    ['Kapan Ksatria Cendekia VIII dilaksanakan?', 'Pelaksanaan kegiatan Ksatria Cendekia VIII saat ini resmi diundur. Tanggal pasti pelaksanaan akan diumumkan kembali oleh panitia melalui portal resmi dan Instagram @kc_menwaunj.'],
+    ['Kapan Ksatria Cendekia VIII dilaksanakan?', 'Berdasarkan Surat Pemberitahuan Resmi Nomor: B-159/Sat-UNJ/XI/2026 tertanggal 02 November 2026, pelaksanaan kegiatan yang semula dijadwalkan 05–08 November 2026 sementara ditangguhkan. Estimasi pelaksanaan terbaru direncanakan pada awal Desember 2026, dengan tanggal pasti yang akan diumumkan selambat-lambatnya pada 08 November 2026. Anda dapat mengunduh surat resmi langsung melalui tautan dokumen di halaman ini.'],
+    ['Bagaimana kebijakan kompensasi peserta bertahan dan pengembalian dana (refund)?', 'Bagi tim peserta yang tetap berkomitmen mengikuti kegiatan pada jadwal baru (peserta bertahan), panitia memberikan kompensasi penuh berupa: 1 buah Jersey Official gratis dan cashback biaya pendaftaran Rp250.000. Bagi tim yang berhalangan hadir dan menghendaki pembatalan kepesertaan, panitia memfasilitasi pengembalian dana penuh (refund) melalui konfirmasi ke narahubung Wakil Komandan (Putra: 0815-2582-3503) selambat-lambatnya pada 08 November 2026.'],
     ['Siapa yang dapat mendaftar sebagai peserta?', 'Peserta merupakan mahasiswa aktif dan anggota aktif Resimen Mahasiswa Indonesia. Setiap tim berisi dua peserta, dengan satu official opsional.'],
     ['Berapa biaya pendaftaran tim?', 'Biaya pendaftaran sebesar Rp2.000.000 per tim. Cek syarat administrasi dan tata cara pembayaran di informasi kegiatan resmi.'],
     ['Apakah jersey peserta berbayar?', 'Jersey peserta bertuliskan ATHLETE termasuk benefit pendaftaran. Pendataan jersey peserta menggunakan formulir khusus yang berbeda dari pre-order official.'],
-    ['Berapa harga jersey official?', 'Jersey official ditawarkan melalui pre-order terpisah seharga Rp150.000.'],
-    ['Kapan batas pengumpulan karya?', 'Seiring dengan penundaan jadwal kegiatan, batas pengumpulan esai dan video kreatif disesuaikan dan akan diinformasikan kembali bersamaan dengan penetapan tanggal baru.'],
+    ['Berapa harga jersey official?', 'Jersey official ditawarkan melalui pre-order terpisah seharga Rp150.000 (gratis 1 buah bagi tim peserta bertahan sesuai Surat Keputusan No. B-159/Sat-UNJ/XI/2026).'],
+    ['Kapan batas pengumpulan karya?', 'Seiring dengan penyesuaian jadwal kegiatan, batas pengumpulan esai dan video kreatif diselaraskan dengan jadwal baru dan akan diinformasikan kembali bersamaan dengan penetapan tanggal definitif.'],
   ] : [
     ['Kapan Youth Spark National Seminar dilaksanakan?', 'Acara dijadwalkan pada 24 Oktober 2026 di Aula Latief Hendraningrat, Universitas Negeri Jakarta.'],
     ['Apa tema utamanya?', 'Seminar bertema “Empowering Youth, Elevating UMKM” dengan highlight “Pembinaan Aktivitas Pemuda”.'],
