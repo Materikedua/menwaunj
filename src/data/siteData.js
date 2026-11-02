@@ -62,7 +62,7 @@
           'Estimasi waktu pelaksanaan terbaru direncanakan pada awal Desember 2026, dengan tanggal pasti diumumkan selambat-lambatnya 08 November 2026.',
           'Kompensasi Peserta Bertahan: 1 (satu) buah Jersey Official gratis dan Cashback biaya pendaftaran sebesar Rp250.000.',
           'Kebijakan Refund: Panitia memfasilitasi pengembalian dana pendaftaran penuh bagi peserta yang berhalangan hadir pada jadwal baru.',
-          'Prosedur Klaim & Konfirmasi: Hubungi Wakil Komandan / Putra di 0815-2582-3503 (WhatsApp) selambat-lambatnya 08 November 2026.',
+          'Prosedur Klaim & Konfirmasi: Hubungi Wakil Komandan (Wadan) di 0815-2582-3503 (WhatsApp) selambat-lambatnya 08 November 2026.',
         ]
       },
       {

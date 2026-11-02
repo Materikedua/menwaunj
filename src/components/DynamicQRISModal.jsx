@@ -51,6 +51,7 @@ export function DynamicQRISModal({
   const [copiedNominal, setCopiedNominal] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(TOTAL_SECONDS);
   const [pollingCount, setPollingCount] = useState(0);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   const hasCompletedRef = useRef(false);
   const activeTxIdRef = useRef('');
@@ -219,8 +220,6 @@ export function DynamicQRISModal({
     return () => clearInterval(timer);
   }, [isOpen, onClose, onPaymentFailed]);
 
-  if (!isOpen) return null;
-
   // Format MM:SS
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
@@ -246,8 +245,6 @@ export function DynamicQRISModal({
     timerBarClass = 'bg-amber-500';
     timerTextClass = 'text-amber-600';
   }
-
-  const [isConfirming, setIsConfirming] = useState(false);
 
   const handleManualConfirm = async (isDemo = false) => {
     if (hasCompletedRef.current || isConfirming) return;
@@ -300,6 +297,8 @@ export function DynamicQRISModal({
       setTimeout(() => setCopiedNominal(false), 2000);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in font-sans">

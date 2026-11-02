@@ -186,7 +186,7 @@ export function useKegiatan() {
               </div>
             </div>
             <p className="text-[11px] text-slate-500 pt-1">
-              *Bagi peserta yang berhalangan hadir akibat penyesuaian jadwal ini dan menghendaki pembatalan, panitia memfasilitasi pengembalian dana penuh (refund) melalui konfirmasi ke narahubung Wakil Komandan (Putra: 0815-2582-3503) selambat-lambatnya 08 November 2026.
+              *Bagi peserta yang berhalangan hadir akibat penyesuaian jadwal ini dan menghendaki pembatalan, panitia memfasilitasi pengembalian dana penuh (refund) melalui konfirmasi ke narahubung Wakil Komandan (Wadan: 0815-2582-3503) selambat-lambatnya 08 November 2026.
             </p>
           </div>
 
@@ -214,7 +214,7 @@ export function useKegiatan() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-50 px-4 py-2.5 text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition"
             >
-              <span>Konfirmasi via WA (Putra)</span>
+              <span>Konfirmasi via WA (Wadan)</span>
               <ExternalLink size={12} />
             </a>
           </div>

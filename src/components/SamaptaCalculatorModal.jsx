@@ -28,8 +28,6 @@ export function SamaptaCalculatorModal({ isOpen, onClose }) {
   const [sitUp, setSitUp] = useState(32); // repetisi 1 menit
   const [shuttleRun, setShuttleRun] = useState(18.2); // detik (6x10m)
 
-  if (!isOpen) return null;
-
   // Preset Cepat
   const applyPreset = (presetName) => {
     playTactileClick('pill');
@@ -158,6 +156,8 @@ export function SamaptaCalculatorModal({ isOpen, onClose }) {
     playTactileClick('press');
     window.print();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div
