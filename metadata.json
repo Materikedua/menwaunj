@@ -1,0 +1,6 @@
+{
+  "name": "Menwa UNJ — Audit & Analisis Arsitektur Portal V7",
+  "description": "Analisis komprehensif arsitektur, hierarki, desain, database, keamanan, dan UI/UX untuk Portal Resmi Menwa UNJ V7.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

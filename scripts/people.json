@@ -1,0 +1,222 @@
+[
+ {
+  "name": "Eben Haezer Sitorus",
+  "role": "Komandan Satuan",
+  "group": "pimpinan"
+ },
+ {
+  "name": "Raffli Syahputra",
+  "role": "Wakil Komandan Satuan",
+  "group": "pimpinan"
+ },
+ {
+  "name": "Mario Bagaskara",
+  "role": "Kaur Pengamanan",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Ghifari Ghufron",
+  "role": "Wa Kaur Pengamanan",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Amiliudin Lesmana",
+  "role": "Staf Pengamanan",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Ichsan Ridwan Hafizh",
+  "role": "Kaur Operasi",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Alea Afiyanti",
+  "role": "Wa Kaur Operasi",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Nadia Windra Zahara",
+  "role": "Kaur Personalia",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Anggie Palentrina",
+  "role": "Wa Kaur Personalia",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Gyan Muhammad Irhamir Subiyantoro",
+  "role": "Staf Personalia",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Wanda Putri Amalia",
+  "role": "Kaur Logistik",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Muhammad Afdhal Abdillah",
+  "role": "Wa Kaur Logistik",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Aulia Asharany Jasmine",
+  "role": "Kaur Teritorial",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Julia Rizqi Rahmawati",
+  "role": "Wa Kaur Teritorial",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Laras Veby Damayanti",
+  "role": "Staf Teritorial",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Siti Jaojah",
+  "role": "Kaur Keputrian",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Hilmi Suciasih",
+  "role": "Wa Kaur Keputrian",
+  "group": "unsurPerencana"
+ },
+ {
+  "name": "Belli Vio Saputra",
+  "role": "Kepala Kesekretariatan",
+  "group": "unsurPelayanan"
+ },
+ {
+  "name": "Riza Rahmandawanti",
+  "role": "Wa Kepala Kesekretariatan",
+  "group": "unsurPelayanan"
+ },
+ {
+  "name": "Alip Rohman Gunawan",
+  "role": "Kepala Markas",
+  "group": "unsurPelayanan"
+ },
+ {
+  "name": "Ronis Satia",
+  "role": "Wa Kepala Markas",
+  "group": "unsurPelayanan"
+ },
+ {
+  "name": "Muhammad Tendison Iha Tabuni",
+  "role": "Staf Markas",
+  "group": "unsurPelayanan"
+ },
+ {
+  "name": "Adam Ramadhana",
+  "role": "Kepala Provost",
+  "group": "unsurPelayanan"
+ },
+ {
+  "name": "Muhammad Alfonso Hermawan",
+  "role": "Wa Kepala Provost",
+  "group": "unsurPelayanan"
+ },
+ {
+  "name": "Ghibthah Maulidya Azzahra",
+  "role": "Komandan Pokok Pasukan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Gisela Rori",
+  "role": "Wakil Komandan Pokok Pasukan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Romy Nirwana",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Khansa Asma Itsar",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Ibnu Bintang Satriawan",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Revalia Febriani",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Tiara Cendy Julianti",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Lia Bertha Yadohamang",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Ahza Rusyaidi Zaman",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Santi Bapaimu",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Medis Siburian",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Hermina Simanagae",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Paskalina Sami",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Natalia Erma Ive",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Margaretha Fridolin",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Lisa Kriswinda Korwa",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Agustina Lusia",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Muhammad Zickry Iswandi",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Theofila Yakanaimu",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ },
+ {
+  "name": "Serlina Sompika",
+  "role": "Anggota Satuan",
+  "group": "unsurPelaksana"
+ }
+]

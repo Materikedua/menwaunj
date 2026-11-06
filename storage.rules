@@ -1,0 +1,80 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email in ['unjmenwa@gmail.com', 'rafflysyahpoetra@gmail.com'] &&
+        request.auth.token.email_verified == true
+      );
+    }
+
+    function isValidImageOrPdf(maxMegabytes) {
+      return request.resource != null && (
+        request.resource.contentType.matches('image/(jpeg|png|webp|svg\\+xml|gif)') ||
+        request.resource.contentType == 'application/pdf'
+      ) && request.resource.size > 0 && request.resource.size <= maxMegabytes * 1024 * 1024;
+    }
+
+    function isValidSlugPath(slug) {
+      return slug.size() >= 2 && slug.size() <= 100 && slug.matches('^[a-z0-9-]+$');
+    }
+
+    // 1. Aset sistem & kanvas publik: Hanya pengguna terautentikasi / Admin yang boleh menulis (Mencegah bot flooding)
+    match /assets/{tabId}/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidImageOrPdf(5) && fileName.size() <= 140;
+    }
+
+    // 2. Berkas pengajuan formulir administrasi pengguna terverifikasi
+    match /submissions/{userId}/{fileName} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (request.auth.uid == userId || isSuperAdmin()) && isValidImageOrPdf(10) && fileName.size() <= 140;
+    }
+
+    // 3. Berkas pendaftaran & foto kontingen official (dibatasi struktur path ketat & ukuran maks 5MB)
+    match /official/{schoolSlug}/{category}/{fileName} {
+      allow read: if true;
+      allow write: if isValidSlugPath(schoolSlug) &&
+        category in ['documents', 'photos'] &&
+        fileName.size() <= 120 &&
+        isValidImageOrPdf(5);
+    }
+
+    match /official_portals/{schoolSlug}/{category}/{fileName} {
+      allow read: if true;
+      allow write: if isValidSlugPath(schoolSlug) &&
+        category in ['documents', 'photos'] &&
+        fileName.size() <= 120 &&
+        isValidImageOrPdf(5);
+    }
+
+    // 4. Berkas surat masuk & pengajuan administrasi umum (Adminu) — wajib path terstruktur per submissionId & maks 10MB
+    match /adminu_submissions/{submissionId}/{fileName} {
+      allow read: if true;
+      allow write: if submissionId.size() >= 3 &&
+        submissionId.size() <= 100 &&
+        fileName.size() <= 140 &&
+        isValidImageOrPdf(10);
+    }
+
+    match /surat_masuk/{submissionId}/{fileName} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() &&
+        submissionId.size() >= 3 &&
+        submissionId.size() <= 100 &&
+        fileName.size() <= 140 &&
+        isValidImageOrPdf(10);
+    }
+
+    // Default Fallback: Baca publik untuk aset statis, tulis hanya untuk SuperAdmin terverifikasi
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+  }
+}

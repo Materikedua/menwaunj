@@ -1,0 +1,15 @@
+# Robots.txt for Menwa UNJ Portal Resmi (https://menwaunj.or.id)
+User-agent: *
+Allow: /
+Allow: /favicon.ico
+Allow: /favicon*.png
+Allow: /favicon.svg
+Allow: /apple-touch-icon.png
+Allow: /logo-menwa-unj.png
+Allow: /manifest.json
+
+# Disallow internal API endpoints & security debug routes
+Disallow: /api/
+Disallow: /mako-ops
+
+Sitemap: https://menwaunj.or.id/sitemap.xml

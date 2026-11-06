@@ -1,0 +1,11 @@
+{
+  "VOTE-UNITTEST-1793954270359": {
+    "txId": "VOTE-UNITTEST-1793954270359",
+    "status": "lunas",
+    "claimed": true,
+    "processedAt": "2026-11-06T08:37:50.360Z",
+    "amount": 10000,
+    "provider": "UNIT_TEST",
+    "claimedAt": "2026-11-06T08:37:50.400Z"
+  }
+}

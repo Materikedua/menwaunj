@@ -1,0 +1,430 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Models & Architectural Contracts (Hardened Stage 1 & 2)
+    // ===============================================================
+    //
+    // Collection: users/{userId}
+    //   - uid: string (matches document ID)
+    //   - email: string (valid email format)
+    //   - displayName: string (max 120 chars)
+    //   - role: string ('public_user' | 'anggota_verified' | 'wadansat' | 'staf_adminu' | 'dansat' | 'superadmin')
+    //   - isVerifiedMenwa: bool (restricted; only staff can grant)
+    //   - tacticalPoints: number (EXP points)
+    //
+    // Collection: forms_submissions/{submissionId}
+    //   - submissionId: string (ID unique)
+    //   - applicantUid: string (UID of creator)
+    //   - fullName: string (max 120 chars)
+    //   - institution: string (max 150 chars)
+    //   - documentPdfUrl: string (Storage URL; documentPdfBase64 > 650KB forbidden)
+    //
+    // Collection: official_portals/{schoolSlug}
+    //   - schoolSlug: string (URL slug identifier)
+    //   - schoolName: string (max 150 chars)
+    //   - whatsappNumber: string (8-30 digits)
+    //   - isVerifiedByAdmin: bool
+    //   - securityPinHash: string (Salted SHA-256 hash; raw plaintext securityPin forbidden)
+    //   - Subcollections:
+    //     - official_portals/{schoolSlug}/activity_logs/{logId}
+    //     - official_portals/{schoolSlug}/snapshots/{snapId}
+    //
+    // Collection: geranat_teams/{teamId}
+    //   - teamId: string
+    //   - teamName: string
+    //   - votesCount: number (monotonic bounded increment tied to verified payment)
+    //
+    // Collection: documentation_posts/{postId}
+    //   - postId: string
+    //   - likes: number
+    //   - comments: bounded preview list (max 20 items)
+    //   - Subcollection: documentation_posts/{postId}/comments/{commentId}
+    //
+    // Collection: payment_mutations/{txId}
+    //   - txId: string (Idempotent server-verified payment record)
+    //   - amount: number
+    //   - status: string ('lunas')
+    // ===============================================================
+
+    // Default Deny All Catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ---------------------------------------------------------------
+    // Core Helper Functions
+    // ---------------------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128;
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && (
+        (
+          request.auth.token.email in ['unjmenwa@gmail.com', 'rafflysyahpoetra@gmail.com'] &&
+          request.auth.token.email_verified == true
+        ) ||
+        (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['superadmin', 'dansat']) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['superadmin', 'dansat'])
+      );
+    }
+
+    function isStaffAdmin() {
+      return isSuperAdmin() || (
+        isSignedIn() && (
+          exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['wadansat', 'staf_adminu', 'admin'])
+        )
+      );
+    }
+
+    function isAdmin() {
+      return isStaffAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // 1. Otorisasi Admin & Pengaturan Sistem (Stage 1.1: Tanpa Bypass PIN 1926)
+    // ---------------------------------------------------------------
+    match /admins/{adminUid} {
+      allow read: if isSignedIn();
+      allow write: if isSuperAdmin();
+    }
+
+    match /payment_configs/{configId} {
+      allow read: if isStaffAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      // Hanya Staf Admin & Superadmin yang berhak mengubah pengaturan & status Siaga 1
+      allow write: if isStaffAdmin() && !('unlockPin' in request.resource.data);
+    }
+
+    match /PendingChanges/{changeId} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // 2. Profil Pengguna & RBAC (/users/{userId})
+    // ---------------------------------------------------------------
+    match /users/{userId} {
+      allow read: if isSignedIn();
+
+      // Pembuatan Akun Baru (Role default 'public_user', tidak boleh self-verify)
+      allow create: if isOwner(userId) && isValidId(userId) &&
+        request.resource.data.uid == userId &&
+        (!('role' in request.resource.data) || request.resource.data.role == 'public_user') &&
+        (!('isVerifiedMenwa' in request.resource.data) || request.resource.data.isVerifiedMenwa == false) &&
+        (!('displayName' in request.resource.data) || (request.resource.data.displayName is string && request.resource.data.displayName.size() <= 120)) &&
+        (!('institution' in request.resource.data) || (request.resource.data.institution is string && request.resource.data.institution.size() <= 150)) &&
+        (!('phone' in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30));
+
+      // Pembaruan Akun: Staf bebas update; Pemilik TIDAK boleh mengubah role atau isVerifiedMenwa
+      allow update: if isStaffAdmin() || (
+        isOwner(userId) &&
+        request.resource.data.uid == resource.data.uid &&
+        (!('role' in request.resource.data) || request.resource.data.role == resource.data.role) &&
+        (!('isVerifiedMenwa' in request.resource.data) || request.resource.data.isVerifiedMenwa == resource.data.isVerifiedMenwa) &&
+        (!('displayName' in request.resource.data) || (request.resource.data.displayName is string && request.resource.data.displayName.size() <= 120)) &&
+        (!('institution' in request.resource.data) || (request.resource.data.institution is string && request.resource.data.institution.size() <= 150)) &&
+        (!('phone' in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30))
+      );
+
+      allow delete: if isSuperAdmin();
+
+      // Subkoleksi Sertifikat
+      match /certificates/{certId} {
+        allow read: if isOwner(userId) || isStaffAdmin();
+        allow create, update: if isOwner(userId) || isStaffAdmin();
+        allow delete: if isSuperAdmin();
+      }
+    }
+
+    // ---------------------------------------------------------------
+    // 3. Pengajuan Formulir Administrasi (/forms_submissions/{submissionId})
+    //    Stage 2.1: Cegah documentPdfBase64 raksasa melampaui 1 MiB
+    // ---------------------------------------------------------------
+    match /forms_submissions/{submissionId} {
+      // Get per ID tunggal diizinkan publik demi pelacakan status progres surat (privasi terjaga)
+      allow get: if true;
+
+      // Listing seluruh surat masuk hanya untuk pemilik akun atau Staf Admin
+      allow list: if isSignedIn() && (
+        resource.data.applicantUid == request.auth.uid || isStaffAdmin()
+      );
+
+      allow create: if isValidId(submissionId) &&
+        request.resource.data.submissionId is string &&
+        request.resource.data.submissionId.size() <= 128 &&
+        request.resource.data.fullName is string &&
+        request.resource.data.fullName.size() <= 120 &&
+        request.resource.data.institution is string &&
+        request.resource.data.institution.size() <= 150 &&
+        (!('documentPdfBase64' in request.resource.data) ||
+         (request.resource.data.documentPdfBase64 is string && request.resource.data.documentPdfBase64.size() <= 665600));
+
+      allow update: if isSignedIn() && (
+        isStaffAdmin() || (
+          resource.data.applicantUid == request.auth.uid &&
+          request.resource.data.applicantUid == resource.data.applicantUid &&
+          (!('fullName' in request.resource.data) || (request.resource.data.fullName is string && request.resource.data.fullName.size() <= 120)) &&
+          (!('institution' in request.resource.data) || (request.resource.data.institution is string && request.resource.data.institution.size() <= 150))
+        )
+      );
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // 4. Tim GERANAT & Transaksi Voting (/geranat_teams & /voting_transactions)
+    //    Stage 1.3: Validasi ketat delta suara & nominal (Anti-Vote Manipulation)
+    // ---------------------------------------------------------------
+    match /geranat_teams/{teamId} {
+      allow read: if true;
+      allow create: if isStaffAdmin() || (
+        isValidId(teamId) &&
+        request.resource.data.teamId == teamId &&
+        request.resource.data.votesCount is number &&
+        request.resource.data.votesCount >= 0 &&
+        request.resource.data.votesCount <= 10000
+      );
+
+      // Non-admin hanya dapat menambah votesCount secara proporsional dengan totalAmountReceived (Rp 1.000/suara)
+      // dan dibatasi maksimal 5.000 suara per transaksi tunggal
+      allow update: if isStaffAdmin() || (
+        isValidId(teamId) &&
+        request.resource.data.teamId == resource.data.teamId &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votesCount', 'totalAmountReceived', 'lastVoteAt', 'updatedAt']) &&
+        request.resource.data.votesCount is number &&
+        request.resource.data.votesCount > resource.data.votesCount &&
+        (request.resource.data.votesCount - resource.data.votesCount) <= 5000 &&
+        request.resource.data.totalAmountReceived is number &&
+        request.resource.data.totalAmountReceived >= (resource.data.totalAmountReceived + ((request.resource.data.votesCount - resource.data.votesCount) * 1000))
+      );
+
+      allow delete: if isStaffAdmin();
+    }
+
+    match /voting_transactions/{txId} {
+      allow read: if true;
+      allow create: if isValidId(txId) &&
+        request.resource.data.txId == txId &&
+        request.resource.data.amount is number &&
+        request.resource.data.amount >= 1000 &&
+        request.resource.data.votes is number &&
+        request.resource.data.votes >= 1 &&
+        request.resource.data.votes <= 5000 &&
+        request.resource.data.amount == request.resource.data.votes * 1000;
+
+      // Idempotency: Jika sudah 'lunas', transaksi terkunci permanen (immutable)
+      allow update: if isSuperAdmin() || (
+        resource.data.status != 'lunas' &&
+        request.resource.data.txId == resource.data.txId &&
+        request.resource.data.amount == resource.data.amount &&
+        request.resource.data.votes == resource.data.votes
+      );
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // Koleksi Mutasi Pembayaran Terverifikasi Server (/payment_mutations/{txId})
+    match /payment_mutations/{txId} {
+      allow get: if true;
+      allow list: if isStaffAdmin();
+      allow create: if isValidId(txId) &&
+        request.resource.data.txId == txId &&
+        request.resource.data.amount is number &&
+        request.resource.data.amount > 0;
+      allow update: if isSuperAdmin() || (
+        resource.data.claimed != true &&
+        request.resource.data.txId == resource.data.txId &&
+        request.resource.data.amount == resource.data.amount
+      );
+      allow delete: if isSuperAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // 5. Portal Peserta Digital (/participant_portals/{token})
+    // ---------------------------------------------------------------
+    match /participant_portals/{token} {
+      allow get: if true;
+      allow list: if isSignedIn() && (resource.data.applicantUid == request.auth.uid || isStaffAdmin());
+      allow create: if isSignedIn() || isStaffAdmin();
+      allow update: if isSignedIn() && (isStaffAdmin() || resource.data.applicantUid == request.auth.uid);
+      allow delete: if isSuperAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // 6. Portal Official Kontingen (/official_portals/{schoolSlug})
+    //    Stage 1.2 & 2.2b: Larang plaintext securityPin + Subkoleksi Log & Snapshot
+    // ---------------------------------------------------------------
+    match /official_portals/{schoolSlug} {
+      allow read: if true;
+
+      allow create: if isStaffAdmin() && isValidId(schoolSlug) &&
+        request.resource.data.schoolSlug == schoolSlug &&
+        request.resource.data.schoolName is string &&
+        request.resource.data.schoolName.size() >= 2 &&
+        request.resource.data.schoolName.size() <= 150 &&
+        request.resource.data.whatsappNumber is string &&
+        request.resource.data.whatsappNumber.size() >= 8 &&
+        request.resource.data.whatsappNumber.size() <= 30 &&
+        !('securityPin' in request.resource.data);
+
+      // Update non-admin wajib mempertahankan nomor WhatsApp & slug terdaftar serta DILARANG menyimpan plaintext securityPin
+      allow update: if isStaffAdmin() || (
+        isValidId(schoolSlug) &&
+        resource.data.isVerifiedByAdmin != false &&
+        request.resource.data.schoolSlug == resource.data.schoolSlug &&
+        request.resource.data.whatsappNumber == resource.data.whatsappNumber &&
+        request.resource.data.schoolName is string &&
+        request.resource.data.schoolName.size() <= 150 &&
+        !('securityPin' in request.resource.data) &&
+        (!('activityLogs' in request.resource.data) || request.resource.data.activityLogs.size() <= 20)
+      );
+
+      allow delete: if isStaffAdmin();
+
+      // Subkoleksi Log Aktivitas Kontingen
+      match /activity_logs/{logId} {
+        allow read: if true;
+        allow create: if isValidId(logId) &&
+          request.resource.data.schoolSlug == schoolSlug &&
+          request.resource.data.action is string &&
+          request.resource.data.action.size() <= 80;
+        allow update, delete: if isStaffAdmin();
+      }
+
+      // Subkoleksi Snapshot Cadangan Kontingen
+      match /snapshots/{snapId} {
+        allow read: if true;
+        allow create, update: if isValidId(snapId) &&
+          request.resource.data.schoolSlug == schoolSlug;
+        allow delete: if isStaffAdmin();
+      }
+    }
+
+    // ---------------------------------------------------------------
+    // 7. Dokumentasi Kegiatan & Komentar (/documentation_posts/{postId})
+    //    Stage 2.2a: Bounded comments di induk + Subkoleksi /comments/{commentId}
+    // ---------------------------------------------------------------
+    match /documentation_posts/{postId} {
+      allow read: if true;
+      allow create: if isStaffAdmin() || (
+        isValidId(postId) &&
+        request.resource.data.postId == postId
+      );
+
+      allow update: if isStaffAdmin() || (
+        isValidId(postId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'comments', 'commentsCount', 'updatedAt']) &&
+        (!('comments' in request.resource.data) || request.resource.data.comments.size() <= 25)
+      );
+
+      allow delete: if isStaffAdmin();
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isValidId(commentId) &&
+          request.resource.data.text is string &&
+          request.resource.data.text.size() >= 1 &&
+          request.resource.data.text.size() <= 1000;
+        allow update, delete: if isStaffAdmin();
+      }
+    }
+
+    // ---------------------------------------------------------------
+    // 8. E-Dispensasi Mahasiswa (/dispensasi_requests/{dispId})
+    // ---------------------------------------------------------------
+    match /dispensasi_requests/{dispId} {
+      allow get: if true;
+
+      allow list: if isSignedIn() && (
+        resource.data.applicantUid == request.auth.uid || isStaffAdmin()
+      );
+
+      allow create: if isSignedIn() &&
+        request.resource.data.applicantUid == request.auth.uid &&
+        request.resource.data.dispensasiId is string &&
+        request.resource.data.dispensasiId.size() <= 64 &&
+        request.resource.data.namaMahasiswa is string &&
+        request.resource.data.namaMahasiswa.size() <= 120 &&
+        request.resource.data.nim is string &&
+        request.resource.data.nim.size() <= 50;
+
+      allow update, delete: if isStaffAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // 9. Audit Logs, Incident Logs & System Lockdown (Stage 1.1 Hardened)
+    // ---------------------------------------------------------------
+    match /system_security/{secId} {
+      allow read: if true;
+      // Hanya Staf Admin & Superadmin yang dapat mengubah status lockdown
+      allow write: if isStaffAdmin() && !('unlockPin' in request.resource.data);
+    }
+
+    match /incident_logs/{logId} {
+      allow read: if isStaffAdmin();
+      allow create: if isValidId(logId) &&
+        request.resource.data.incidentId == logId &&
+        request.resource.data.type is string &&
+        request.resource.data.type.size() <= 80;
+      allow update, delete: if false; // Immutable forensic evidence
+    }
+
+    match /audit_logs/{logId} {
+      allow read: if isSuperAdmin();
+      allow create: if isSignedIn() || isStaffAdmin();
+      allow update, delete: if false; // Immutable audit trail
+    }
+
+    match /content_registry/{contentId} {
+      allow read: if true;
+      allow write: if isStaffAdmin();
+    }
+
+    match /command_center_logs/{logId} {
+      allow read, write: if isStaffAdmin();
+    }
+
+    match /notifications/{notifId} {
+      allow read: if isStaffAdmin() || (
+        isSignedIn() && (resource.data.recipientUid == request.auth.uid || resource.data.recipientRole == 'all')
+      );
+      allow create: if isSignedIn() || isStaffAdmin();
+      allow update: if isStaffAdmin() || (isSignedIn() && resource.data.recipientUid == request.auth.uid);
+      allow delete: if isSuperAdmin();
+    }
+
+    match /scheduled_tasks/{taskId} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // 10. Chat Sessions Gemini AI (/user_chats/{userId}/...)
+    // ---------------------------------------------------------------
+    match /user_chats/{userId}/sessions/{sessionId} {
+      allow read, create, update, delete: if isOwner(userId);
+
+      match /messages/{messageId} {
+        allow read, create, delete: if isOwner(userId);
+        allow update: if false;
+      }
+    }
+  }
+}

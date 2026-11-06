@@ -1,0 +1,19 @@
+Taruh gambar header (.svg) di folder ini. Nama file PERSIS seperti berikut, yang belum ada otomatis tidak tampil:
+
+  Subtab program:
+    header-kc.svg
+    header-geranat.svg
+    header-pengabdian.svg
+    header-seminar.svg
+    header-pam.svg
+    header-diklat.svg
+
+  Tab lain (selain beranda):
+    header-gariskomando.svg
+    header-pendidikan.svg
+    header-mako.svg
+    header-administrasi.svg
+
+Saran ukuran: 1920 x 600 piksel (rasio lebar). Gambar mengisi seluruh area header (object-fit: cover)
+dan berada DI ATAS foto latar, DI BAWAH teks. Kosongkan/transparankan area tempat teks agar tetap terbaca.
+Mau mengubah cara tampil (contain, posisi kanan, dst.)? Ubah props fit dan position pada <HeaderArt />.
