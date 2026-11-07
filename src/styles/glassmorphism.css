@@ -1,0 +1,239 @@
+/* ==========================================================================
+   ULTRA-PREMIUM CRYSTALLINE GLASSMORPHISM DESIGN SYSTEM
+   Dark Tactical Glass, Clean Edges, High Contrast & Zero Excessive Glow
+   Inspirasi: Apple visionOS, macOS Dark Mode & Liquid Obsidian Optics
+   ========================================================================== */
+
+/* ── 1. Luxury Card & Documentation Motion Card (Deep Obsidian Glass Slab) ── */
+.luxury-card,
+.doc-motion-card {
+  position: relative;
+  background: rgba(7, 24, 30, 0.85) !important;
+  backdrop-filter: blur(20px) saturate(180%) contrast(106%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%) contrast(106%);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 1.75rem;
+  color: #f1f5f9;
+  box-shadow:
+    0 10px 28px -4px rgba(0, 0, 0, 0.5),
+    0 2px 6px -1px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease,
+              border-color 0.25s ease,
+              background 0.25s ease;
+  will-change: transform;
+}
+
+.luxury-card:hover,
+.doc-motion-card:hover {
+  transform: translateY(-3px);
+  background: rgba(10, 32, 40, 0.92) !important;
+  border-color: rgba(0, 168, 175, 0.45) !important;
+  box-shadow:
+    0 16px 36px -6px rgba(0, 0, 0, 0.65),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.22) !important;
+}
+
+.dark .luxury-card,
+.dark .doc-motion-card {
+  background: rgba(5, 18, 23, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow:
+    0 12px 32px -6px rgba(0, 0, 0, 0.7),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12) !important;
+}
+
+.dark .luxury-card:hover,
+.dark .doc-motion-card:hover {
+  background: rgba(8, 28, 36, 0.94) !important;
+  border-color: rgba(255, 221, 0, 0.4) !important;
+  box-shadow:
+    0 18px 42px -8px rgba(0, 0, 0, 0.8),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* ── 2. Reusable Neu-Glass Utilities: Slab & Well (Dark Translucent) ── */
+.neu-glass-slab,
+.neu-card {
+  position: relative;
+  background: rgba(7, 22, 28, 0.82) !important;
+  backdrop-filter: blur(16px) saturate(175%) contrast(105%);
+  -webkit-backdrop-filter: blur(16px) saturate(175%) contrast(105%);
+  border: 1px solid rgba(255, 255, 255, 0.11) !important;
+  border-radius: 1.5rem;
+  color: #f1f5f9;
+  box-shadow:
+    0 8px 24px -4px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.14);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .neu-glass-slab,
+.dark .neu-card {
+  background: rgba(4, 16, 21, 0.86) !important;
+  border: 1px solid rgba(0, 168, 175, 0.22) !important;
+  box-shadow:
+    0 10px 28px -5px rgba(0, 0, 0, 0.65),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12);
+}
+
+.neu-card-sm {
+  background: rgba(8, 25, 32, 0.82) !important;
+  backdrop-filter: blur(14px) saturate(170%);
+  -webkit-backdrop-filter: blur(14px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 1rem;
+  color: #f1f5f9;
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  transition: all 0.2s ease;
+}
+
+.dark .neu-card-sm {
+  background: rgba(5, 18, 24, 0.88) !important;
+  border: 1px solid rgba(0, 168, 175, 0.22) !important;
+  box-shadow: 0 6px 18px -3px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Sunken Inset Glass Well (Debossed Search / Form Container) */
+.neu-inset,
+.neu-glass-well {
+  background: rgba(3, 13, 17, 0.85) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 1.25rem;
+  color: #f1f5f9;
+  box-shadow:
+    inset 1.5px 1.5px 4px rgba(0, 0, 0, 0.55),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.06);
+}
+
+.dark .neu-inset,
+.dark .neu-glass-well {
+  background: rgba(2, 9, 12, 0.9) !important;
+  border: 1px solid rgba(0, 168, 175, 0.18) !important;
+  box-shadow:
+    inset 2px 2px 6px rgba(0, 0, 0, 0.7),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.05);
+}
+
+/* ── 3. Luxury Card Floating Icon & Kickers ── */
+.luxury-card-icon {
+  background: linear-gradient(135deg, rgba(0, 101, 105, 0.45) 0%, rgba(3, 20, 26, 0.8) 100%);
+  border: 1px solid rgba(0, 168, 175, 0.35);
+  box-shadow:
+    0 4px 12px -2px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  border-radius: 1rem;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+}
+
+.dark .luxury-card-icon {
+  background: linear-gradient(135deg, rgba(0, 101, 105, 0.5) 0%, rgba(2, 16, 22, 0.85) 100%);
+  border-color: rgba(0, 168, 175, 0.3);
+  box-shadow:
+    0 4px 14px -2px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12);
+}
+
+.luxury-card:hover .luxury-card-icon {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow:
+    0 8px 18px -2px rgba(0, 0, 0, 0.5);
+}
+
+.luxury-card-arrow {
+  transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+
+.luxury-card:hover .luxury-card-arrow {
+  transform: translateX(4px);
+}
+
+/* ── 4. Brand Hub & Access Grid Glass Elements ── */
+.brand-access-item {
+  position: relative;
+  background: rgba(7, 24, 30, 0.82) !important;
+  backdrop-filter: blur(16px) saturate(175%);
+  -webkit-backdrop-filter: blur(16px) saturate(175%);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 1.5rem;
+  color: #f1f5f9;
+  box-shadow:
+    0 8px 22px -4px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .brand-access-item {
+  background: rgba(4, 17, 22, 0.88) !important;
+  border: 1px solid rgba(0, 168, 175, 0.2) !important;
+  box-shadow:
+    0 10px 26px -5px rgba(0, 0, 0, 0.65),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.brand-access-item:hover {
+  transform: translateY(-3px);
+  background: rgba(10, 32, 40, 0.92) !important;
+  border-color: rgba(0, 168, 175, 0.45) !important;
+  box-shadow:
+    0 14px 32px -6px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.18);
+}
+
+.dark .brand-access-item:hover {
+  background: rgba(7, 26, 34, 0.94) !important;
+  border-color: rgba(255, 221, 0, 0.4) !important;
+  box-shadow:
+    0 16px 36px -6px rgba(0, 0, 0, 0.75);
+}
+
+/* ── 5. Form Controls Crisp Dark Glass Insets ── */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not(.no-neu),
+select:not(.no-neu),
+textarea:not(.no-neu) {
+  background: rgba(5, 18, 23, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.875rem;
+  color: #f1f5f9;
+  box-shadow:
+    inset 1.5px 1.5px 3px rgba(0, 0, 0, 0.5),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not(.no-neu):focus,
+select:not(.no-neu):focus,
+textarea:not(.no-neu):focus {
+  background: rgba(7, 24, 30, 0.95);
+  border-color: #00A8AF;
+  box-shadow:
+    0 0 0 2px rgba(0, 168, 175, 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+  outline: none;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not(.no-neu),
+.dark select:not(.no-neu),
+.dark textarea:not(.no-neu) {
+  background: rgba(3, 14, 18, 0.9);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
+  box-shadow:
+    inset 1.5px 1.5px 4px rgba(0, 0, 0, 0.6),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.05);
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not(.no-neu):focus,
+.dark select:not(.no-neu):focus,
+.dark textarea:not(.no-neu):focus {
+  background: rgba(4, 20, 26, 0.98);
+  border-color: #ffdd00;
+  box-shadow:
+    0 0 0 2px rgba(255, 221, 0, 0.25),
+    0 4px 14px rgba(0, 0, 0, 0.5);
+}

@@ -270,10 +270,10 @@ export function PendidikanTab({ onOpenSamapta = null, onOpenKTA = null }) {
   const collapseAll = () => setOpenCourseIds(new Set());
 
   return (
-    <div className="bg-slate-100 min-h-screen pb-32 font-sans flex-grow">
+    <div className="bg-[#051419] min-h-screen pb-32 font-sans flex-grow text-slate-100">
       <HeroStage className="min-h-[400px] py-20 md:py-28" photo={HERO_PHOTO} blur={2.5} dim={0.62}>
         <Reveal className="relative z-10 mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/40 bg-black/25 px-5 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#FFDD00] backdrop-blur-sm">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/40 bg-black/40 px-5 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#FFDD00] backdrop-blur-md">
             <BookOpen size={15} /> Kurikulum Komando Menwa UNJ
           </div>
           <h2 className="text-4xl font-black tracking-tight text-white drop-shadow-2xl md:text-6xl">
@@ -323,12 +323,12 @@ export function PendidikanTab({ onOpenSamapta = null, onOpenKTA = null }) {
         </Reveal>
 
         {/* Toolbar Buka / Ringkas Semua Renlat */}
-        <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-md border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <div className="bg-[#071c22]/90 backdrop-blur-xl rounded-3xl p-4 sm:p-5 shadow-2xl border border-white/10 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span className="text-xs font-black uppercase tracking-wider text-[#006569]">
+            <span className="text-xs font-black uppercase tracking-wider text-[#FFDD00]">
               12 Modul Kurikulum Keprajuritan
             </span>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-300">
               Pilih kartu kursus untuk melihat rincian materi latihan (Renlat).
             </p>
           </div>
@@ -336,7 +336,7 @@ export function PendidikanTab({ onOpenSamapta = null, onOpenKTA = null }) {
             <button
               type="button"
               onClick={expandAll}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#006569]/10 hover:bg-[#006569] text-[#006569] hover:text-[#FFDD00] text-xs font-black transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#006569]/40 hover:bg-[#006569] text-[#FFDD00] text-xs font-black transition border border-[#006569]/60 cursor-pointer"
             >
               <ChevronsUpDown size={14} />
               <span>Buka Semua</span>
@@ -344,7 +344,7 @@ export function PendidikanTab({ onOpenSamapta = null, onOpenKTA = null }) {
             <button
               type="button"
               onClick={collapseAll}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-bold transition border border-white/10 cursor-pointer"
             >
               <span>Ringkas</span>
             </button>
@@ -352,12 +352,12 @@ export function PendidikanTab({ onOpenSamapta = null, onOpenKTA = null }) {
         </div>
 
         {/* SUBJUDUL 1: Pendidikan Bertingkat */}
-        <Reveal delay={100} className="bg-white rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-12 border border-slate-200">
+        <Reveal delay={100} className="bg-[#071c22]/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-12 border border-white/12">
           <div className="text-center mb-10">
-            <h3 className="text-2xl font-black text-slate-900 inline-flex items-center tracking-tight border-b-4 border-[#006569] pb-3">
-              <Shield className="mr-3 text-[#006569]" size={28} /> Pendidikan Bertingkat
+            <h3 className="text-2xl font-black text-white inline-flex items-center tracking-tight border-b-4 border-[#006569] pb-3">
+              <Shield className="mr-3 text-[#00A8AF]" size={28} /> Pendidikan Bertingkat
             </h3>
-            <p className="text-slate-500 mt-3 font-medium text-sm">
+            <p className="text-slate-300 mt-3 font-medium text-sm">
               Jenjang pembinaan internal anggota Menwa Satuan UNJ.
             </p>
           </div>
@@ -377,32 +377,32 @@ export function PendidikanTab({ onOpenSamapta = null, onOpenKTA = null }) {
                       toggleCourse(course);
                     }
                   }}
-                  className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
+                  className="bg-[#09252e] rounded-2xl p-6 border border-white/10 hover:border-[#00A8AF]/60 hover:bg-[#0d2f3a] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex justify-between items-start mb-3">
-                      <span className="bg-[#006569]/10 text-[#006569] font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">
+                      <span className="bg-[#006569]/40 border border-[#006569]/60 text-[#FFDD00] font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">
                         {course.level}
                       </span>
-                      <span className="text-xs font-bold text-slate-500 flex items-center">
-                        <Clock size={12} className="mr-1 text-[#006569]" /> {course.duration}
+                      <span className="text-xs font-bold text-slate-300 flex items-center">
+                        <Clock size={12} className="mr-1 text-[#00A8AF]" /> {course.duration}
                       </span>
                     </div>
-                    <h4 className="font-black text-slate-900 text-lg mb-2 group-hover:text-[#006569] transition-colors">
+                    <h4 className="font-black text-white text-lg mb-2 group-hover:text-[#FFDD00] transition-colors">
                       {course.title}
                     </h4>
-                    <p className={`text-slate-600 text-xs font-medium leading-relaxed ${isOpen ? '' : 'line-clamp-2'}`}>
+                    <p className={`text-slate-300 text-xs font-medium leading-relaxed ${isOpen ? '' : 'line-clamp-2'}`}>
                       {course.desc}
                     </p>
                   </div>
-                  <div className="pt-4 mt-4 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-[#006569]">
+                  <div className="pt-4 mt-4 border-t border-white/10 flex items-center justify-between text-xs font-bold text-[#FFDD00]">
                     <span>{isOpen ? 'Tutup' : 'Detail Modul'}</span>
                     <ChevronRight
                       size={16}
                       className={`transition-transform duration-300 ${isOpen ? 'rotate-90' : 'group-hover:translate-x-1'}`}
                     />
                   </div>
-                  <CourseDetail course={course} open={isOpen} />
+                  <CourseDetail course={course} open={isOpen} dark />
                 </div>
               );
             })}
@@ -410,12 +410,12 @@ export function PendidikanTab({ onOpenSamapta = null, onOpenKTA = null }) {
         </Reveal>
 
         {/* SUBJUDUL 2: Pendidikan Berjenjang */}
-        <Reveal delay={200} className="bg-white rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-12 border border-slate-200">
+        <Reveal delay={200} className="bg-[#071c22]/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-12 border border-white/12">
           <div className="text-center mb-10">
-            <h3 className="text-2xl font-black text-slate-900 inline-flex items-center tracking-tight border-b-4 border-[#FFDD00] pb-3">
-              <Award className="mr-3 text-[#006569]" size={28} /> Pendidikan Berjenjang
+            <h3 className="text-2xl font-black text-white inline-flex items-center tracking-tight border-b-4 border-[#FFDD00] pb-3">
+              <Award className="mr-3 text-[#FFDD00]" size={28} /> Pendidikan Berjenjang
             </h3>
-            <p className="text-slate-500 mt-3 font-medium text-sm">
+            <p className="text-slate-300 mt-3 font-medium text-sm">
               Kualifikasi komando tingkat provinsi dan nasional.
             </p>
           </div>
@@ -435,32 +435,32 @@ export function PendidikanTab({ onOpenSamapta = null, onOpenKTA = null }) {
                       toggleCourse(course);
                     }
                   }}
-                  className="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
+                  className="bg-[#09252e] rounded-2xl p-6 border border-white/10 hover:border-[#00A8AF]/60 hover:bg-[#0d2f3a] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex justify-between items-start mb-3">
                       <span className="bg-[#FFDD00] text-slate-950 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
                         {course.level}
                       </span>
-                      <span className="text-xs font-bold text-slate-500 flex items-center">
-                        <Clock size={12} className="mr-1 text-[#006569]" /> {course.duration}
+                      <span className="text-xs font-bold text-slate-300 flex items-center">
+                        <Clock size={12} className="mr-1 text-[#00A8AF]" /> {course.duration}
                       </span>
                     </div>
-                    <h4 className="font-black text-slate-900 text-base mb-2 group-hover:text-[#006569] transition-colors">
+                    <h4 className="font-black text-white text-base mb-2 group-hover:text-[#FFDD00] transition-colors">
                       {course.title}
                     </h4>
-                    <p className={`text-slate-600 text-xs font-medium leading-relaxed ${isOpen ? '' : 'line-clamp-2'}`}>
+                    <p className={`text-slate-300 text-xs font-medium leading-relaxed ${isOpen ? '' : 'line-clamp-2'}`}>
                       {course.desc}
                     </p>
                   </div>
-                  <div className="pt-4 mt-4 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-[#006569]">
+                  <div className="pt-4 mt-4 border-t border-white/10 flex items-center justify-between text-xs font-bold text-[#FFDD00]">
                     <span>{isOpen ? 'Tutup' : 'Detail Modul'}</span>
                     <ChevronRight
                       size={16}
                       className={`transition-transform duration-300 ${isOpen ? 'rotate-90' : 'group-hover:translate-x-1'}`}
                     />
                   </div>
-                  <CourseDetail course={course} open={isOpen} />
+                  <CourseDetail course={course} open={isOpen} dark />
                 </div>
               );
             })}

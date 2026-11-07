@@ -100,6 +100,11 @@ const PageLoadingFallback = () => (
   </div>
 );
 
+import { AppNavigation } from './components/AppNavigation.jsx';
+import { PrideSection } from './components/PrideSection.jsx';
+import { MakoTab, TabHero } from './components/tabs/MakoTab.jsx';
+import { PoloPreOrderSection } from './components/home/PoloPreOrderSection.jsx';
+
 const handleImgError = (e, text, bgColor = '006569', textColor = 'FFDD00') => {
   e.target.onerror = null;
   e.target.src = `https://placehold.co/600x400/${bgColor}/${textColor}?text=${encodeURIComponent(text)}`;
@@ -107,383 +112,15 @@ const handleImgError = (e, text, bgColor = '006569', textColor = 'FFDD00') => {
 
 const RevealOnScroll = Reveal;
 
-const NAV_ITEMS = [
-  {
-    id: 'beranda',
-    label: 'Beranda',
-    icon: <Compass size={20} />,
-    desc: 'Identitas, program, & informasi satuan.',
-  },
-  {
-    id: 'gallery',
-    label: 'Galeri',
-    icon: <Images size={20} />,
-    desc: 'Dokumentasi giat & arsip visual satuan.',
-  },
-  {
-    id: 'informasi',
-    label: 'Pusat Informasi',
-    icon: <SearchIcon size={20} />,
-    desc: 'Direktori terpadu layanan & panduan.',
-  },
-  {
-    id: 'kegiatan',
-    label: 'Kegiatan & Lomba',
-    icon: <Trophy size={20} />,
-    desc: 'Ajang nasional & pembinaan pemuda.',
-    children: [
-      {
-        id: 'kc',
-        label: 'KC VIII',
-        badge: 'Lomba Nasional',
-        icon: <Trophy size={16} className="text-[#FFDD00]" />,
-        desc: 'Kompetisi Pemuda Nusantara & jersey.',
-      },
-      {
-        id: 'youth-spark',
-        label: 'Youth Spark',
-        badge: 'Seminar Nasional',
-        icon: <Sparkles size={16} className="text-amber-400" />,
-        desc: 'Seminar nasional, pelatihan & lomba.',
-      },
-      {
-        id: 'geranat',
-        label: 'Geranat VII',
-        badge: 'LFPB & Paskibra',
-        icon: <Award size={16} className="text-emerald-400" />,
-        desc: 'Lomba formasi paskibra & e-voting.',
-      },
-    ],
-  },
-  {
-    id: 'struktur',
-    label: 'Organisasi',
-    icon: <Shield size={20} />,
-    desc: 'Garis Komando & struktur organisasi.',
-  },
-  {
-    id: 'administrasi',
-    label: 'Adminu',
-    icon: <FileText size={20} />,
-    desc: 'Pendaftaran, layanan dinas, & Mako.',
-  },
-];
-
-const Navigation = (props) => (
-  <NavBar
-    {...props}
-    onNavigate={props.handleQuickSearch}
-    navItems={NAV_ITEMS}
-    MenuIcon={<Menu size={28} />}
-    CloseIcon={<X size={28} />}
-    rightSlot={
-      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-        <button
-          type="button"
-          onClick={props.onOpenSearch}
-          className="portal-search-trigger shrink-0"
-          aria-label="Cari informasi portal, tekan Ctrl K atau Command K"
-          title="Cari cepat • Ctrl/⌘ K"
-        >
-          <SearchIcon size={17} />
-          <span className="hidden sm:inline">Cari</span>
-          <kbd className="hidden xl:inline">⌘ K</kbd>
-        </button>
-        <MusicPlayer />
-        <button
-          type="button"
-          onClick={() => {
-            const next = !props.tactileAudioMuted;
-            setTactileAudioMuted(next);
-            props.onToggleAudio?.(next);
-          }}
-          className="hidden sm:inline-flex p-2 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white transition hover:scale-105 shrink-0"
-          title={props.tactileAudioMuted ? 'Aktifkan Efek Suara Haptic Tombol 3D' : 'Senyapkan Efek Suara Tombol'}
-        >
-          {props.tactileAudioMuted ? (
-            <VolumeX size={15} className="text-slate-400" />
-          ) : (
-            <Volume2 size={15} className="text-amber-400" />
-          )}
-        </button>
-        <div className="flex items-center gap-1 sm:gap-2 pl-1 border-l border-slate-200/60 dark:border-white/10">
-          <button
-            type="button"
-            onClick={props.onOpenGamification}
-            className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-black transition border border-amber-500/40 bg-slate-900/90 hover:bg-slate-800 text-amber-300 shadow-sm hover:scale-105"
-            title="Buka Subtab Games, Kuis Taktis & Papan Peringkat"
-          >
-            <Flame size={14} className="text-amber-400 fill-amber-400" />
-            <span className="font-mono text-amber-400">{props.profile?.tacticalPoints || 0}</span>
-            <span className="hidden md:inline text-[10px] text-slate-400 uppercase">EXP</span>
-          </button>
-          <button
-            type="button"
-            onClick={props.onOpenAccount}
-            className="portal-account-trigger inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-black transition border border-[#006569]/25 bg-white/90 hover:bg-white text-slate-800 shadow-sm hover:scale-105"
-            title={
-              props.user
-                ? `Akun: ${props.profile?.displayName || props.user.email}`
-                : 'Masuk atau Kelola Akun Portal'
-            }
-          >
-            <User size={15} className={props.user ? 'text-[#006569]' : 'text-slate-500'} />
-            <span className="hidden sm:inline max-w-[100px] truncate">
-              {props.user
-                ? props.profile?.displayName?.split(' ')[0] || props.user.email?.split('@')[0]
-                : 'Akun'}
-            </span>
-            {props.profile?.isVerifiedMenwa ? (
-              <span title="Anggota Menwa Terverifikasi Resmi">
-                <ShieldCheck size={13} className="text-blue-500 shrink-0" />
-              </span>
-            ) : props.user ? (
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-            ) : null}
-          </button>
-        </div>
-      </div>
-    }
-    onLogoError={(e) => handleImgError(e, 'MENWA UNJ', '006569', 'FFDD00')}
-  />
-);
-
-const rotatingPhrases = ['Prestasi', 'Pengabdian', 'Anggota', 'Penyelenggaraan'];
-
-const PrideText = () => {
-  const [index, setIndex] = useState(0);
-  const [typed, setTyped] = useState('');
-  const [deleting, setDeleting] = useState(false);
-  const phrase = rotatingPhrases[index];
-
-  useEffect(() => {
-    const pause = !deleting && typed === phrase;
-    const timer = setTimeout(
-      () => {
-        if (pause) {
-          setDeleting(true);
-          return;
-        }
-        if (deleting) {
-          const next = typed.slice(0, -1);
-          setTyped(next);
-          if (!next) {
-            setDeleting(false);
-            setIndex((i) => (i + 1) % rotatingPhrases.length);
-          }
-        } else {
-          setTyped(phrase.slice(0, typed.length + 1));
-        }
-      },
-      pause ? 1500 : deleting ? 55 : 85
-    );
-    return () => clearTimeout(timer);
-  }, [typed, deleting, phrase]);
-
-  return (
-    <span className="pride-line">
-      <span className="pride-prefix">Menwa UNJ dalam </span>
-      <span className="pride-typing">
-        <span className="pride-typing__text">{typed}</span>
-        <span className="pride-typing__caret" aria-hidden />
-      </span>
-    </span>
-  );
-};
-
-const V3_STATS = [
-  { label: 'Anggota Aktif', number: 50, icon: Users, color: 'teal' },
-  { label: 'Prestasi Terdata', number: 150, icon: Award, color: 'gold' },
-  { label: 'Giat Pengabdian Masyarakat', number: 100, icon: Compass, color: 'violet' },
-  { label: 'Penyelenggaraan Lomba', number: 30, icon: Trophy, color: 'coral' },
-];
-
-const PrideStat = ({ item }) => {
-  const ref = useRef(null);
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    let frame = 0;
-    let running = false;
-    const run = () => {
-      if (running) return;
-      running = true;
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        setCount(item.number);
-        return;
-      }
-      const start = performance.now();
-      const tick = (now) => {
-        const progress = Math.min(1, (now-start)/4700);
-        const eased = 1 - Math.pow(1 - progress, 2);
-        setCount(Math.round(eased * item.number));
-        if (progress < 1) frame = requestAnimationFrame(tick);
-      };
-      frame = requestAnimationFrame(tick);
-    };
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          run();
-          observer.disconnect();
-        }
-      },
-      { threshold:.58 }
-    );
-    observer.observe(el);
-    return () => {
-      observer.disconnect();
-      cancelAnimationFrame(frame);
-    };
-  }, [item.number]);
-  const Icon = item.icon;
-  return (
-    <article className={`brand-pride-stat brand-pride-stat--${item.color}`} ref={ref}>
-      <span className="brand-pride-icon">
-        <Icon size={24} />
-      </span>
-      <strong>
-        {count}
-        <i>+</i>
-      </strong>
-      <span>{item.label}</span>
-    </article>
-  );
-};
-
-const PrideSection = () => (
-  <section className="brand-pride" aria-labelledby="brand-pride-title">
-    <div className="brand-container">
-      <span className="brand-pride-eyebrow">JEJAK &amp; KEBANGGAAN SATUAN</span>
-      <h2 id="brand-pride-title">
-        <PrideText />
-      </h2>
-      <p className="brand-pride-lead">Langkah, karya, dan pengabdian yang menjadi kebanggaan Menwa UNJ.</p>
-      <div className="brand-pride-grid">
-        {V3_STATS.map((item) => (
-          <PrideStat key={item.label} item={item} />
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
-const TabHero = ({ eyebrow, title, subtitle, icon }) => (
-  <HeroStage className="min-h-[430px] py-24 md:py-32" photo={HERO_PHOTO} blur={2.5} dim={0.62}>
-    <RevealOnScroll className="relative z-10 mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-      {eyebrow && (
-        <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/40 bg-black/25 px-5 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#FFDD00] backdrop-blur-sm">
-          {icon}
-          {eyebrow}
-        </div>
-      )}
-      <h2 className="text-4xl font-black tracking-tight text-white drop-shadow-2xl md:text-6xl">{title}</h2>
-      {subtitle && (
-        <p className="mx-auto mt-5 max-w-3xl text-lg font-bold leading-relaxed text-[#FFDD00] drop-shadow-lg md:text-xl">
-          {subtitle}
-        </p>
-      )}
-    </RevealOnScroll>
-  </HeroStage>
-);
-
 const BerandaTab = ({ onOpenSearch }) => (
-  <div className="flex-grow bg-slate-50 font-sans">
+  <div className="flex-grow bg-[#051419] font-sans text-slate-100">
     <BrandHome onOpenSearch={onOpenSearch} />
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <DynamicCanvasZone containerId="beranda_showcase_slot" title="Canvas Showcases & Galeri Dokumentasi" />
-    </div>
+    <PoloPreOrderSection />
     <HomeSections />
     <BrandValues />
     <PrideSection />
   </div>
 );
-
-const MakoTab = () => {
-  return (
-    <div className="bg-slate-100 min-h-screen pb-32 font-sans flex-grow">
-      <TabHero
-        title="Markas Komando (MAKO)"
-        subtitle="Pusat Komando & Pelayanan Administrasi Satuan UNJ"
-        icon={<MapPin size={15} />}
-        eyebrow="Markas Komando"
-      />
-      <div className="max-w-7xl mx-auto px-4 pt-12 md:pt-16 relative z-10 space-y-12">
-        <RevealOnScroll delay={200} className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-slate-200">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#006569]/10 text-[#006569] rounded-full font-black text-xs uppercase tracking-widest mb-4">
-                <MapPin size={16} /> Lokasi Markas Komando
-              </div>
-              <h3 className="text-3xl font-black text-slate-900 mb-4">Mako Resimen Mahasiswa UNJ</h3>
-              <p className="text-slate-600 font-medium leading-relaxed mb-6">
-                Jl. R.Mangun Muka Kampus A UNJ Gedung G R.107, RT.11/RW.14, Rawamangun, Kec. Pulo Gadung, Kota Jakarta
-                Timur, Daerah Khusus Ibukota Jakarta 13220
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 text-slate-700 font-bold text-sm bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                  <Phone className="text-[#006569] shrink-0" size={20} />
-                  <span>
-                    WhatsApp (Wakil Komandan):{' '}
-                    <a
-                      href="https://wa.me/6281525823503"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#006569] underline font-black"
-                    >
-                      +62 815-2582-3503
-                    </a>
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-slate-700 font-bold text-sm bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                  <Mail className="text-[#006569] shrink-0" size={20} />
-                  <span>
-                    Email Satuan:{' '}
-                    <a href="mailto:unjmenwa@gmail.com" className="text-[#006569] underline font-black">
-                      unjmenwa@gmail.com
-                    </a>
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-slate-700 font-bold text-sm bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                  <Clock className="text-[#006569] shrink-0" size={20} />
-                  <span>Jam Operasional Piket: Senin - Minggu (08.00 - 22.00 WIB)</span>
-                </div>
-              </div>
-            </div>
-            <div className="rounded-3xl overflow-hidden shadow-xl border-4 border-white h-80 bg-slate-200 relative">
-              <iframe
-                title="Google Maps Mako Menwa UNJ"
-                src="https://maps.google.com/maps?q=Mako%20Menwa%20UNJ%20Universitas%20Negeri%20Jakarta&t=&z=16&ie=UTF8&iwloc=&output=embed"
-                className="w-full h-full border-0"
-                allowFullScreen=""
-                loading="lazy"
-              />
-            </div>
-          </div>
-        </RevealOnScroll>
-        <RevealOnScroll className="mt-12">
-          <div className="mako-admin-entry flex flex-col items-start justify-between gap-5 rounded-[2rem] border border-[#006569]/15 bg-gradient-to-r from-white to-[#e8f5f1] p-6 shadow-sm sm:flex-row sm:items-center md:p-8">
-            <div className="max-w-xl">
-              <span className="text-xs font-black uppercase tracking-[.18em] text-[#006569]">Layanan Satuan</span>
-              <h3 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Butuh pengurusan administrasi?</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                Pengajuan surat, permohonan personel, peminjaman sarpras, dan kemitraan satuan.
-              </p>
-            </div>
-            <Link to="/administrasi" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#006569] px-6 py-4 text-sm font-black text-white shadow-lg transition hover:-translate-y-1 hover:bg-[#00474c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#006569]">
-              Buka Administrasi <ArrowRight size={18} />
-            </Link>
-          </div>
-        </RevealOnScroll>
-        <RevealOnScroll>
-          <TacticalMakoNavigator />
-        </RevealOnScroll>
-        <DynamicCanvasZone containerId="mako_slot" title="Layanan & Kontak Tambahan" />
-      </div>
-    </div>
-  );
-};
 
 const Footer = SiteFooter;
 
@@ -553,9 +190,10 @@ export default function App() {
   const [tactileAudioMuted, setTactileAudioMutedState] = useState(() => isTactileAudioMuted());
   const [darkMode, setDarkMode] = useState(() => {
     try {
-      return localStorage.getItem('menwa_dark_mode') === 'true';
+      const saved = localStorage.getItem('menwa_dark_mode');
+      return saved === null ? true : saved === 'true';
     } catch {
-      return false;
+      return true;
     }
   });
   const [konamiUnlocked, setKonamiUnlocked] = useState(false);
@@ -757,7 +395,7 @@ export default function App() {
       <AppErrorBoundary>
         <div
           className={`min-h-screen flex flex-col font-sans selection:bg-[#006569] selection:text-[#FFDD00] transition-colors duration-300 ${
-            darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
+            darkMode ? 'bg-[#041217] text-slate-100' : 'bg-[#06171d] text-slate-100'
           }`}
         >
           <a href="#main-content" className="portal-skip-link">
@@ -817,7 +455,7 @@ export default function App() {
           )}
 
           {!kioskMode && (
-            <Navigation
+            <AppNavigation
               onOpenSearch={() => setSearchOpen(true)}
               onOpenAccount={() => setAccountModalOpen(true)}
               onOpenGamification={() => navigate('/games')}
@@ -831,6 +469,7 @@ export default function App() {
               setIsMobileMenuOpen={setIsMobileMenuOpen}
               tactileAudioMuted={tactileAudioMuted}
               onToggleAudio={(val) => setTactileAudioMutedState(val)}
+              onLogoError={(e) => handleImgError(e, 'MENWA UNJ', '006569', 'FFDD00')}
             />
           )}
 
@@ -872,7 +511,7 @@ export default function App() {
                   <ParticipantPortal schoolSlugProp={decodeURIComponent(path.split('/')[2] || '')} />
                 </Suspense>
               ) : path === '/portal-peserta' || path === '/official' ? (
-                <div className="bg-slate-50 min-h-screen py-10 px-4 max-w-6xl mx-auto w-full">
+                <div className="bg-[#051419] min-h-screen py-10 px-4 max-w-6xl mx-auto w-full text-slate-100">
                   <Suspense fallback={<PageLoadingFallback />}>
                     <ParticipantPortal />
                   </Suspense>
@@ -923,12 +562,12 @@ export default function App() {
           <TacticalKTACardModal isOpen={ktaModalOpen} onClose={() => setKtaModalOpen(false)} />
 
           {gamificationModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md overflow-y-auto animate-fade-in">
-              <div className="relative w-full max-w-4xl bg-slate-50 border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl my-8 text-slate-900">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto animate-fade-in">
+              <div className="relative w-full max-w-4xl bg-[#071c22]/95 border border-white/12 rounded-3xl p-6 sm:p-8 shadow-2xl my-8 text-slate-100">
                 <div className="flex justify-end mb-2">
                   <button
                     onClick={() => setGamificationModalOpen(false)}
-                    className="p-2 text-slate-500 hover:text-slate-900 rounded-full hover:bg-slate-200 transition"
+                    className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/10 transition cursor-pointer"
                   >
                     <X size={20} />
                   </button>

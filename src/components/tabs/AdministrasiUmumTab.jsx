@@ -184,10 +184,10 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen pb-32 font-sans flex-grow">
+    <div className="bg-[#051419] min-h-screen pb-32 font-sans flex-grow text-slate-100">
       <HeroStage className="min-h-[400px] py-20 md:py-28" photo={HERO_PHOTO} blur={2.5} dim={0.62}>
         <Reveal className="relative z-10 mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/40 bg-black/25 px-5 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#FFDD00] backdrop-blur-sm">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/40 bg-black/40 px-5 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#FFDD00] backdrop-blur-md">
             <FileText size={15} /> Administrasi &amp; Markas Komando
           </div>
           <h2 className="text-4xl font-black tracking-tight text-white drop-shadow-2xl md:text-6xl">
@@ -202,7 +202,7 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
       <div className="max-w-7xl mx-auto px-4 pt-8 md:pt-12 relative z-10 space-y-8">
         {/* Banner Auto-Fill Profil Pengguna */}
         {user ? (
-          <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-white border border-emerald-200/80 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-[#071c22]/90 backdrop-blur-xl border border-white/12 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-[#006569] text-[#FFDD00] flex items-center justify-center font-black text-lg shrink-0 shadow-md">
                 <User size={22} />
@@ -212,15 +212,15 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
                   <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white px-2.5 py-0.5 rounded-full">
                     Auto-Fill Aktif
                   </span>
-                  <span className="text-xs text-slate-500 font-mono">{user.email}</span>
+                  <span className="text-xs text-slate-400 font-mono">{user.email}</span>
                 </div>
-                <h4 className="text-base font-black text-slate-900 mt-1">
+                <h4 className="text-base font-black text-white mt-1">
                   {profile?.displayName || user.displayName || 'Anggota Pengguna'}
-                  <span className="text-slate-500 font-normal text-xs ml-2">
+                  <span className="text-slate-400 font-normal text-xs ml-2">
                     ({profile?.institution || 'UNJ'} · {profile?.occupation || 'Mahasiswa'})
                   </span>
                 </h4>
-                <p className="text-xs text-slate-600 mt-0.5">
+                <p className="text-xs text-slate-300 mt-0.5">
                   Identitas profil otomatis terisi pada setiap formulir pengajuan.
                 </p>
               </div>
@@ -229,7 +229,7 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
               <button
                 type="button"
                 onClick={onOpenAccountModal}
-                className="px-3.5 py-2 bg-white border border-slate-300 hover:border-[#006569] text-slate-800 text-xs font-bold rounded-xl shadow-sm transition cursor-pointer"
+                className="px-3.5 py-2 bg-white/10 hover:bg-white/20 border border-white/15 text-slate-100 text-xs font-bold rounded-xl shadow-sm transition cursor-pointer"
               >
                 Edit Profil
               </button>
@@ -259,7 +259,7 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
             </div>
           </div>
         ) : (
-          <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#00474c] text-white rounded-3xl p-5 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-700">
+          <div className="bg-[#071c22]/90 backdrop-blur-xl text-white rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-white/12">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-[#FFDD00] text-slate-950 flex items-center justify-center font-black text-lg shrink-0 shadow-md">
                 <Sparkles size={24} />
@@ -299,7 +299,7 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
 
         {/* Responsive Sub-Tab Navigation Bar: Horizontal Scrollable on Mobile, Balanced Flex/Grid on Desktop */}
         <div
-          className="bg-white/95 backdrop-blur-md p-2 sm:p-2.5 rounded-3xl border border-slate-200 shadow-lg overflow-x-auto no-scrollbar"
+          className="bg-[#071c22]/90 backdrop-blur-xl p-2 sm:p-2.5 rounded-3xl border border-white/10 shadow-2xl overflow-x-auto no-scrollbar"
           role="tablist"
           aria-label="Sub-kategori Administrasi Umum"
         >
@@ -319,8 +319,8 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
                   }}
                   className={`px-3.5 sm:px-4 py-2.5 rounded-2xl font-black text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer ${
                     isActive
-                      ? 'bg-[#006569] text-[#FFDD00] shadow-md shadow-[#006569]/30'
-                      : 'bg-slate-50 hover:bg-teal-50 text-slate-700 hover:text-[#006569] border border-slate-200/80'
+                      ? 'bg-[#006569] text-[#FFDD00] shadow-md shadow-[#006569]/30 border border-[#00A8AF]/60'
+                      : 'bg-[#09252e] hover:bg-[#0d2f3a] text-slate-200 hover:text-white border border-white/10'
                   }`}
                 >
                   <Icon size={14} />
@@ -339,12 +339,12 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
         </div>
 
         {/* Active Sub-Tab Panel */}
-        <div className="bg-white rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-14 border border-slate-200">
+        <div className="bg-[#071c22]/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-14 border border-white/12 text-slate-100">
           {activeSubTab === 'pendaftaran' && (
             <div className="space-y-6">
               <div className="text-center max-w-2xl mx-auto mb-8">
-                <h3 className="text-2xl md:text-3xl font-black text-slate-900">Portal Pendaftaran</h3>
-                <p className="text-slate-500 font-medium text-sm mt-2">
+                <h3 className="text-2xl md:text-3xl font-black text-white">Portal Pendaftaran</h3>
+                <p className="text-slate-300 font-medium text-sm mt-2">
                   Pilih program pendaftaran untuk pengisian langsung di aplikasi.
                 </p>
               </div>
@@ -352,21 +352,21 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
                 {PENDAFTARAN_ITEMS.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+                    className="bg-[#09252e] rounded-3xl p-6 border border-white/10 hover:border-[#00A8AF]/60 hover:bg-[#0d2f3a] hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group"
                   >
                     <div>
                       <div className="flex justify-between items-center mb-4">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] bg-[#006569]/10 px-3 py-1 rounded-full">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-[#FFDD00] bg-[#006569]/40 border border-[#006569]/60 px-3 py-1 rounded-full">
                           {item.category}
                         </span>
                         <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${item.statusClass}`}>
                           {item.status}
                         </span>
                       </div>
-                      <h4 className="text-lg font-black text-slate-900 leading-tight mb-2.5 group-hover:text-[#006569] transition-colors">
+                      <h4 className="text-lg font-black text-white leading-tight mb-2.5 group-hover:text-[#FFDD00] transition-colors">
                         {item.title}
                       </h4>
-                      <p className="text-slate-600 text-xs font-medium leading-relaxed mb-5">{item.desc}</p>
+                      <p className="text-slate-300 text-xs font-medium leading-relaxed mb-5">{item.desc}</p>
                     </div>
                     <div className="space-y-2">
                       <button
@@ -406,8 +406,8 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
           {activeSubTab === 'permohonan' && (
             <div className="space-y-6">
               <div className="text-center max-w-2xl mx-auto mb-8">
-                <h3 className="text-2xl md:text-3xl font-black text-slate-900">Permohonan Layanan Satuan</h3>
-                <p className="text-slate-500 font-medium text-sm mt-2">
+                <h3 className="text-2xl md:text-3xl font-black text-white">Permohonan Layanan Satuan</h3>
+                <p className="text-slate-300 font-medium text-sm mt-2">
                   Ajukan personel, sarpras, atau instruktur langsung secara digital.
                 </p>
               </div>
@@ -415,21 +415,21 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
                 {PERMOHONAN_ITEMS.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+                    className="bg-[#09252e] rounded-3xl p-6 border border-white/10 hover:border-[#00A8AF]/60 hover:bg-[#0d2f3a] hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group"
                   >
                     <div>
                       <div className="flex justify-between items-center mb-4">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] bg-[#006569]/10 px-3 py-1 rounded-full">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-[#FFDD00] bg-[#006569]/40 border border-[#006569]/60 px-3 py-1 rounded-full">
                           {item.category}
                         </span>
                         <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${item.statusClass}`}>
                           {item.status}
                         </span>
                       </div>
-                      <h4 className="text-lg font-black text-slate-900 leading-tight mb-2.5 group-hover:text-[#006569] transition-colors">
+                      <h4 className="text-lg font-black text-white leading-tight mb-2.5 group-hover:text-[#FFDD00] transition-colors">
                         {item.title}
                       </h4>
-                      <p className="text-slate-600 text-xs font-medium leading-relaxed mb-5">{item.desc}</p>
+                      <p className="text-slate-300 text-xs font-medium leading-relaxed mb-5">{item.desc}</p>
                     </div>
                     <div className="space-y-2">
                       <button
@@ -444,7 +444,7 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full py-1.5 text-center text-[11px] font-bold text-slate-500 hover:text-[#006569] flex items-center justify-center gap-1 transition"
+                        className="w-full py-1.5 text-center text-[11px] font-bold text-slate-400 hover:text-[#FFDD00] flex items-center justify-center gap-1 transition"
                       >
                         <span>WhatsApp Piket</span>
                         <ExternalLink size={12} />
@@ -459,8 +459,8 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
           {activeSubTab === 'kerjasama' && (
             <div className="space-y-6">
               <div className="text-center max-w-2xl mx-auto mb-8">
-                <h3 className="text-2xl md:text-3xl font-black text-slate-900">Portal Kemitraan</h3>
-                <p className="text-slate-500 font-medium text-sm mt-2">
+                <h3 className="text-2xl md:text-3xl font-black text-white">Portal Kemitraan</h3>
+                <p className="text-slate-300 font-medium text-sm mt-2">
                   Ajukan sponsorship, media partner, dan kolaborasi kegiatan.
                 </p>
               </div>
@@ -468,21 +468,21 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
                 {KERJASAMA_ITEMS.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+                    className="bg-[#09252e] rounded-3xl p-6 border border-white/10 hover:border-[#00A8AF]/60 hover:bg-[#0d2f3a] hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group"
                   >
                     <div>
                       <div className="flex justify-between items-center mb-4">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] bg-[#006569]/10 px-3 py-1 rounded-full">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-[#FFDD00] bg-[#006569]/40 border border-[#006569]/60 px-3 py-1 rounded-full">
                           {item.category}
                         </span>
                         <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${item.statusClass}`}>
                           {item.status}
                         </span>
                       </div>
-                      <h4 className="text-lg font-black text-slate-900 leading-tight mb-2.5 group-hover:text-[#006569] transition-colors">
+                      <h4 className="text-lg font-black text-white leading-tight mb-2.5 group-hover:text-[#FFDD00] transition-colors">
                         {item.title}
                       </h4>
-                      <p className="text-slate-600 text-xs font-medium leading-relaxed mb-5">{item.desc}</p>
+                      <p className="text-slate-300 text-xs font-medium leading-relaxed mb-5">{item.desc}</p>
                     </div>
                     <div className="space-y-2">
                       <button
@@ -497,7 +497,7 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full py-1 text-center text-[10px] font-bold text-slate-500 hover:text-[#006569] flex items-center justify-center gap-1 transition"
+                        className="w-full py-1 text-center text-[10px] font-bold text-slate-400 hover:text-[#FFDD00] flex items-center justify-center gap-1 transition"
                       >
                         <span>WhatsApp</span>
                         <ExternalLink size={11} />
@@ -512,8 +512,8 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
           {activeSubTab === 'registrasi-mandiri' && (
             <div className="max-w-3xl mx-auto space-y-6">
               <div className="text-center max-w-2xl mx-auto mb-6">
-                <h3 className="text-2xl md:text-3xl font-black text-slate-900">Formulir Registrasi Mandiri</h3>
-                <p className="text-slate-500 font-medium text-sm mt-2">
+                <h3 className="text-2xl md:text-3xl font-black text-white">Formulir Registrasi Mandiri</h3>
+                <p className="text-slate-300 font-medium text-sm mt-2">
                   Data profil Anda (Nama Lengkap, Asal Instansi, Pekerjaan, Tanggal Lahir) terisi secara otomatis dan
                   tersimpan langsung ke database Firestore.
                 </p>
@@ -548,48 +548,48 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
         </div>
 
         {/* Bagian Bawah Adminu: Informasi Markas Komando (MAKO) & Kontak Resmi */}
-        <Reveal delay={150} className="bg-white rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-12 border border-slate-200">
+        <Reveal delay={150} className="bg-[#071c22]/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-12 border border-white/12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#006569]/10 text-[#006569] rounded-full font-black text-xs uppercase tracking-widest mb-4">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#006569]/30 border border-[#006569]/60 text-[#FFDD00] rounded-full font-black text-xs uppercase tracking-widest mb-4">
                 <MapPin size={16} /> Lokasi &amp; Kontak Markas Komando (MAKO)
               </div>
-              <h3 className="text-3xl font-black text-slate-900 mb-4">Mako Resimen Mahasiswa UNJ</h3>
-              <p className="text-slate-600 font-medium leading-relaxed mb-6">
+              <h3 className="text-3xl font-black text-white mb-4">Mako Resimen Mahasiswa UNJ</h3>
+              <p className="text-slate-300 font-medium leading-relaxed mb-6">
                 Jl. R.Mangun Muka Kampus A UNJ Gedung G R.107, RT.11/RW.14, Rawamangun, Kec. Pulo Gadung, Kota Jakarta
                 Timur, Daerah Khusus Ibukota Jakarta 13220
               </p>
               <div className="space-y-4">
-                <div className="flex items-center gap-3 text-slate-700 font-bold text-sm bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                  <Phone className="text-[#006569] shrink-0" size={20} />
+                <div className="flex items-center gap-3 text-slate-200 font-bold text-sm bg-[#09252e] p-4 rounded-2xl border border-white/10">
+                  <Phone className="text-[#00A8AF] shrink-0" size={20} />
                   <span>
                     WhatsApp (Wakil Komandan):{' '}
                     <a
                       href="https://wa.me/6281525823503"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#006569] underline font-black"
+                      className="text-[#FFDD00] hover:underline font-black"
                     >
                       +62 815-2582-3503
                     </a>
                   </span>
                 </div>
-                <div className="flex items-center gap-3 text-slate-700 font-bold text-sm bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                  <Mail className="text-[#006569] shrink-0" size={20} />
+                <div className="flex items-center gap-3 text-slate-200 font-bold text-sm bg-[#09252e] p-4 rounded-2xl border border-white/10">
+                  <Mail className="text-[#00A8AF] shrink-0" size={20} />
                   <span>
                     Email Satuan:{' '}
-                    <a href="mailto:unjmenwa@gmail.com" className="text-[#006569] underline font-black">
+                    <a href="mailto:unjmenwa@gmail.com" className="text-[#FFDD00] hover:underline font-black">
                       unjmenwa@gmail.com
                     </a>
                   </span>
                 </div>
-                <div className="flex items-center gap-3 text-slate-700 font-bold text-sm bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                  <Clock className="text-[#006569] shrink-0" size={20} />
+                <div className="flex items-center gap-3 text-slate-200 font-bold text-sm bg-[#09252e] p-4 rounded-2xl border border-white/10">
+                  <Clock className="text-[#00A8AF] shrink-0" size={20} />
                   <span>Jam Operasional Piket: Senin - Minggu (08.00 - 22.00 WIB)</span>
                 </div>
               </div>
             </div>
-            <div className="rounded-3xl overflow-hidden shadow-xl border-4 border-white h-80 bg-slate-200 relative">
+            <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 h-80 bg-slate-900 relative">
               <iframe
                 title="Google Maps Mako Menwa UNJ"
                 src="https://maps.google.com/maps?q=Mako%20Menwa%20UNJ%20Universitas%20Negeri%20Jakarta&t=&z=16&ie=UTF8&iwloc=&output=embed"

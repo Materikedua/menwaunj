@@ -191,36 +191,7 @@ const EventStoryCard = ({ to, image, eyebrow, title, meta, description, variant 
   </Link>
 );
 
-const LIVE_HERO_SCENES = [
-  {
-    code: 'SCENE 01 // MARKAS KOMANDO',
-    headline: 'Anda Memasuki Portal Komando Resimen Mahasiswa UNJ',
-    sub: 'Pusat Kendali Informasi, Diklat Keprajuritan & Pengabdian Sivitas Akademika',
-  },
-  {
-    code: 'SCENE 02 // KSATRIA CENDEKIA',
-    headline: 'Kawah Candradimuka Mahasiswa Intelektual & Berjiwa Ksatria',
-    sub: 'Menempa Disiplin, Kepemimpinan Lapangan, dan Prestasi Nasional',
-  },
-  {
-    code: 'SCENE 03 // PENGABDIAN BANGSA',
-    headline: 'Widya Castrena Dharma Siddha — Satuan Universitas Negeri Jakarta',
-    sub: 'Menyatukan Ilmu Pengetahuan dan Ilmu Olah Keprajuritan untuk Negeri',
-  },
-];
-
 export function BrandHome({ onOpenSearch }) {
-  const [sceneIdx, setSceneIdx] = useState(0);
-
-  React.useEffect(() => {
-    const id = setInterval(() => {
-      setSceneIdx((prev) => (prev + 1) % LIVE_HERO_SCENES.length);
-    }, 7000);
-    return () => clearInterval(id);
-  }, []);
-
-  const activeScene = LIVE_HERO_SCENES[sceneIdx];
-
   return (
     <div className="brand-home">
       {/* Live Web Short-Video Cinematic Hero Stage */}
@@ -232,16 +203,6 @@ export function BrandHome({ onOpenSearch }) {
         liveCinema={true}
       >
         <Reveal className="brand-legacy-inner relative z-20 mx-auto flex max-w-5xl flex-col items-center px-4 text-center">
-          {/* Live Web Cinema Pill Banner */}
-          <div className="mb-5 inline-flex flex-wrap items-center justify-center gap-2.5 rounded-full border border-[#FFDD00]/45 bg-slate-950/75 px-4 py-1.5 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] text-white backdrop-blur-md shadow-lg">
-            <span className="inline-flex items-center gap-1.5 text-[#FFDD00]">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>LIVE WEB CINEMA</span>
-            </span>
-            <span className="text-white/30">|</span>
-            <span className="text-slate-200 font-mono">{activeScene.code}</span>
-          </div>
-
           <div className="mb-6">
             <HeroLogo alt="Lambang Resimen Mahasiswa Jayakarta Satuan UNJ" />
           </div>
@@ -257,19 +218,6 @@ export function BrandHome({ onOpenSearch }) {
             SATUAN UNIVERSITAS NEGERI JAKARTA
           </div>
 
-          {/* Pesan Kuat Sekuens Sinematik Live Web */}
-          <div
-            key={activeScene.code}
-            className="mt-4 max-w-2xl rounded-2xl border border-[#FFDD00]/35 bg-gradient-to-r from-slate-950/85 via-[#00383b]/80 to-slate-950/85 px-5 py-3 text-center backdrop-blur-md shadow-xl transition-all duration-500"
-          >
-            <p className="text-xs sm:text-sm md:text-base font-black tracking-wide text-[#FFDD00]">
-              {activeScene.headline}
-            </p>
-            <p className="mt-0.5 text-[11px] sm:text-xs font-medium text-slate-200">
-              {activeScene.sub}
-            </p>
-          </div>
-
           <div className="my-4 h-1 w-32 rounded-full bg-gradient-to-r from-[#006569] via-[#FFDD00] to-[#006569]" />
 
           <p className="brand-legacy-motto rounded-2xl border border-white/10 bg-black/40 px-4 py-2.5 font-semibold italic leading-relaxed text-slate-100 shadow-lg backdrop-blur-sm">
@@ -278,21 +226,6 @@ export function BrandHome({ onOpenSearch }) {
 
           <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/55 bg-gradient-to-r from-[#006569]/55 to-[#00383b]/65 px-5 py-2 text-[11px] font-black uppercase tracking-widest text-[#FFDD00] shadow-md">
             <ShieldCheck size={15} /> WIDYA CASTRENA DHARMA SIDDHA
-          </div>
-
-          {/* Indikator Scene Video Pendek */}
-          <div className="mt-4 flex items-center gap-2" role="tablist" aria-label="Sekuens Sinematik Hero">
-            {LIVE_HERO_SCENES.map((sc, i) => (
-              <button
-                key={sc.code}
-                type="button"
-                onClick={() => setSceneIdx(i)}
-                aria-label={sc.code}
-                className={`no-neu h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                  i === sceneIdx ? 'w-8 bg-[#FFDD00]' : 'w-2 bg-white/35 hover:bg-white/60'
-                }`}
-              />
-            ))}
           </div>
 
           <div className="brand-hero-actions mt-7 flex flex-wrap justify-center gap-2.5">
@@ -309,56 +242,11 @@ export function BrandHome({ onOpenSearch }) {
               <ChevronRight size={16} />
             </Link>
           </div>
-          <DynamicCanvasZone containerId="hero_cta_slot" className="mt-3 max-w-md w-full" />
           <a className="brand-legacy-scroll" href="#akses-cepat">
             Akses cepat <ArrowDownRight size={16} />
           </a>
         </Reveal>
       </HeroStage>
-
-      {/* Profil Satuan & Status Operasional Markas Komando (Ringkas & Padat) */}
-      <section className="relative z-20 -mt-10 mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="rounded-3xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-          <div className="lg:col-span-8 flex flex-col sm:flex-row items-start sm:items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-[#006569] text-[#FFDD00] flex items-center justify-center shrink-0 shadow-md border border-[#FFDD00]/30">
-              <ShieldCheck size={24} />
-            </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-emerald-700">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Mako Gd. G R.107 Siaga
-                </span>
-                <span className="text-[11px] font-bold text-slate-500">
-                  SKEP 2026 • Satuan UNJ
-                </span>
-              </div>
-              <h2 className="text-sm sm:text-base font-black text-slate-900 mt-1">
-                Kawah Candradimuka Mahasiswa Intelektual &amp; Berjiwa Ksatria
-              </h2>
-              <p className="text-xs text-slate-600 leading-snug mt-0.5">
-                Pusat pembinaan bela negara, kepemimpinan taktis, pengabdian masyarakat, dan kompetisi nasional UNJ.
-              </p>
-            </div>
-          </div>
-          <div className="lg:col-span-4 flex flex-wrap sm:flex-nowrap items-center justify-start lg:justify-end gap-2 border-t lg:border-t-0 lg:border-l border-slate-200/80 pt-3 lg:pt-0 lg:pl-5">
-            <Link
-              to="/pendidikan"
-              className="neu-btn flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2.5 text-xs font-black transition"
-            >
-              <BookOpen size={14} />
-              <span>Diklat</span>
-            </Link>
-            <Link
-              to="/administrasi"
-              className="neu-btn-primary flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-black transition"
-            >
-              <FileText size={14} />
-              <span>Layanan Adminu</span>
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* Akses Cepat Orientasi Pengunjung */}
       <section className="brand-access" id="akses-cepat" aria-labelledby="akses-cepat-title">

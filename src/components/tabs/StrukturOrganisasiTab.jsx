@@ -189,10 +189,10 @@ export function StrukturOrganisasiTab() {
   const isCardOpen = (id) => Boolean(normalizedQuery) || expandedIds.has(id);
 
   return (
-    <div className="bg-slate-100 min-h-screen pb-32 font-sans flex-grow">
+    <div className="bg-[#051419] min-h-screen pb-32 font-sans flex-grow text-slate-100">
       <HeroStage className="min-h-[400px] py-20 md:py-28" photo={HERO_PHOTO} blur={2.5} dim={0.62}>
         <Reveal className="relative z-10 mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/40 bg-black/25 px-5 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#FFDD00] backdrop-blur-sm">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/40 bg-black/40 px-5 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#FFDD00] backdrop-blur-md">
             <Shield size={15} /> Garis Komando
           </div>
           <h2 className="text-4xl font-black tracking-tight text-white drop-shadow-2xl md:text-6xl">
@@ -206,23 +206,23 @@ export function StrukturOrganisasiTab() {
 
       <div className="max-w-7xl mx-auto px-4 pt-10 md:pt-14 relative z-10 space-y-10">
         {/* Toolbar Pencarian Cepat Personel & Buka/Tutup Semua */}
-        <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="bg-[#071c22]/90 backdrop-blur-xl rounded-3xl p-4 sm:p-5 shadow-2xl border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#006569]" />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#00A8AF]" />
             <input
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari nama, jabatan, atau fakultas…"
               aria-label="Cari personel dalam struktur organisasi"
-              className="w-full pl-11 pr-9 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#006569]"
+              className="w-full pl-11 pr-9 py-2.5 rounded-2xl bg-[#09252e] border border-white/15 text-xs sm:text-sm font-bold text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00A8AF]"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
                 aria-label="Hapus pencarian"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 cursor-pointer"
               >
                 <X size={15} />
               </button>
@@ -232,7 +232,7 @@ export function StrukturOrganisasiTab() {
             <button
               type="button"
               onClick={expandAll}
-              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-[#006569]/10 hover:bg-[#006569] text-[#006569] hover:text-[#FFDD00] text-xs font-black transition cursor-pointer"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-[#006569]/40 hover:bg-[#006569] text-[#FFDD00] text-xs font-black transition border border-[#006569]/60 cursor-pointer"
             >
               <ChevronsUpDown size={14} />
               <span>Buka Semua</span>
@@ -240,7 +240,7 @@ export function StrukturOrganisasiTab() {
             <button
               type="button"
               onClick={collapseAll}
-              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-bold transition border border-white/10 cursor-pointer"
             >
               <span>Ringkas</span>
             </button>
@@ -250,26 +250,26 @@ export function StrukturOrganisasiTab() {
         {/* Unsur Pimpinan */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           <Reveal delay={100} className="flex justify-center">
-            <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 text-center w-full shadow-2xl relative group hover:border-[#006569] transition-all">
+            <div className="bg-[#071c22]/90 backdrop-blur-xl rounded-[2.5rem] p-8 border border-white/15 text-center w-full shadow-2xl relative group hover:border-[#00A8AF] transition-all">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#006569] text-[#FFDD00] text-xs font-black px-5 py-1.5 rounded-full shadow-lg uppercase tracking-widest border border-[#FFDD00]/30">
                 Pimpinan Satuan
               </div>
-              <div className="w-28 h-28 mx-auto rounded-full bg-[#00383b] text-[#FFDD00] flex items-center justify-center font-black text-2xl border-4 border-[#006569] shadow-xl mb-4 group-hover:scale-105 transition-transform overflow-hidden">
+              <div className="w-28 h-28 mx-auto rounded-full bg-[#00383b] text-[#FFDD00] flex items-center justify-center font-black text-2xl border-4 border-[#00A8AF] shadow-xl mb-4 group-hover:scale-105 transition-transform overflow-hidden">
                 <PersonPhoto name="Eben Haezer Sitorus" fallback="EHS" />
               </div>
-              <h3 className="font-black text-xl text-slate-900 leading-tight mb-1">Eben Haezer Sitorus</h3>
-              <p className="text-[#006569] font-extrabold text-xs uppercase tracking-widest bg-[#006569]/10 py-2 px-3 rounded-xl border border-[#006569]/20">
+              <h3 className="font-black text-xl text-white leading-tight mb-1">Eben Haezer Sitorus</h3>
+              <p className="text-[#FFDD00] font-extrabold text-xs uppercase tracking-widest bg-[#006569]/40 py-2 px-3 rounded-xl border border-[#006569]/60">
                 Komandan Satuan (FISH / Geografi)
               </p>
             </div>
           </Reveal>
 
           <Reveal delay={180} className="flex justify-center">
-            <div className="bg-slate-900 text-white rounded-[2.5rem] p-8 border border-slate-700 text-center w-full shadow-xl relative group hover:border-[#FFDD00] transition-all">
+            <div className="bg-[#071c22]/90 backdrop-blur-xl text-white rounded-[2.5rem] p-8 border border-white/15 text-center w-full shadow-2xl relative group hover:border-[#FFDD00] transition-all">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#FFDD00] text-slate-950 text-xs font-black px-5 py-1.5 rounded-full shadow-lg uppercase tracking-widest">
                 Wakil Pimpinan
               </div>
-              <div className="w-28 h-28 mx-auto rounded-full bg-[#FFDD00] text-slate-950 flex items-center justify-center font-black text-2xl border-4 border-white shadow-lg mb-4 group-hover:scale-105 transition-transform overflow-hidden">
+              <div className="w-28 h-28 mx-auto rounded-full bg-[#FFDD00] text-slate-950 flex items-center justify-center font-black text-2xl border-4 border-white/80 shadow-lg mb-4 group-hover:scale-105 transition-transform overflow-hidden">
                 <PersonPhoto name="Raffli Syahputra" fallback="RS" />
               </div>
               <h3 className="font-black text-xl text-white leading-tight mb-1">Raffli Syahputra</h3>
@@ -282,12 +282,12 @@ export function StrukturOrganisasiTab() {
 
         {/* Unsur Perencana */}
         {filteredPerencana.length > 0 && (
-          <Reveal delay={240} className="bg-white rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-12 border border-slate-200">
+          <Reveal delay={240} className="bg-[#071c22]/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-12 border border-white/12">
             <div className="text-center mb-8">
-              <h3 className="text-2xl font-black text-slate-900 inline-flex items-center tracking-tight border-b-4 border-[#006569] pb-3">
-                <Target className="mr-3 text-[#006569]" size={28} /> Unsur Perencana (Staf Komando)
+              <h3 className="text-2xl font-black text-white inline-flex items-center tracking-tight border-b-4 border-[#006569] pb-3">
+                <Target className="mr-3 text-[#00A8AF]" size={28} /> Unsur Perencana (Staf Komando)
               </h3>
-              <p className="text-slate-500 mt-3 font-medium text-sm">
+              <p className="text-slate-300 mt-3 font-medium text-sm">
                 Klik kartu staf untuk menampilkan atau menyembunyikan daftar pejabat staf perencana.
               </p>
             </div>
@@ -309,38 +309,38 @@ export function StrukturOrganisasiTab() {
                     }}
                     className={`rounded-2xl p-6 border transition-all duration-300 cursor-pointer ${
                       isExpanded
-                        ? 'bg-[#006569]/5 border-[#006569] shadow-xl ring-2 ring-[#006569]/30'
-                        : 'bg-slate-50 border-slate-200 hover:shadow-lg hover:border-[#006569]'
+                        ? 'bg-[#006569]/30 border-[#00A8AF] shadow-xl ring-2 ring-[#00A8AF]/40'
+                        : 'bg-[#09252e] border-white/10 hover:shadow-lg hover:border-[#00A8AF]/60 hover:bg-[#0d2f3a]'
                     }`}
                   >
                     <div className="flex justify-between items-start mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#006569]/10 text-[#006569] flex items-center justify-center font-black">
+                      <div className="w-10 h-10 rounded-xl bg-[#006569]/40 text-[#FFDD00] flex items-center justify-center font-black border border-[#006569]">
                         <Shield size={20} />
                       </div>
                       <span
                         className={`text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 ${
-                          isExpanded ? 'bg-[#006569] text-[#FFDD00]' : 'bg-slate-200 text-slate-700'
+                          isExpanded ? 'bg-[#006569] text-[#FFDD00]' : 'bg-white/10 text-slate-300'
                         }`}
                       >
                         {isExpanded ? 'Tutup ▲' : `Buka (${staf.members.length}) ▼`}
                       </span>
                     </div>
-                    <h4 className="font-black text-slate-900 text-base mb-1">{staf.title}</h4>
-                    <p className="text-slate-600 text-xs font-medium leading-relaxed">{staf.desc}</p>
+                    <h4 className="font-black text-white text-base mb-1">{staf.title}</h4>
+                    <p className="text-slate-300 text-xs font-medium leading-relaxed">{staf.desc}</p>
                     {isExpanded && (
-                      <div className="mt-5 pt-4 border-t border-[#006569]/20 space-y-3" onClick={(e) => e.stopPropagation()}>
-                        <h5 className="text-[11px] font-black uppercase text-[#006569] tracking-wider flex items-center gap-1">
+                      <div className="mt-5 pt-4 border-t border-white/10 space-y-3" onClick={(e) => e.stopPropagation()}>
+                        <h5 className="text-[11px] font-black uppercase text-[#FFDD00] tracking-wider flex items-center gap-1">
                           <User size={12} /> Pejabat Staf Terdaftar ({staf.members.length}):
                         </h5>
                         {staf.members.map((m, idx) => (
-                          <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
-                            <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 text-xs font-black border-[#006569]/30 bg-slate-100 text-[#006569]">
+                          <div key={idx} className="bg-[#05161c] p-3 rounded-xl border border-white/10 shadow-sm flex items-center gap-3">
+                            <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 text-xs font-black border-[#00A8AF]/40 bg-slate-900 text-[#FFDD00]">
                               <PersonPhoto name={m.name} />
                             </span>
                             <div className="min-w-0">
-                              <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] block">{m.role}</span>
-                              <span className="font-bold text-slate-900 text-sm block">{m.name}</span>
-                              <span className="text-[11px] text-slate-500 font-medium block">{m.detail}</span>
+                              <span className="text-[10px] font-black uppercase tracking-wider text-[#FFDD00] block">{m.role}</span>
+                              <span className="font-bold text-white text-sm block">{m.name}</span>
+                              <span className="text-[11px] text-slate-400 font-medium block">{m.detail}</span>
                             </div>
                           </div>
                         ))}
@@ -355,12 +355,12 @@ export function StrukturOrganisasiTab() {
 
         {/* Unsur Pelayanan */}
         {filteredPelayanan.length > 0 && (
-          <Reveal delay={300} className="bg-white rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-12 border border-slate-200">
+          <Reveal delay={300} className="bg-[#071c22]/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-6 sm:p-8 md:p-12 border border-white/12">
             <div className="text-center mb-8">
-              <h3 className="text-2xl font-black text-slate-900 inline-flex items-center tracking-tight border-b-4 border-[#FFDD00] pb-3">
-                <Briefcase className="mr-3 text-[#006569]" size={28} /> Unsur Pelayanan
+              <h3 className="text-2xl font-black text-white inline-flex items-center tracking-tight border-b-4 border-[#FFDD00] pb-3">
+                <Briefcase className="mr-3 text-[#FFDD00]" size={28} /> Unsur Pelayanan
               </h3>
-              <p className="text-slate-500 mt-3 font-medium text-sm">
+              <p className="text-slate-300 mt-3 font-medium text-sm">
                 Pejabat staf kesekretariatan, markas komando, dan provos satuan.
               </p>
             </div>
@@ -382,38 +382,38 @@ export function StrukturOrganisasiTab() {
                     }}
                     className={`rounded-2xl p-6 border transition-all duration-300 cursor-pointer ${
                       isExpanded
-                        ? 'bg-[#FFDD00]/10 border-[#006569] shadow-xl ring-2 ring-[#006569]/30'
-                        : 'bg-slate-50 border-slate-200 hover:shadow-lg hover:border-[#006569]'
+                        ? 'bg-[#FFDD00]/15 border-[#FFDD00] shadow-xl ring-2 ring-[#FFDD00]/30'
+                        : 'bg-[#09252e] border-white/10 hover:shadow-lg hover:border-[#00A8AF]/60 hover:bg-[#0d2f3a]'
                     }`}
                   >
                     <div className="flex justify-between items-start mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-black">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-[#FFDD00] flex items-center justify-center font-black border border-amber-500/40">
                         <Wrench size={20} />
                       </div>
                       <span
                         className={`text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 ${
-                          isExpanded ? 'bg-[#006569] text-[#FFDD00]' : 'bg-slate-200 text-slate-700'
+                          isExpanded ? 'bg-[#006569] text-[#FFDD00]' : 'bg-white/10 text-slate-300'
                         }`}
                       >
                         {isExpanded ? 'Tutup ▲' : `Buka (${staf.members.length}) ▼`}
                       </span>
                     </div>
-                    <h4 className="font-black text-slate-900 text-base mb-1">{staf.title}</h4>
-                    <p className="text-slate-600 text-xs font-medium leading-relaxed">{staf.desc}</p>
+                    <h4 className="font-black text-white text-base mb-1">{staf.title}</h4>
+                    <p className="text-slate-300 text-xs font-medium leading-relaxed">{staf.desc}</p>
                     {isExpanded && (
-                      <div className="mt-5 pt-4 border-t border-slate-300 space-y-3" onClick={(e) => e.stopPropagation()}>
-                        <h5 className="text-[11px] font-black uppercase text-[#006569] tracking-wider flex items-center gap-1">
+                      <div className="mt-5 pt-4 border-t border-white/10 space-y-3" onClick={(e) => e.stopPropagation()}>
+                        <h5 className="text-[11px] font-black uppercase text-[#FFDD00] tracking-wider flex items-center gap-1">
                           <User size={12} /> Pejabat Staf Terdaftar ({staf.members.length}):
                         </h5>
                         {staf.members.map((m, idx) => (
-                          <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
-                            <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 text-xs font-black border-[#006569]/30 bg-slate-100 text-[#006569]">
+                          <div key={idx} className="bg-[#05161c] p-3 rounded-xl border border-white/10 shadow-sm flex items-center gap-3">
+                            <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 text-xs font-black border-[#00A8AF]/40 bg-slate-900 text-[#FFDD00]">
                               <PersonPhoto name={m.name} />
                             </span>
                             <div className="min-w-0">
-                              <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] block">{m.role}</span>
-                              <span className="font-bold text-slate-900 text-sm block">{m.name}</span>
-                              <span className="text-[11px] text-slate-500 font-medium block">{m.detail}</span>
+                              <span className="text-[10px] font-black uppercase tracking-wider text-[#FFDD00] block">{m.role}</span>
+                              <span className="font-bold text-white text-sm block">{m.name}</span>
+                              <span className="text-[11px] text-slate-400 font-medium block">{m.detail}</span>
                             </div>
                           </div>
                         ))}

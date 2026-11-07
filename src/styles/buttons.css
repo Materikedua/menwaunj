@@ -1,0 +1,228 @@
+/* ==========================================================================
+   ULTRA-PREMIUM GLASS PILL & ACTION BUTTONS
+   Refined Crystalline Luster, Silky Transitions & Minimal Subtle Shadows (No Excessive Glow)
+   ========================================================================== */
+
+/* ── Base Glass Button ── */
+.neu-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(8, 25, 32, 0.85);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 9999px;
+  color: #f1f5f9;
+  font-weight: 800;
+  box-shadow:
+    0 4px 12px -2px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.18s ease,
+              background 0.18s ease,
+              border-color 0.18s ease;
+  cursor: pointer;
+  will-change: transform;
+}
+
+.dark .neu-btn {
+  background: rgba(5, 18, 24, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
+  box-shadow:
+    0 4px 12px -2px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.neu-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: rgba(12, 35, 44, 0.95);
+  border-color: rgba(0, 168, 175, 0.4);
+  color: #ffffff;
+  box-shadow:
+    0 6px 16px -2px rgba(0, 0, 0, 0.55),
+    inset 0 1px 1px rgba(255, 255, 255, 0.18);
+}
+
+.dark .neu-btn:hover:not(:disabled) {
+  background: rgba(10, 32, 40, 0.96);
+  border-color: rgba(255, 221, 0, 0.4);
+  color: #ffdd00;
+  box-shadow:
+    0 6px 16px -2px rgba(0, 0, 0, 0.6);
+}
+
+.neu-btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Primary Teal Glass Button ── */
+.neu-btn-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, rgba(0, 101, 105, 0.95) 0%, rgba(0, 56, 59, 0.98) 100%) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 9999px;
+  color: #ffffff !important;
+  font-weight: 850;
+  box-shadow:
+    0 4px 14px -2px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25) !important;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.18s ease,
+              filter 0.18s ease;
+  cursor: pointer;
+}
+
+.neu-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 20px -2px rgba(0, 0, 0, 0.55),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35) !important;
+  filter: brightness(1.05);
+}
+
+.neu-btn-primary:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ── Gold Luminous Glass Button (Refined Tactical Gold, No Neon Glow) ── */
+.neu-btn-gold {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #e5a50a 0%, #b47804 100%) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-radius: 9999px;
+  color: #041217 !important;
+  font-weight: 900;
+  box-shadow:
+    0 4px 12px -2px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35) !important;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.18s ease,
+              filter 0.18s ease;
+  cursor: pointer;
+}
+
+.neu-btn-gold:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 16px -2px rgba(0, 0, 0, 0.55),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.45) !important;
+  filter: brightness(1.04);
+}
+
+.neu-btn-gold:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* ── Accent Status Glass Buttons ── */
+.neu-btn-strong-blue {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.95) 0%, rgba(3, 105, 161, 0.98) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  border-radius: 9999px;
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+.neu-btn-strong-blue:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 18px -2px rgba(0, 0, 0, 0.5);
+}
+
+.neu-btn-strong-green {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.95) 0%, rgba(4, 120, 87, 0.98) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  border-radius: 9999px;
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+.neu-btn-strong-green:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 18px -2px rgba(0, 0, 0, 0.5);
+}
+
+.neu-btn-strong-red {
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.95) 0%, rgba(190, 18, 60, 0.98) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  border-radius: 9999px;
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+.neu-btn-strong-red:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 18px -2px rgba(0, 0, 0, 0.5);
+}
+
+.neu-btn-strong-orange {
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.95) 0%, rgba(194, 65, 12, 0.98) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  border-radius: 9999px;
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+/* ── Pill Tabs & Search Capsules ── */
+.neu-pill-bar {
+  background: rgba(4, 16, 21, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  padding: 0.35rem;
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+}
+
+.dark .neu-pill-bar {
+  background: rgba(3, 14, 18, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.5);
+}
+
+.neu-pill-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.neu-pill-tab:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.neu-pill-tab.active {
+  color: #ffdd00;
+  background: rgba(0, 101, 105, 0.85);
+  border-color: rgba(255, 221, 0, 0.45);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}

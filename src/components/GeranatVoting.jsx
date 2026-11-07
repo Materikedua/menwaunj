@@ -1,3 +1,11 @@
+import { GeranatVotingFilterBar } from './voting/GeranatVotingFilterBar.jsx';
+import { GeranatVotingHero } from './voting/GeranatVotingHero.jsx';
+
+import { GeranatVotingStandbySection } from './voting/GeranatVotingStandbySection.jsx';
+import { GeranatVotingTeamCard } from './voting/GeranatVotingTeamCard.jsx';
+import { GeranatVotingSuccessModal } from './voting/GeranatVotingSuccessModal.jsx';
+import { GeranatVotingAdminModal } from './voting/GeranatVotingAdminModal.jsx';
+
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Trophy,
@@ -585,330 +593,43 @@ export function GeranatVoting() {
         </aside>
       )}
 
-      {/* HEADER HERO (Palet Elegan Menwa UNJ) */}
-      <header className="relative overflow-hidden bg-gradient-to-b from-[#e8f5f1] via-sky-50/40 to-slate-50 border-b border-slate-200/80 pt-10 pb-12 px-4 sm:px-6">
-        <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-[#006569]/10 blur-3xl pointer-events-none" />
-        <div className="absolute top-10 right-0 w-80 h-80 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
-        <div className="max-w-6xl mx-auto relative z-10">
-          {/* Top Bar: Navigasi + Status Refresh */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-            <button
-              type="button"
-              onClick={() => navigate('/geranat')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold transition border border-slate-200 shadow-sm w-fit cursor-pointer"
-            >
-              <ArrowLeft size={16} className="text-[#006569]" />
-              <span>🏆 Lihat Klasemen Podium Charity</span>
-            </button>
-
-            {/* Indikator Auto-Refresh 15 Detik */}
-            <div className="flex items-center gap-3">
-              <div className="bg-white border border-slate-200 px-3.5 py-1.5 rounded-full flex items-center gap-2.5 shadow-sm">
-                <div className="relative w-5 h-5 flex items-center justify-center">
-                  <svg className="w-5 h-5 transform -rotate-90">
-                    <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2" className="text-slate-200" fill="transparent" />
-                    <circle
-                      cx="10"
-                      cy="10"
-                      r="8"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="text-[#006569]"
-                      fill="transparent"
-                      strokeDasharray={50}
-                      strokeDashoffset={50 - (50 * progressPercent) / 100}
-                    />
-                  </svg>
-                  <span className="absolute text-[8px] font-mono font-bold text-slate-700">
-                    {countdown}
-                  </span>
-                </div>
-                <span className="text-xs text-slate-600 font-medium">
-                  {isRefreshing ? 'Memperbarui...' : `Live Sync: ${countdown}s`}
-                </span>
-                <button
-                  onClick={fetchTeams}
-                  disabled={isRefreshing}
-                  className="text-slate-400 hover:text-[#006569] transition cursor-pointer"
-                  title="Segarkan Sekarang"
-                >
-                  <RefreshCw size={13} className={isRefreshing ? 'animate-spin text-[#006569]' : ''} />
-                </button>
-              </div>
-
-              {/* Status Badge */}
-              <div className={`px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 border shadow-sm ${
-                votingConfig.isVotingOpen
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                  : 'bg-amber-50 text-amber-800 border-amber-300'
-              }`}>
-                <span className={`w-2 h-2 rounded-full ${votingConfig.isVotingOpen ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-                <span>{votingConfig.isVotingOpen ? 'Sesi Dibuka' : 'Mode Siaga'}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Judul & Hero Utama */}
-          <div className="text-center max-w-3xl mx-auto space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-xs font-black">
-              <span className="w-2 h-2 rounded-full bg-[#006569]" />
-              <span className="text-[#006569]">Charity Vote Resimen Mahasiswa UNJ</span>
-              <span className="text-slate-300">•</span>
-              <span className="text-rose-600 flex items-center gap-1">
-                <Heart size={12} className="fill-rose-600" /> Berbagi Harapan
-              </span>
-            </div>
-
-            <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-              Charity Vote: <span className="bg-gradient-to-r from-[#006569] via-teal-700 to-emerald-600 bg-clip-text text-transparent">Beasiswa Menwa &amp; Bantuan Kemanusiaan</span>
-            </h1>
-
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-medium">
-              Wujud nyata pengabdian Widya Castrena Dharma Siddha. Setiap 1 suara bernilai donasi Rp1.000 (QRIS Tanpa Potongan) untuk beasiswa kader bangsa, logistik pengungsian bencana, dan dukungan lapangan penanganan karhutla.
-            </p>
-
-            {/* Ringkasan Dana & Target */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 max-w-2xl mx-auto">
-              <div className="bg-white p-3.5 rounded-2xl border border-blue-100 shadow-sm text-center">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Total Suara</div>
-                <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono mt-0.5">
-                  <AnimatedVoteCounter value={totalAllVotes} />
-                </div>
-              </div>
-              <div className="bg-white p-3.5 rounded-2xl border border-emerald-100 shadow-sm text-center">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Dana Terkumpul</div>
-                <div className="text-xl sm:text-2xl font-black text-[#006569] font-mono mt-0.5">
-                  {formatRupiah(totalDanaTerkumpul)}
-                </div>
-              </div>
-              <div className="bg-white p-3.5 rounded-2xl border border-amber-100 shadow-sm text-center">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-amber-600">Target Dana</div>
-                <div className="text-xl sm:text-2xl font-black text-slate-800 font-mono mt-0.5">
-                  Rp25 Juta
-                </div>
-              </div>
-              <div className="bg-white p-3.5 rounded-2xl border border-rose-100 shadow-sm text-center">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-rose-600">Nominal / Suara</div>
-                <div className="text-xl sm:text-2xl font-black text-rose-600 font-mono mt-0.5">
-                  Rp1.000
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* ========================================================
-          TAMPILAN MODE SIAGA INTERAKTIF (KETIKA VOTING DITUTUP)
-          ======================================================== */}
+      <GeranatVotingHero
+        progressPercent={progressPercent}
+        countdown={countdown}
+        isRefreshing={isRefreshing}
+        fetchTeams={fetchTeams}
+        votingConfig={votingConfig}
+        totalVotesAll={totalVotesAll}
+        totalDonationRupiah={totalDonationRupiah}
+        targetGoalAmount={targetGoalAmount}
+      />
       {!votingConfig.isVotingOpen ? (
-        <section aria-label="Mode Siaga Interaktif" className="max-w-5xl mx-auto px-4 sm:px-6 pt-10 pb-16 space-y-8 animate-fade-in">
-          {/* Card Pengumuman Mode Siaga dengan Countdown */}
-          <div className="bg-white rounded-[2.5rem] p-6 sm:p-10 border-2 border-dashed border-[#006569]/30 shadow-xl relative overflow-hidden text-center space-y-6">
-            <div className="w-16 h-16 rounded-3xl bg-amber-50 text-[#006569] border border-amber-200 flex items-center justify-center mx-auto shadow-inner">
-              <Clock size={32} className="text-[#006569]" />
-            </div>
-
-            <div className="max-w-xl mx-auto space-y-2">
-              <span className="inline-block px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-widest bg-amber-100 text-amber-900 border border-amber-300">
-                Pintu Donasi Sedang Disiapkan
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
-                Pintu Charity Vote Segera Dibuka
-              </h2>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Saat ini panitia dan pengurus Mako Menwa UNJ sedang melakukan finalisasi verifikasi data calon penerima beasiswa dan posko logistik kemanusiaan.
-              </p>
-            </div>
-
-            {/* Countdown Box */}
-            <div className="grid grid-cols-4 gap-2 sm:gap-4 max-w-lg mx-auto pt-2">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100/60 border border-blue-200 rounded-2xl p-3 sm:p-4 text-center">
-                <div className="text-2xl sm:text-4xl font-black text-blue-600 font-mono">
-                  {standbyTimeLeft.days}
-                </div>
-                <div className="text-[10px] sm:text-xs font-bold uppercase text-slate-600 mt-1">Hari</div>
-              </div>
-              <div className="bg-gradient-to-br from-red-50 to-red-100/60 border border-red-200 rounded-2xl p-3 sm:p-4 text-center">
-                <div className="text-2xl sm:text-4xl font-black text-red-600 font-mono">
-                  {String(standbyTimeLeft.hours).padStart(2, '0')}
-                </div>
-                <div className="text-[10px] sm:text-xs font-bold uppercase text-slate-600 mt-1">Jam</div>
-              </div>
-              <div className="bg-gradient-to-br from-yellow-50 to-yellow-100/60 border border-amber-200 rounded-2xl p-3 sm:p-4 text-center">
-                <div className="text-2xl sm:text-4xl font-black text-amber-600 font-mono">
-                  {String(standbyTimeLeft.minutes).padStart(2, '0')}
-                </div>
-                <div className="text-[10px] sm:text-xs font-bold uppercase text-slate-600 mt-1">Menit</div>
-              </div>
-              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/60 border border-emerald-200 rounded-2xl p-3 sm:p-4 text-center">
-                <div className="text-2xl sm:text-4xl font-black text-emerald-600 font-mono">
-                  {String(standbyTimeLeft.seconds).padStart(2, '0')}
-                </div>
-                <div className="text-[10px] sm:text-xs font-bold uppercase text-slate-600 mt-1">Detik</div>
-              </div>
-            </div>
-
-            {/* Form Pengingat Pembukaan */}
-            <div className="max-w-md mx-auto pt-4">
-              {reminderSent ? (
-                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-bold flex items-center justify-center gap-2">
-                  <CheckCircle2 size={16} />
-                  <span>Terima kasih! Notifikasi pembukaan akan dikirimkan ke email Anda.</span>
-                </div>
-              ) : (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    if (reminderEmail.trim()) {
-                      setReminderSent(true);
-                    }
-                  }}
-                  className="flex gap-2"
-                >
-                  <input
-                    type="email"
-                    required
-                    placeholder="Masukkan email Anda untuk diingatkan..."
-                    value={reminderEmail}
-                    onChange={(e) => setReminderEmail(e.target.value)}
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-[#006569]"
-                  />
-                  <button
-                    type="submit"
-                    className="px-4 py-2.5 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] text-xs font-black uppercase rounded-xl transition shadow-md flex items-center gap-1.5 cursor-pointer shrink-0"
-                  >
-                    <Send size={13} />
-                    <span>Ingatkan Saya</span>
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-
-          {/* 3 PILAR MISI CHARITY VOTE */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-3xl p-6 border-t-4 border-t-blue-500 border-x border-b border-slate-200 shadow-sm hover:shadow-md transition">
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
-                <GraduationCap size={24} />
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">
-                Pendidikan Bangsa
-              </span>
-              <h3 className="text-lg font-black text-slate-900 mt-2 mb-2">
-                Menwa Scholarship
-              </h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Beasiswa pembinaan dan keringanan biaya SPP/UKT untuk mahasiswa aktif dan kader Menwa UNJ berprestasi dari latar belakang prasejahtera.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-6 border-t-4 border-t-rose-500 border-x border-b border-slate-200 shadow-sm hover:shadow-md transition">
-              <div className="w-12 h-12 rounded-2xl bg-red-50 text-rose-600 flex items-center justify-center mb-4">
-                <Heart size={24} />
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 bg-red-50 px-2.5 py-0.5 rounded-full">
-                Tanggap Darurat
-              </span>
-              <h3 className="text-lg font-black text-slate-900 mt-2 mb-2">
-                Bantuan Logistik Bencana
-              </h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Penyediaan paket sembako, selimut, obat-obatan, dan air bersih untuk disalurkan langsung oleh personel Menwa ke titik bencana alam.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-6 border-t-4 border-t-emerald-500 border-x border-b border-slate-200 shadow-sm hover:shadow-md transition">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
-                <Flame size={24} />
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">
-                Pelestarian Lingkungan
-              </span>
-              <h3 className="text-lg font-black text-slate-900 mt-2 mb-2">
-                Aksi Cepat Karhutla
-              </h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Dukungan peralatan respirator perlindungan kabut asap, pompa apung pemadam, dan suplai tim gabungan penanganan kebakaran hutan dan lahan.
-              </p>
-            </div>
-          </div>
-
-          {/* Banner Ajakan Buka untuk Super Admin / Perwira */}
-          {isSuperAdmin && (
-            <div className="bg-gradient-to-r from-[#006569] to-[#004d50] text-white p-6 rounded-3xl shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                <h4 className="font-black text-base text-[#FFDD00]">
-                  Siap Membuka Sesi Donasi untuk Publik?
-                </h4>
-                <p className="text-xs text-teal-100 mt-1">
-                  Klik tombol di samping untuk mengaktifkan pemungutan suara/donasi secara real-time.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleToggleVotingStatus}
-                className="px-6 py-3 rounded-2xl bg-[#FFDD00] hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-md transition flex items-center gap-2 cursor-pointer shrink-0"
-              >
-                <Unlock size={16} />
-                <span>Buka Charity Vote Sekarang</span>
-              </button>
-            </div>
-          )}
-        </section>
+        <GeranatVotingStandbySection
+          standbyTimeLeft={standbyTimeLeft}
+          reminderSent={reminderSent}
+          setReminderSent={setReminderSent}
+          reminderEmail={reminderEmail}
+          setReminderEmail={setReminderEmail}
+          isSuperAdmin={isSuperAdmin}
+          isAdminPinUnlocked={isAdminPinUnlocked}
+          adminPinInput={adminPinInput}
+          setAdminPinInput={setAdminPinInput}
+          handleAdminPinSubmit={handleAdminPinSubmit}
+          handleToggleVotingStatus={handleToggleVotingStatus}
+          setAdminModalOpen={setAdminModalOpen}
+        />
       ) : (
         /* ========================================================
             TAMPILAN LIVE VOTING (KETIKA DIBUKA OLEH ADMIN/PERWIRA)
             ======================================================== */
         <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 space-y-8 animate-fade-in">
-          {/* Filter & Toolbar Pencarian */}
-          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              {[
-                { id: 'all', label: 'Semua Inisiatif' },
-                { id: 'beasiswa', label: '🎓 Beasiswa Menwa' },
-                { id: 'logistik', label: '📦 Logistik Bencana' },
-                { id: 'karhutla', label: '🔥 Aksi Karhutla' }
-              ].map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setCategoryFilter(cat.id)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                    categoryFilter === cat.id
-                      ? 'bg-[#006569] text-[#FFDD00] shadow-sm'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Input Pencarian & Tombol Tambah Penerima */}
-            <div className="flex items-center gap-2 w-full md:w-auto">
-              <div className="relative flex-1 md:w-64">
-                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Cari penerima / inisiatif..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#006569]"
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setAdminModalOpen(true)}
-                className="px-3.5 py-2 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold text-xs rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer shrink-0"
-                title="Tambah inisiatif atau penerima charity baru"
-              >
-                <Plus size={14} />
-                <span className="hidden sm:inline">Penerima Baru</span>
-              </button>
-            </div>
-          </div>
+          <GeranatVotingFilterBar
+            categoryFilter={categoryFilter}
+            setCategoryFilter={setCategoryFilter}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            setAdminModalOpen={setAdminModalOpen}
+          />
 
           {/* Grid Daftar Tim / Penerima Donasi */}
           {loading ? (
@@ -940,144 +661,17 @@ export function GeranatVoting() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedTeams.map((team, idx) => {
-                const teamId = team.teamId || team.id;
-                const votesCount = team.votesCount || 0;
-                const danaTerkumpul = votesCount * 1000;
-                const targetDana = team.targetDonation || 5000000;
-                const percentAchieved = Math.min(100, Math.round((danaTerkumpul / targetDana) * 100));
-
-                return (
-                  <div
-                    key={teamId}
-                    className="bg-white rounded-3xl border border-slate-200 hover:border-teal-500/60 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group"
-                  >
-                    <div>
-                      {/* Foto Penerima / Inisiatif */}
-                      <div className="relative h-48 bg-slate-100 overflow-hidden">
-                        {team.photoUrl ? (
-                          <img
-                            src={team.photoUrl}
-                            alt={team.teamName}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = '/foto-kampus-unj.jpg';
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#006569]/10 to-teal-500/10 text-slate-400">
-                            <GraduationCap size={48} className="text-[#006569]/40" />
-                          </div>
-                        )}
-
-                        {/* Rank Badge */}
-                        <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-slate-900 font-black text-xs shadow-sm flex items-center gap-1.5 border border-slate-200">
-                          <span className="text-[#006569]">#{idx + 1}</span>
-                          <span className="text-[10px] text-slate-500 uppercase font-mono">Peringkat</span>
-                        </div>
-
-                        {/* Category Pill */}
-                        <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-[#006569] text-[#FFDD00] font-black text-[10px] uppercase shadow-sm">
-                          {team.category || 'Beasiswa Menwa'}
-                        </div>
-
-                        {/* Delete Button for Super Admin */}
-                        {isSuperAdmin && (
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteTeam(teamId, team.teamName)}
-                            className="absolute bottom-3 right-3 p-2 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white shadow-md transition cursor-pointer"
-                            title="Hapus penerima ini"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Konten Card */}
-                      <div className="p-5 space-y-3">
-                        <div>
-                          <h4 className="text-base font-black text-slate-900 group-hover:text-[#006569] transition leading-snug">
-                            {team.teamName}
-                          </h4>
-                          <p className="text-xs font-semibold text-slate-500">
-                            {team.institution}
-                          </p>
-                        </div>
-
-                        {team.motto && (
-                          <p className="text-[11px] text-slate-600 italic bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                            "{team.motto}"
-                          </p>
-                        )}
-
-                        {/* Progress Bar Donasi */}
-                        <div className="space-y-1.5 pt-1">
-                          <div className="flex justify-between text-xs font-bold">
-                            <span className="text-slate-600">{formatRupiah(danaTerkumpul)}</span>
-                            <span className="text-emerald-600">{percentAchieved}% Target</span>
-                          </div>
-                          <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-gradient-to-r from-[#006569] to-emerald-500 transition-all duration-500"
-                              style={{ width: `${percentAchieved}%` }}
-                            />
-                          </div>
-                          <div className="text-[10px] text-slate-400 text-right">
-                            Target: {formatRupiah(targetDana)}
-                          </div>
-                        </div>
-
-                        {/* Akumulasi Suara Masuk */}
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                          <span className="text-xs font-bold text-slate-500">Dukungan:</span>
-                          <span className="text-sm font-black font-mono text-[#006569] flex items-center gap-1">
-                            <Vote size={15} />
-                            <AnimatedVoteCounter value={votesCount} /> Suara
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Tombol Donasi / Vote Cepat */}
-                    <div className="p-5 pt-0 space-y-2">
-                      <div className="grid grid-cols-3 gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleInitiateVote(team, 1)}
-                          className="py-2 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 hover:text-emerald-800 transition cursor-pointer"
-                        >
-                          +1 (Rp1rb)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleInitiateVote(team, 5)}
-                          className="py-2 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 hover:text-emerald-800 transition cursor-pointer"
-                        >
-                          +5 (Rp5rb)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleInitiateVote(team, 10)}
-                          className="py-2 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 hover:text-emerald-800 transition cursor-pointer"
-                        >
-                          +10 (Rp10rb)
-                        </button>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => handleInitiateVote(team, 25)}
-                        className="w-full py-3 bg-gradient-to-r from-[#006569] via-[#004d50] to-[#006569] hover:opacity-95 text-[#FFDD00] font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                      >
-                        <Heart size={15} className="fill-[#FFDD00]" />
-                        <span>Beri Donasi Charity (QRIS)</span>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+              {sortedTeams.map((team, idx) => (
+                <GeranatVotingTeamCard
+                  key={team.teamId || team.id}
+                  team={team}
+                  idx={idx}
+                  flippedCards={flippedCards}
+                  toggleFlipCard={toggleFlipCard}
+                  handleInitiateVote={handleInitiateVote}
+                  AnimatedVoteCounter={AnimatedVoteCounter}
+                />
+              ))}
             </div>
           )}
         </main>
@@ -1096,281 +690,24 @@ export function GeranatVoting() {
         />
       )}
 
-      {/* POPUP NOTIFIKASI SUKSES PEMBAYARAN */}
-      {successModalData && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in font-sans">
-          <div className="relative w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900 border border-emerald-200 text-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3.5 shadow-sm scale-110 transition-transform">
-              <CheckCircle2 size={38} />
-            </div>
+      <GeranatVotingSuccessModal
+        successModalData={successModalData}
+        setSuccessModalData={setSuccessModalData}
+        AnimatedVoteCounter={AnimatedVoteCounter}
+      />
 
-            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full inline-block mb-2">
-              Terverifikasi • {successModalData.txId}
-            </span>
-
-            <h3 className="text-xl sm:text-2xl font-black text-slate-900">
-              Donasi Berhasil! 🎉
-            </h3>
-
-            <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-              Donasi sebesar <strong className="text-emerald-700 font-bold">{formatRupiah(successModalData.amount)}</strong> berhasil dialokasikan. Sebanyak <strong className="text-[#006569] font-black">+{successModalData.votesCount} Suara</strong> langsung ditambahkan secara real-time!
-            </p>
-
-            <div className="my-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center space-y-2">
-              <div className="font-black text-slate-900 text-base">
-                {successModalData.teamName}
-              </div>
-              <div className="text-xs text-slate-500 font-semibold">
-                {successModalData.institution}
-              </div>
-              <div className="pt-2 border-t border-slate-200 flex items-center justify-center gap-2 font-mono text-lg font-black text-[#006569]">
-                <Vote size={18} />
-                <AnimatedVoteCounter value={successModalData.newTotal} />
-                <span className="text-xs font-sans font-bold text-emerald-600">
-                  (+{successModalData.votesCount} Suara)
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setSuccessModalData(null)}
-              className="w-full py-3.5 px-4 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase tracking-wider rounded-xl transition shadow-md cursor-pointer"
-            >
-              Selesai &amp; Tutup
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL ADMIN MAKO: TAMBAH TIM / PENERIMA BARU */}
-      {adminModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in font-sans">
-          <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900 my-8">
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#006569] text-[#FFDD00] flex items-center justify-center font-bold">
-                  <Plus size={18} />
-                </div>
-                <div>
-                  <h3 className="text-base font-black text-slate-900">
-                    Tambah Penerima / Posko Charity
-                  </h3>
-                  <span className="text-[10px] text-teal-700 font-mono">
-                    Otoritas Komando Mako
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setAdminModalOpen(false)}
-                className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {!isSuperAdmin && !isAdminPinUnlocked ? (
-              <div className="space-y-4 py-4 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200">
-                  <Lock size={22} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-black text-slate-900">Otorisasi Komando Diperlukan</h4>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Penambahan penerima donasi / posko charity hanya dapat dilakukan oleh akun Superadmin Komando Mako (<code className="text-teal-700 font-bold">unjmenwa@gmail.com</code>) yang terautentikasi.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setAdminModalOpen(false)}
-                  className="w-full py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-black text-xs uppercase tracking-wider rounded-xl transition cursor-pointer"
-                >
-                  Tutup
-                </button>
-              </div>
-            ) : (
-
-            <form onSubmit={handleCreateTeam} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Nama Inisiatif / Penerima *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Beasiswa Taruna Menwa - Farhan / Posko Sembako Bencana"
-                  value={newTeam.teamName}
-                  onChange={(e) => setNewTeam({ ...newTeam, teamName: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Asal Lembaga / Lokasi Posko *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Batalyon Jayakarta / Posko Lapangan Cianjur"
-                  value={newTeam.institution}
-                  onChange={(e) => setNewTeam({ ...newTeam, institution: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Kategori Inisiatif</label>
-                <select
-                  value={newTeam.category}
-                  onChange={(e) => setNewTeam({ ...newTeam, category: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
-                >
-                  <option value="Beasiswa Menwa">🎓 Beasiswa Menwa (Menwa Scholarship)</option>
-                  <option value="Logistik Bencana">📦 Bantuan Logistik Kemanusiaan</option>
-                  <option value="Aksi Karhutla">🔥 Aksi Cepat Tanggap Karhutla</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Penanggung Jawab / Kontak</label>
-                <input
-                  type="text"
-                  placeholder="Nama Penanggung Jawab"
-                  value={newTeam.dantonName}
-                  onChange={(e) => setNewTeam({ ...newTeam, dantonName: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Target Donasi (Rp)</label>
-                <input
-                  type="number"
-                  placeholder="Contoh: 5000000"
-                  value={newTeam.targetDonation}
-                  onChange={(e) => setNewTeam({ ...newTeam, targetDonation: Number(e.target.value) })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Deskripsi / Motto Inisiatif</label>
-                <input
-                  type="text"
-                  placeholder="Keterangan singkat penyaluran donasi"
-                  value={newTeam.motto}
-                  onChange={(e) => setNewTeam({ ...newTeam, motto: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#006569]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Foto / Poster Inisiatif *</label>
-                
-                {/* Opsi Upload Langsung dari File */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-teal-50 hover:border-[#006569] border-2 border-dashed border-slate-300 rounded-xl cursor-pointer transition text-slate-700 font-bold">
-                      <Upload size={14} className="text-[#006569]" />
-                      <span>{isCompressingPhoto ? 'Mengompres Foto...' : 'Unggah File Foto (JPG/PNG/WebP)'}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoSelect}
-                        disabled={isCompressingPhoto}
-                        className="hidden"
-                      />
-                    </label>
-                  </div>
-
-                  {/* Thumbnail Preview */}
-                  {previewPhoto && (
-                    <div className="relative w-full h-32 rounded-xl overflow-hidden border-2 border-emerald-500/50 bg-slate-100 flex items-center justify-center">
-                      <img
-                        src={previewPhoto}
-                        alt="Pratinjau Foto"
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPreviewPhoto('');
-                          setNewTeam(prev => ({ ...prev, photoUrl: '' }));
-                        }}
-                        className="absolute top-2 right-2 p-1 rounded-full bg-slate-900/80 text-white hover:bg-rose-600 transition"
-                        title="Hapus Foto"
-                      >
-                        <X size={14} />
-                      </button>
-                      <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-slate-900/80 text-[#FFDD00] text-[10px] font-mono font-bold">
-                        ✓ Foto Siap Digunakan
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Pilihan Cepat Preset Resmi */}
-                  <div className="pt-1">
-                    <span className="text-[10px] font-bold text-slate-500 block mb-1">Atau pilih preset visual satuan:</span>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {[
-                        { label: 'Kampus UNJ', url: '/foto-kampus-unj.jpg' },
-                        { label: 'Posko Cianjur', url: '/dokumentasi/pengabdian25.svg' },
-                        { label: 'KC VIII', url: '/kegiatan/kc-menwa-unj.jpg' },
-                        { label: 'LFPB Geranat', url: '/geranat-menwa-unj.png' },
-                      ].map(preset => (
-                        <button
-                          key={preset.url}
-                          type="button"
-                          onClick={() => {
-                            setPreviewPhoto(preset.url);
-                            setNewTeam(prev => ({ ...prev, photoUrl: preset.url }));
-                          }}
-                          className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold text-left transition ${
-                            newTeam.photoUrl === preset.url
-                              ? 'bg-teal-50 border-[#006569] text-[#006569] font-bold'
-                              : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                          }`}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Fallback Input URL */}
-                  <div className="pt-1">
-                    <input
-                      type="url"
-                      placeholder="Atau tautan URL kustom (https://...)"
-                      value={newTeam.photoUrl}
-                      onChange={(e) => {
-                        setNewTeam({ ...newTeam, photoUrl: e.target.value });
-                        setPreviewPhoto(e.target.value);
-                      }}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-[11px] focus:outline-none focus:border-[#006569]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 flex justify-end gap-2.5 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setAdminModalOpen(false)}
-                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black rounded-xl uppercase tracking-wider transition shadow-md cursor-pointer"
-                >
-                  Simpan Inisiatif
-                </button>
-              </div>
-            </form>
-            )}
-          </div>
-        </div>
-      )}
+      <GeranatVotingAdminModal
+        adminModalOpen={adminModalOpen}
+        setAdminModalOpen={setAdminModalOpen}
+        isSuperAdmin={isSuperAdmin}
+        isAdminPinUnlocked={isAdminPinUnlocked}
+        handleCreateTeam={handleCreateTeam}
+        newTeam={newTeam}
+        setNewTeam={setNewTeam}
+        handlePhotoSelect={handlePhotoSelect}
+        isCompressingPhoto={isCompressingPhoto}
+        previewPhoto={previewPhoto}
+      />
     </div>
   );
 }
