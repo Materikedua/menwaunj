@@ -30,6 +30,8 @@ import { MakoCommandCenter } from './MakoCommandCenter.jsx';
 import { SITE } from '../data/siteData.js';
 import { playTactileClick } from '../lib/tactileAudio.js';
 import './BrandExperience.css';
+import './BrandExperienceCards.css';
+import './BrandExperienceHero.css';
 
 const primaryGuides = [
   {
@@ -204,14 +206,6 @@ export function BrandHome({ onOpenSearch }) {
         liveCinema={true}
       >
         <Reveal className="brand-legacy-inner relative z-20 mx-auto flex max-w-5xl flex-col items-center px-4 text-center">
-          {/* Live Web Cinema Scene Pill (Image 2) */}
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/40 bg-slate-950/80 px-4 py-1.5 text-[11px] font-mono tracking-widest text-slate-100 shadow-md backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-[#FFDD00] animate-pulse" />
-            <span className="font-black text-[#FFDD00]">LIVE WEB CINEMA</span>
-            <span className="text-white/40">|</span>
-            <span className="font-semibold text-white/90">SCENE 02 // KSATRIA CENDEKIA</span>
-          </div>
-
           <div className="mb-5">
             <HeroLogo alt="Lambang Resimen Mahasiswa Jayakarta Satuan UNJ" />
           </div>

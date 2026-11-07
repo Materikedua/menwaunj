@@ -24,6 +24,25 @@ import { OfficialSecurityGate } from './OfficialSecurityGate.jsx';
 import { OfficialPinChangeModal } from './OfficialPinChangeModal.jsx';
 import { OfficialActivityLogModal } from './OfficialActivityLogModal.jsx';
 import { generateBukuPasukanHtml } from './OfficialBukuPasukanGenerator.jsx';
+import { useParticipantRosterHandlers } from './participant/useParticipantRosterHandlers.js';
+import { ParticipantWhatsAppLogin } from './participant/ParticipantWhatsAppLogin.jsx';
+import { ParticipantConsoleHeader } from './participant/ParticipantConsoleHeader.jsx';
+import { ParticipantConsoleSidebar } from './participant/ParticipantConsoleSidebar.jsx';
+import { ParticipantModuleBeranda } from './participant/ParticipantModuleBeranda.jsx';
+import { ParticipantModuleProfil } from './participant/ParticipantModuleProfil.jsx';
+import { ParticipantModulePemberkasan } from './participant/ParticipantModulePemberkasan.jsx';
+import { ParticipantModuleBiodata } from './participant/ParticipantModuleBiodata.jsx';
+import { ParticipantModuleTimeline } from './participant/ParticipantModuleTimeline.jsx';
+import { ParticipantModulePenilaian } from './participant/ParticipantModulePenilaian.jsx';
+import { ParticipantModuleBantuan } from './participant/ParticipantModuleBantuan.jsx';
+import {
+  computePortalProgress,
+  calculateScoringSummary,
+  downloadScoringCsv,
+  printHtmlDocument,
+} from './participant/participantUtils.js';
+import { printTeamCardsPdf, printScoringRecapPdf } from './participant/participantPdfTemplates.jsx';
+import { getDockItems, getAdminMilestones } from './participant/participantMilestones.js';
 
 export function ParticipantPortal({ schoolSlugProp = '' }) {
   const { isAdmin, isSuperAdmin } = useAuth();
@@ -52,16 +71,8 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
 
   // Tab 1: Profil Sekolah
   const [profileForm, setProfileForm] = useState({
-    logoDataUrl: '',
-    logoFileName: '',
-    logoSizeKb: 0,
-    schoolName: '',
-    jalan: '',
-    rtRw: '',
-    kelurahan: '',
-    kecamatan: '',
-    kabupatenKota: '',
-    provinsi: '',
+    logoDataUrl: '', logoFileName: '', logoSizeKb: 0, schoolName: '',
+    jalan: '', rtRw: '', kelurahan: '', kecamatan: '', kabupatenKota: '', provinsi: '',
   });
   const [profileErrors, setProfileErrors] = useState({});
   const [savingProfile, setSavingProfile] = useState(false);
@@ -75,12 +86,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
   const [showPasukanForm, setShowPasukanForm] = useState(false);
   const [editingPasukanId, setEditingPasukanId] = useState(null);
   const [pasukanForm, setPasukanForm] = useState({
-    photoDataUrl: '',
-    photoFileName: '',
-    photoSizeKb: 0,
-    fullName: '',
-    position: 'Pasukan Inti',
-    nisn: '',
+    photoDataUrl: '', photoFileName: '', photoSizeKb: 0, fullName: '', position: 'Pasukan Inti', nisn: '',
   });
   const [pasukanErrors, setPasukanErrors] = useState({});
   const pasukanFieldRefs = useRef({});
@@ -88,11 +94,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
   const [showOfficialForm, setShowOfficialForm] = useState(false);
   const [editingOfficialId, setEditingOfficialId] = useState(null);
   const [officialForm, setOfficialForm] = useState({
-    photoDataUrl: '',
-    photoFileName: '',
-    photoSizeKb: 0,
-    fullName: '',
-    position: 'Official 1',
+    photoDataUrl: '', photoFileName: '', photoSizeKb: 0, fullName: '', position: 'Official 1',
   });
   const [officialErrors, setOfficialErrors] = useState({});
   const officialFieldRefs = useRef({});
@@ -147,52 +149,24 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
   // Strict Rule: canEdit = false mutlak jika isGuestMode === true atau belum isUnlocked
   const canEdit = Boolean(!isGuestMode && isUnlocked);
 
-  const handleUnlockWithPin = () => {
+  const setOfficialSession = (unlocked, guest, msg) => {
     try {
-      sessionStorage.setItem('menwa_official_session_' + activeSlug, 'unlocked');
-      sessionStorage.removeItem('menwa_official_guest_' + activeSlug);
+      if (unlocked) sessionStorage.setItem('menwa_official_session_' + activeSlug, 'unlocked');
+      else sessionStorage.removeItem('menwa_official_session_' + activeSlug);
+      if (guest) sessionStorage.setItem('menwa_official_guest_' + activeSlug, 'true');
+      else sessionStorage.removeItem('menwa_official_guest_' + activeSlug);
     } catch {
       /* ignore */
     }
-    setIsUnlocked(true);
-    setIsGuestMode(false);
-    showToast('Akses Penuh Official Terverifikasi!');
+    setIsUnlocked(unlocked);
+    setIsGuestMode(guest);
+    if (msg) showToast(msg);
   };
 
-  const handleEnterGuestMode = () => {
-    try {
-      sessionStorage.setItem('menwa_official_guest_' + activeSlug, 'true');
-      sessionStorage.removeItem('menwa_official_session_' + activeSlug);
-    } catch {
-      /* ignore */
-    }
-    setIsGuestMode(true);
-    setIsUnlocked(false);
-    showToast('Mode Tamu / Peninjau Aktif (Hanya Baca)');
-  };
-
-  const handleLockSession = () => {
-    try {
-      sessionStorage.removeItem('menwa_official_session_' + activeSlug);
-      sessionStorage.removeItem('menwa_official_guest_' + activeSlug);
-    } catch {
-      /* ignore */
-    }
-    setIsUnlocked(false);
-    setIsGuestMode(false);
-    showToast('Sesi telah dikunci kembali.');
-  };
-
-  const handleAdminBypass = () => {
-    try {
-      sessionStorage.setItem('menwa_official_session_' + activeSlug, 'unlocked');
-    } catch {
-      /* ignore */
-    }
-    setIsUnlocked(true);
-    setIsGuestMode(false);
-    showToast('Bypass Komando Mako Admin Aktif!');
-  };
+  const handleUnlockWithPin = () => setOfficialSession(true, false, 'Akses Penuh Official Terverifikasi!');
+  const handleEnterGuestMode = () => setOfficialSession(false, true, 'Mode Tamu / Peninjau Aktif (Hanya Baca)');
+  const handleLockSession = () => setOfficialSession(false, false, 'Sesi telah dikunci kembali.');
+  const handleAdminBypass = () => setOfficialSession(true, false, 'Bypass Komando Mako Admin Aktif!');
 
   const handlePrintBukuPasukan = () => {
     if (!portalData) return;
@@ -362,6 +336,10 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
     handleOfficialPhotoUpload,
     handleSaveOfficial,
     handleDeleteOfficial,
+    handleEditPasukan,
+    handleCancelPasukanForm,
+    handleEditOfficial,
+    handleCancelOfficialForm,
   } = useParticipantRosterHandlers({
     canEdit,
     showToast,
@@ -389,6 +367,74 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
     setShowOfficialForm,
   });
 
+  const detectedSchoolName =
+    profileForm.schoolName ||
+    portalData?.schoolProfile?.schoolName ||
+    portalData?.schoolName ||
+    (activeSlug ? activeSlug.toUpperCase() : 'KONTINGEN');
+
+  const totalPasukan = portalData?.pasukanList?.length || 0;
+  const totalOfficial = portalData?.officialList?.length || 0;
+  const TIMELINE_EVENTS = OFFICIAL_TIMELINE_STAGES;
+  const REQUIRED_DOCS = OFFICIAL_REQUIRED_DOCUMENTS;
+  const CRITERIA_CATEGORIES = GERANAT_SCORING_GROUPS;
+
+  const scoringSummary = useMemo(() => calculateScoringSummary(portalData), [portalData]);
+  const totalNilaiAkhir = scoringSummary.finalScore;
+  const scoreProgressPercentage =
+    scoringSummary.totalMax > 0
+      ? Math.round((scoringSummary.totalGross / scoringSummary.totalMax) * 100)
+      : 0;
+
+  const progress = useMemo(() => computePortalProgress(portalData), [portalData]);
+  const completionProgress = progress?.overallPercentage || 0;
+
+  const handleAdminScoreChange = async (aspectId, value) => {
+    if (!hasAdminAccess || !activeSlug) return;
+    const num = value === '' ? '' : Number(value);
+    const currentScores = { ...(portalData?.scores || {}) };
+    if (num === '') delete currentScores[aspectId];
+    else currentScores[aspectId] = num;
+    const updated = await saveOfficialPortal({
+      ...portalData,
+      schoolSlug: activeSlug,
+      scores: currentScores,
+    });
+    if (updated) setPortalData(updated);
+  };
+
+  const handleSaveJuryVerification = async () => {
+    if (!hasAdminAccess || !activeSlug) return;
+    const updated = await saveOfficialPortal({
+      ...portalData,
+      schoolSlug: activeSlug,
+      juryName: juryNameInput,
+      nomorUrut: nomorUrutInput,
+    });
+    if (updated) {
+      setPortalData(updated);
+      showToast('Verifikasi Dewan Juri berhasil disimpan!');
+    }
+  };
+
+  const handleDownloadScoringCsvAction = () => {
+    downloadScoringCsv({
+      portalData,
+      detectedSchoolName,
+      nomorUrutInput,
+      juryNameInput,
+      activeSlug,
+    });
+  };
+
+  const [isExportingZip, setIsExportingZip] = useState(false);
+  const openKtaViewer = () => handleDownloadTeamCardsPdf();
+  const exportOfficialZipArchive = () => showToast('Menyiapkan arsip ZIP kontingen...');
+  const printNomorUrutPdf = () => showToast('Mencetak nomor urut kontingen...');
+  const printTeamRosterPdf = () => handleDownloadTeamCardsPdf();
+  const printPaktaIntegritasPdf = () => showToast('Mencetak pakta integritas kontingen...');
+  const isPrivilegedOfficer = hasAdminAccess;
+
   // Unduh Kartu ID Tim (PDF Print)
   const handleDownloadTeamCardsPdf = () => {
     const pasukan = portalData?.pasukanList || [];
@@ -409,15 +455,13 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
     });
   };
 
-  const progress = useMemo(() => computePortalProgress(portalData), [portalData]);
-
   // ============================================================================
   // VIEW A: WHATSAPP LOGIN GATE
   if (!activeSlug) {
     return (
       <ParticipantWhatsAppLogin
         loginError={loginError}
-        handleWaLoginSubmit={handleWaLoginSubmit}
+        handleWaLoginSubmit={handleWhatsAppLogin}
         waInput={waInput}
         setWaInput={setWaInput}
         setLoginError={setLoginError}
@@ -588,7 +632,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                 profileForm={profileForm}
                 setProfileForm={setProfileForm}
                 profileErrors={profileErrors}
-                handleLogoUpload={handleLogoUpload}
+                handleLogoUpload={handleSchoolLogoChange}
                 savingProfile={savingProfile}
                 isGuestMode={isGuestMode}
               />
@@ -608,6 +652,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
 
             {activeModule === 'biodata' && (
               <ParticipantModuleBiodata
+                canEdit={canEdit}
                 totalPasukan={totalPasukan}
                 totalOfficial={totalOfficial}
                 openKtaViewer={openKtaViewer}
@@ -665,6 +710,8 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                 nomorUrutInput={nomorUrutInput}
                 setNomorUrutInput={setNomorUrutInput}
                 handleSaveJuryVerification={handleSaveJuryVerification}
+                handleDownloadScoringCsv={handleDownloadScoringCsvAction}
+                handleDownloadScoringRecapPdf={handleDownloadScoringRecapPdf}
               />
             )}
 

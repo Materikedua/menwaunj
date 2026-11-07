@@ -1,0 +1,491 @@
+@media(max-width:480px) {
+  .brand-hero-actions .brand-btn {
+    width: 100%;
+  }
+
+  .brand-hero-visual {
+    height: 220px;
+  }
+
+  .brand-visual-frame {
+    width: 48%;
+  }
+
+  .brand-visual-halo {
+    width: 200px;
+  }
+
+  .brand-visual-tag {
+    padding: 10px;
+    font-size: 10px;
+  }
+
+  .brand-visual-tag strong {
+    font-size: 10px;
+  }
+
+  .brand-visual-tag span {
+    font-size: 8px;
+  }
+
+  .brand-hero-bottom-inner {
+    flex-direction: column;
+    align-items: start;
+    padding-block: 13px;
+    gap: 5px;
+  }
+
+  .brand-access-grid,
+  .brand-hub-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .brand-access-item {
+    min-height: 215px;
+    padding: 22px;
+  }
+
+  .brand-access-icon {
+    margin-bottom: 15px;
+  }
+
+  .brand-hub-searchbox button {
+    display: none;
+  }
+
+  .brand-section-heading h2,
+  .brand-values h2 {
+    font-size: clamp(2rem, 9vw, 3rem);
+  }
+}
+
+@media(prefers-reduced-motion:reduce) {
+
+  .brand-visual-frame img,
+  .brand-visual-halo {
+    animation: none !important;
+  }
+
+  .brand-btn,
+  .brand-event-card,
+  .brand-event-image img,
+  .brand-access-item,
+  .brand-hub-card {
+    transition: none !important;
+  }
+}
+
+/* V5 — kembali ke hero ikonik beranda; logo dan identitas dipusatkan. */
+.brand-hero--classic {
+  min-height: 790px;
+}
+
+.brand-hero--classic .brand-hero-shade {
+  background: linear-gradient(180deg, rgba(2, 26, 31, .8), rgba(2, 20, 26, .86)), radial-gradient(circle at 50% 34%, rgba(255, 221, 0, .08), transparent 54%);
+}
+
+.brand-classic-layout {
+  position: relative;
+  min-height: 760px;
+  padding: 72px 0 115px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  gap: 0;
+}
+
+.brand-classic-logo {
+  width: clamp(112px, 13vw, 178px);
+  height: clamp(112px, 13vw, 178px);
+  margin: 0 auto 28px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 14px 27px #00191c90);
+}
+
+.brand-classic-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.brand-classic-layout .brand-eyebrow {
+  margin: 0 auto 24px;
+}
+
+.brand-hero--classic h1 {
+  max-width: 1120px;
+  font-size: clamp(2rem, 4.4vw, 4.7rem);
+  line-height: 1.15;
+  margin: 0;
+  color: #fff;
+  letter-spacing: -.035em;
+  text-shadow: 0 12px 26px #0008;
+}
+
+.brand-classic-unit {
+  font-weight: 950;
+  line-height: 1.24;
+  letter-spacing: .06em;
+  font-size: clamp(1.25rem, 2.6vw, 2.4rem);
+  color: #ffdd00;
+  margin-top: 18px;
+}
+
+.brand-classic-accent {
+  width: 145px;
+  height: 5px;
+  margin: 27px auto 22px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #006569, #ffdd00, #006569);
+  box-shadow: 0 0 24px #ffdd007d;
+}
+
+.brand-classic-motto {
+  max-width: 850px;
+  background: #0008;
+  border: 1px solid #ffffff2a;
+  color: #f7faf8;
+  padding: 16px 22px;
+  border-radius: 17px;
+  line-height: 1.6;
+  font-size: clamp(.95rem, 1.4vw, 1.25rem);
+  font-weight: 700;
+  font-style: italic;
+  backdrop-filter: blur(12px);
+}
+
+.brand-classic-promise {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid #ffe57978;
+  background: #073e43ab;
+  color: #ffdd00;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .12em;
+  margin-top: 20px;
+  padding: 10px 16px;
+}
+
+.brand-classic-layout .brand-hero-actions {
+  justify-content: center;
+  margin-top: 29px;
+}
+
+.brand-hub-filters {
+  flex-wrap: wrap;
+  overflow: visible;
+  gap: 12px;
+  padding: 5px 0 12px;
+}
+
+.brand-hub-filters button {
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 850;
+  padding: 13px 21px;
+  min-height: 46px;
+  border-color: #c7dcd6;
+}
+
+.brand-hub-searchbox button {
+  font-size: 13px;
+  padding: 13px 17px;
+  background: #006569;
+  color: #fff;
+}
+
+.brand-hub-searchbox button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.brand-hub-ai-status {
+  font-size: 13px !important;
+  margin: 12px 0 !important;
+  color: #ffedbd !important;
+}
+
+@media(max-width:767px) {
+  .brand-classic-layout {
+    min-height: 0;
+    padding: 78px 0 120px;
+  }
+
+  .brand-classic-logo {
+    margin-bottom: 19px;
+  }
+
+  .brand-hero--classic {
+    min-height: 0;
+  }
+
+  .brand-hub-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding: 4px 2px 18px;
+  }
+
+  .brand-hub-filters button {
+    font-size: 13px;
+    padding: 12px 18px;
+    scroll-snap-align: start;
+  }
+
+  .brand-hub-searchbox button {
+    display: inline-flex !important;
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  .brand-hub-searchbox {
+    gap: 8px;
+  }
+
+  .brand-hub-searchbox input {
+    font-size: 13px;
+  }
+}
+
+/* V6 — hero pertama dipulihkan (HeroStage + HeroLogo), tombol V5 dipertahankan. */
+.brand-legacy-hero {
+  min-height: min(880px, calc(100svh - 74px));
+  padding-bottom: 130px !important;
+}
+
+.brand-legacy-inner h1 {
+  max-width: 1050px;
+  text-wrap: balance;
+}
+
+.brand-legacy-scroll {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+  color: #ffe78a;
+  letter-spacing: .06em;
+  transition: color .2s ease;
+}
+
+.brand-legacy-scroll:hover {
+  color: #fff;
+}
+
+.brand-legacy-hero .brand-hero-actions {
+  justify-content: center;
+}
+
+.brand-legacy-hero .brand-btn--outline {
+  border: 1px solid #ffffff9e;
+  background: #ffffff17;
+  backdrop-filter: blur(14px);
+}
+
+.brand-legacy-hero .brand-btn--outline:hover {
+  background: #ffffff31;
+}
+
+.brand-legacy-hero .brand-btn {
+  min-height: 56px;
+  padding: 14px 23px;
+}
+
+.brand-access {
+  background: #f8fafc;
+}
+
+.brand-access-icon,
+.brand-hub-card-icon {
+  background: linear-gradient(145deg, #f5f8f7, #e9f3f2) !important;
+  color: #006569;
+}
+
+@media(max-width:767px) {
+  .brand-legacy-hero {
+    min-height: 750px;
+    padding-top: 85px !important;
+    padding-bottom: 100px !important;
+  }
+
+  .brand-legacy-inner h1 {
+    font-size: clamp(1.9rem, 7vw, 3.5rem);
+  }
+
+  .brand-legacy-scroll {
+    bottom: 18px;
+  }
+}
+
+@media(max-width:480px) {
+  .brand-legacy-hero .brand-hero-actions {
+    width: 100%;
+  }
+
+  .brand-legacy-hero .brand-btn {
+    width: 100%;
+  }
+
+  .brand-legacy-inner .brand-hero-actions {
+    margin-top: 25px;
+  }
+}
+
+/* Gerakan halus pada kartu narasumber tanpa membuat blok berwarna terpisah dari section sekitarnya. */
+.youth-speaker-card {
+  transition: transform .35s cubic-bezier(.16, 1, .3, 1), box-shadow .35s ease;
+}
+
+.youth-speaker-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 32px 62px -30px rgba(6, 59, 60, .24);
+}
+
+.youth-speaker-card .youth-speaker-portrait img {
+  transform-origin: center bottom;
+  transition: transform .5s cubic-bezier(.16, 1, .3, 1);
+}
+
+.youth-speaker-card:hover .youth-speaker-portrait img {
+  transform: scale(1.025);
+}
+
+@media(prefers-reduced-motion:reduce) {
+
+  .youth-speaker-card,
+  .youth-speaker-card .youth-speaker-portrait img {
+    transition: none !important;
+  }
+}
+
+/* V7 — perbaikan hero: elemen sorotan mengikuti alur konten, tidak lagi menimpa CTA. */
+.brand-legacy-hero {
+  min-height: min(960px, 100svh);
+  padding-block: clamp(78px, 8vw, 112px) clamp(62px, 7vw, 96px) !important;
+}
+
+.brand-legacy-inner {
+  gap: 0;
+}
+
+.brand-legacy-inner .brand-legacy-title {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: .06em;
+  max-width: min(1260px, 96vw);
+  font-size: clamp(1.55rem, 4.3vw, 4.25rem);
+  line-height: 1.13;
+  text-wrap: nowrap;
+}
+
+.brand-legacy-title span {
+  display: block;
+  white-space: nowrap;
+}
+
+.brand-legacy-motto {
+  width: max-content;
+  max-width: min(96vw, 1160px);
+  font-size: clamp(.81rem, 1.36vw, 1.22rem);
+  white-space: nowrap;
+  margin-inline: auto;
+}
+
+.brand-legacy-inner .brand-legacy-scroll {
+  position: static;
+  left: auto;
+  bottom: auto;
+  transform: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  margin-top: clamp(25px, 3vw, 40px);
+  padding: 8px 4px;
+  border-bottom: 1px solid rgba(255, 221, 0, .4);
+  z-index: auto;
+}
+
+.brand-legacy-inner .brand-hero-actions {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 767px) {
+  .brand-legacy-hero {
+    min-height: auto;
+    padding-block: 80px 86px !important;
+  }
+
+  .brand-legacy-inner .brand-legacy-title {
+    font-size: clamp(1.12rem, 5vw, 2.15rem);
+  }
+
+  .brand-legacy-title span {
+    white-space: normal;
+  }
+
+  .brand-legacy-motto {
+    width: auto;
+    white-space: normal;
+    max-width: min(100%, 680px);
+  }
+}
+
+@media (max-width: 420px) {
+  .brand-legacy-inner .brand-legacy-title {
+    font-size: clamp(1.08rem, 4.7vw, 1.4rem);
+  }
+}
+
+/* V7 — header Pusat Informasi menggunakan foto Plaza UNJ yang sama dengan hero beranda. */
+.brand-hub-head {
+  isolation: isolate;
+  background: #061f29;
+}
+
+.brand-hub-head::before {
+  content: "";
+  position: absolute;
+  inset: -15px;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: url('/foto-kampus-unj.jpg') center / cover no-repeat;
+  filter: blur(3px) saturate(1.08);
+  transform: scale(1.035);
+  opacity: .88;
+  z-index: -2;
+}
+
+.brand-hub-head::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(2, 6, 23, .65), rgba(0, 56, 59, .66), rgba(2, 6, 23, .78)), radial-gradient(ellipse at center, transparent 40%, rgba(2, 6, 23, .55));
+  z-index: -1;
+  pointer-events: none;
+}
+
+.brand-hub-head>.brand-container {
+  position: relative;
+  z-index: 1;
+}

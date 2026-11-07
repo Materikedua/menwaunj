@@ -12,10 +12,14 @@ import {
   AlertCircle,
   X,
   CheckCircle2,
+  UserPlus,
+  Printer,
+  Edit3,
 } from 'lucide-react';
 import { TeamIdCardPreview } from './TeamIdCardPreview.jsx';
 
 export function ParticipantModuleBiodata({
+  canEdit,
   totalPasukan,
   totalOfficial,
   openKtaViewer,
@@ -593,9 +597,5 @@ export function ParticipantModuleBiodata({
                   )}
                 </div>
               </div>
-            )}
-
-            {/* ================================================================
-                MODULE 4: TIMELINE ACARA
   );
 }

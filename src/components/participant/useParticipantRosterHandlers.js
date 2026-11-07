@@ -420,6 +420,46 @@ export function useParticipantRosterHandlers({
     showToast(`Data official "${offName}" telah dihapus.`);
   };
 
+  const handleEditPasukan = (p) => {
+    if (!canEdit) return;
+    setEditingPasukanId(p.id);
+    setPasukanForm({
+      fullName: p.fullName || '',
+      position: p.position || 'Pasukan Inti',
+      nisn: p.nisn || '',
+      photoDataUrl: p.photoDataUrl || '',
+      photoFileName: p.photoFileName || '',
+      photoSizeKb: p.photoSizeKb || 0,
+    });
+    setShowPasukanForm(true);
+    setShowOfficialForm(false);
+  };
+
+  const handleCancelPasukanForm = () => {
+    setEditingPasukanId(null);
+    setShowPasukanForm(false);
+    if (typeof setPasukanErrors === 'function') setPasukanErrors({});
+  };
+
+  const handleEditOfficial = (o) => {
+    if (!canEdit) return;
+    setEditingOfficialId(o.id);
+    setOfficialForm({
+      fullName: o.fullName || '',
+      position: o.position || 'Official 1',
+      photoDataUrl: o.photoDataUrl || '',
+      photoFileName: o.photoFileName || '',
+      photoSizeKb: o.photoSizeKb || 0,
+    });
+    setShowOfficialForm(true);
+    setShowPasukanForm(false);
+  };
+
+  const handleCancelOfficialForm = () => {
+    setEditingOfficialId(null);
+    setShowOfficialForm(false);
+    if (typeof setOfficialErrors === 'function') setOfficialErrors({});
+  };
 
   return {
     handleSchoolLogoChange,
@@ -432,5 +472,9 @@ export function useParticipantRosterHandlers({
     handleOfficialPhotoUpload,
     handleSaveOfficial,
     handleDeleteOfficial,
+    handleEditPasukan,
+    handleCancelPasukanForm,
+    handleEditOfficial,
+    handleCancelOfficialForm,
   };
 }

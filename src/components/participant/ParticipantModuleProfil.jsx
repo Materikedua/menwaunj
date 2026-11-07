@@ -5,6 +5,8 @@ import {
   Loader2,
   Upload,
   Lock,
+  AlertCircle,
+  Check,
 } from 'lucide-react';
 
 export function ParticipantModuleProfil({
@@ -205,9 +207,5 @@ export function ParticipantModuleProfil({
                   )}
                 </form>
               </div>
-            )}
-
-            {/* ================================================================
-                MODULE 2: PEMBERKASAN (5 DOKUMEN WAJIB + UNDUH TEMPLATE)
   );
 }

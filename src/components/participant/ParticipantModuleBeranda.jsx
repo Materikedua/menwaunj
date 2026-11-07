@@ -12,6 +12,9 @@ import {
   Download,
   Calendar,
   Lock,
+  FolderOpen,
+  Check,
+  ChevronRight,
 } from 'lucide-react';
 import { playTactileClick } from '../../lib/tactileAudio.js';
 
@@ -339,9 +342,5 @@ export function ParticipantModuleBeranda({
                   </div>
                 </div>
               </div>
-            )}
-
-            {/* ================================================================
-                MODULE 1: PROFIL SEKOLAH
   );
 }

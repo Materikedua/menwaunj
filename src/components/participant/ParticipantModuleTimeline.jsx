@@ -124,9 +124,5 @@ export function ParticipantModuleTimeline({
                   )}
                 </div>
               </div>
-            )}
-
-            {/* ================================================================
-                MODULE 5: REKAP NILAI JURI
   );
 }

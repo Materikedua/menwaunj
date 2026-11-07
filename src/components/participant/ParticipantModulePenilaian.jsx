@@ -10,6 +10,8 @@ import {
   Trash2,
   Star,
   Users,
+  FileSpreadsheet,
+  Printer,
 } from 'lucide-react';
 
 export function ParticipantModulePenilaian({
@@ -26,6 +28,8 @@ export function ParticipantModulePenilaian({
   nomorUrutInput,
   setNomorUrutInput,
   handleSaveJuryVerification,
+  handleDownloadScoringCsv,
+  handleDownloadScoringRecapPdf,
 }) {
   return (
               <div className="space-y-6 animate-fade-in">
@@ -378,9 +382,5 @@ export function ParticipantModulePenilaian({
                   </div>
                 </div>
               </div>
-            )}
-
-            {/* ================================================================
-                MODULE 6: PUSAT UNDUH JUKNIS & BANTUAN PANITIA
   );
 }

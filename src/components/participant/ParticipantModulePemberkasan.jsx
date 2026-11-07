@@ -7,6 +7,8 @@ import {
   CheckCircle2,
   ExternalLink,
   Trash2,
+  AlertCircle,
+  Download,
 } from 'lucide-react';
 
 export function ParticipantModulePemberkasan({
@@ -149,9 +151,5 @@ export function ParticipantModulePemberkasan({
                   })}
                 </div>
               </div>
-            )}
-
-            {/* ================================================================
-                MODULE 3: BIODATA TIM (18 PASUKAN + 2 OFFICIAL = 20 DATA)
   );
 }
