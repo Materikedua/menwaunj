@@ -34,28 +34,28 @@ const primaryGuides = [
   {
     title: 'Ksatria Cendekia VIII',
     category: 'Program unggulan',
-    description: 'Kompetisi nasional, juknis, jersey & jadwal.',
+    description: 'Kompetisi nasional, juknis, jersey, pendaftaran, dan jadwal.',
     to: '/kc',
     icon: Trophy,
   },
   {
     title: 'Youth Spark National',
     category: 'Seminar & pembinaan',
-    description: 'Seminar nasional, narasumber & rundown.',
+    description: 'Pembinaan Aktivitas Pemuda, narasumber, rundown, dan informasi kegiatan.',
     to: '/youth-spark',
     icon: Sparkles,
   },
   {
     title: 'Gerakan Paskibra Semangat VII',
     category: 'Lomba Paskibra Nasional',
-    description: 'LFPB nasional, juknis & e-voting terfavorit.',
+    description: 'Kompetisi formasi pengibaran bendera, juknis GERANAT VII, dan e-voting juara terfavorit.',
     to: '/geranat',
     icon: Trophy,
   },
   {
     title: 'Galeri & Dokumentasi',
     category: 'Arsip Lensa',
-    description: 'Arsip foto kegiatan resmi 2023–2026.',
+    description: 'Dokumentasi dan arsip foto kegiatan resmi Menwa UNJ 2023–2026.',
     to: '/gallery',
     icon: Sparkles,
   },
@@ -203,7 +203,15 @@ export function BrandHome({ onOpenSearch }) {
         liveCinema={true}
       >
         <Reveal className="brand-legacy-inner relative z-20 mx-auto flex max-w-5xl flex-col items-center px-4 text-center">
-          <div className="mb-6">
+          {/* Live Web Cinema Scene Pill (Image 2) */}
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/40 bg-slate-950/80 px-4 py-1.5 text-[11px] font-mono tracking-widest text-slate-100 shadow-md backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-[#FFDD00] animate-pulse" />
+            <span className="font-black text-[#FFDD00]">LIVE WEB CINEMA</span>
+            <span className="text-white/40">|</span>
+            <span className="font-semibold text-white/90">SCENE 02 // KSATRIA CENDEKIA</span>
+          </div>
+
+          <div className="mb-5">
             <HeroLogo alt="Lambang Resimen Mahasiswa Jayakarta Satuan UNJ" />
           </div>
 
@@ -218,26 +226,59 @@ export function BrandHome({ onOpenSearch }) {
             SATUAN UNIVERSITAS NEGERI JAKARTA
           </div>
 
-          <div className="my-4 h-1 w-32 rounded-full bg-gradient-to-r from-[#006569] via-[#FFDD00] to-[#006569]" />
+          <div className="my-3 h-1 w-32 rounded-full bg-gradient-to-r from-[#006569] via-[#FFDD00] to-[#006569]" />
 
-          <p className="brand-legacy-motto rounded-2xl border border-white/10 bg-black/40 px-4 py-2.5 font-semibold italic leading-relaxed text-slate-100 shadow-lg backdrop-blur-sm">
+          <p className="brand-legacy-motto rounded-2xl border border-white/10 bg-black/40 px-4 py-2 font-semibold italic leading-relaxed text-slate-100 shadow-lg backdrop-blur-sm">
             “Penyempurnaan Pengabdian dengan Ilmu Pengetahuan dan Ilmu Olah Keprajuritan.”
           </p>
 
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/55 bg-gradient-to-r from-[#006569]/55 to-[#00383b]/65 px-5 py-2 text-[11px] font-black uppercase tracking-widest text-[#FFDD00] shadow-md">
+          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/55 bg-gradient-to-r from-[#006569]/55 to-[#00383b]/65 px-5 py-1.5 text-[11px] font-black uppercase tracking-widest text-[#FFDD00] shadow-md">
             <ShieldCheck size={15} /> WIDYA CASTRENA DHARMA SIDDHA
           </div>
 
-          <div className="brand-hero-actions mt-7 flex flex-wrap justify-center gap-2.5">
-            <Link to="/informasi" className="neu-btn-gold px-5 py-3 rounded-2xl text-xs font-black flex items-center gap-2 shadow-lg">
+          {/* Kawah Candradimuka Banner (Image 3) */}
+          <div className="mt-4 max-w-2xl rounded-2xl border border-teal-400/25 bg-[#051c24]/85 px-6 py-3 text-center shadow-xl backdrop-blur-md">
+            <div className="text-sm sm:text-base font-black text-[#FFDD00] tracking-wide">
+              Kawah Candradimuka Mahasiswa Intelektual &amp; Berjiwa Ksatria
+            </div>
+            <div className="text-xs text-slate-200 mt-0.5 font-medium">
+              Menempa Disiplin, Kepemimpinan Lapangan, dan Prestasi Nasional
+            </div>
+          </div>
+
+          {/* Action Buttons with 3D Glassmorphism (Image 1) */}
+          <div className="brand-hero-actions mt-7 flex flex-wrap justify-center gap-3">
+            <a
+              href="https://wa.me/6281525823503?text=Halo%20Piket%20Mako%20Menwa%20UNJ%2C%20saya%20memerlukan%20informasi%2Fbantuan"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => playTactileClick('gold')}
+              className="neu-btn-gold px-6 py-3.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-xl"
+            >
+              <span>HUBUNGI PIKET MAKO 24 JAM</span>
+              <ExternalLink size={16} />
+            </a>
+            <Link
+              to="/informasi"
+              onClick={() => playTactileClick('press')}
+              className="neu-btn-primary px-5 py-3.5 rounded-full text-xs font-black flex items-center gap-2 shadow-lg text-white"
+            >
               <span>Pusat Informasi</span>
               <ArrowRight size={16} />
             </Link>
-            <Link to="/gallery" className="neu-btn-primary px-5 py-3 rounded-2xl text-xs font-black flex items-center gap-2 shadow-lg text-[#FFDD00]">
+            <Link
+              to="/gallery"
+              onClick={() => playTactileClick('press')}
+              className="neu-btn px-5 py-3.5 rounded-full text-xs font-bold flex items-center gap-2 text-slate-800 bg-white/90"
+            >
               <span>Galeri Kegiatan</span>
               <Sparkles size={16} />
             </Link>
-            <Link to="/garis-komando" className="neu-btn px-5 py-3 rounded-2xl text-xs font-bold flex items-center gap-2 text-slate-800">
+            <Link
+              to="/garis-komando"
+              onClick={() => playTactileClick('press')}
+              className="neu-btn px-5 py-3.5 rounded-full text-xs font-bold flex items-center gap-2 text-slate-800 bg-white/90"
+            >
               <span>Struktur Satuan</span>
               <ChevronRight size={16} />
             </Link>
@@ -253,27 +294,23 @@ export function BrandHome({ onOpenSearch }) {
         <div className="brand-container">
           <div className="brand-section-heading">
             <div>
-              <span className="brand-section-overline">ORIENTASI CEPAT</span>
+              <span className="brand-section-overline">ORIENTASI PENGUNJUNG</span>
               <h2 id="akses-cepat-title">
-                Apa yang ingin kamu <em>tuju?</em>
+                Apa yang ingin kamu <em>temukan?</em>
               </h2>
-              <p>Pilih layanan, kegiatan nasional, atau informasi satuan secara instan.</p>
+              <p>Pilih tujuanmu dan langsung menuju informasi yang dibutuhkan.</p>
             </div>
-            <button
-              type="button"
-              className="neu-pill-tab text-xs font-black text-[#006569] flex items-center gap-2 cursor-pointer shadow-sm"
-              onClick={() => {
-                playTactileClick('press');
-                onOpenSearch();
-              }}
+            <Link
+              to="/informasi"
+              className="neu-pill-tab text-xs font-black text-[#006569] flex items-center gap-2 cursor-pointer shadow-sm hover:scale-105 transition"
             >
               <Search size={14} />
-              <span>Cari Cepat</span>
+              <span>Cari semua informasi</span>
               <ArrowRight size={13} />
-            </button>
+            </Link>
           </div>
           <div className="brand-access-grid">
-            {primaryGuides.slice(0, 6).map((guide, i) => {
+            {primaryGuides.slice(0, 4).map((guide, i) => {
               return (
                 <Link
                   key={guide.to}
@@ -306,13 +343,13 @@ export const BrandValues = () => (
         <div className="brand-values-intro">
           <span className="brand-section-overline">WIDYA CASTRENA DHARMA SIDDHA</span>
           <h2 id="nilai-menwa-title">
-            Bukan sekadar organisasi. <em>Ruang bertumbuh.</em>
+            Bukan sekadar organisasi. <em>Ruang untuk bertumbuh.</em>
           </h2>
           <p>
-            Menempa disiplin, ketangkasan intelektual, dan pengabdian sosial sivitas UNJ.
+            Melalui pembinaan, kerja sama, dan pengabdian, Menwa UNJ menghadirkan ruang bagi mahasiswa untuk mengembangkan disiplin, pengetahuan, dan tanggung jawab sosial.
           </p>
-          <Link to="/pendidikan" className="neu-btn-primary px-5 py-3 rounded-2xl text-xs font-black inline-flex items-center gap-2 text-[#FFDD00] shadow-md">
-            <span>Kurikulum Diklat</span>
+          <Link to="/pendidikan" className="neu-btn-primary px-5 py-3 rounded-2xl text-xs font-black inline-flex items-center gap-2 text-white shadow-md hover:scale-105 transition">
+            <span>Pelajari Pembinaan</span>
             <ArrowRight size={16} />
           </Link>
         </div>
@@ -323,7 +360,7 @@ export const BrandValues = () => (
             </span>
             <div>
               <strong>Ilmu &amp; Pembinaan</strong>
-              <p>Terampil, kritis, dan siap memimpin.</p>
+              <p>Belajar menjadi pribadi terampil, kritis, dan siap berkembang.</p>
             </div>
           </div>
           <div>
@@ -332,7 +369,7 @@ export const BrandValues = () => (
             </span>
             <div>
               <strong>Pengabdian Nyata</strong>
-              <p>Hadir menjawab kebutuhan masyarakat.</p>
+              <p>Menghubungkan semangat mahasiswa dengan kebutuhan masyarakat.</p>
             </div>
           </div>
           <div>
@@ -340,8 +377,8 @@ export const BrandValues = () => (
               <Compass size={20} />
             </span>
             <div>
-              <strong>Solidaritas Komando</strong>
-              <p>Tanggung jawab, disiplin, dan jiwa korsa.</p>
+              <strong>Kepemimpinan &amp; Kebersamaan</strong>
+              <p>Menumbuhkan tanggung jawab, kolaborasi, dan solidaritas satuan.</p>
             </div>
           </div>
         </div>
@@ -448,9 +485,9 @@ export function InformationHub({ onOpenSearch }) {
       >
         <div className="brand-section-heading">
           <div>
-            <span className="brand-section-overline text-teal-400 font-black tracking-widest text-xs">DIREKTORI PORTAL</span>
-            <h2 id="brand-hub-directory-title" className="text-white font-black text-2xl sm:text-3xl">Informasi &amp; Layanan</h2>
-            <p className="text-slate-300 text-sm mt-1">{items.length} akses tersedia.</p>
+            <span className="brand-section-overline">DIREKTORI PORTAL</span>
+            <h2 id="brand-hub-directory-title">Informasi &amp; Layanan</h2>
+            <p>{items.length} akses tersedia.</p>
           </div>
         </div>
 
@@ -466,7 +503,7 @@ export function InformationHub({ onOpenSearch }) {
               <button
                 type="button"
                 key={cat}
-                className={isActive ? 'neu-pill-tab-dark active' : 'neu-pill-tab'}
+                className={isActive ? 'neu-pill-tab active' : 'neu-pill-tab'}
                 aria-pressed={isActive}
                 onClick={() => {
                   playTactileClick('pill');
@@ -487,12 +524,12 @@ export function InformationHub({ onOpenSearch }) {
                 <span className="brand-hub-card-icon">
                   <PortalIcon kind={item.to || item.category} size={22} />
                 </span>
-                <span className="brand-hub-card-tag font-bold text-[10px] uppercase text-[#2dd4bf] bg-teal-950/70 px-2.5 py-0.5 rounded-md border border-teal-500/30">
+                <span className="brand-hub-card-tag font-bold text-[10px] uppercase text-[#006569] bg-teal-50 px-2.5 py-0.5 rounded-md border border-teal-200">
                   {item.category}
                 </span>
-                <strong className="text-sm sm:text-base text-white font-black group-hover:text-[#FFDD00] transition-colors">{item.title}</strong>
-                <p className="text-xs text-slate-300 leading-relaxed font-medium">{item.description}</p>
-                <span className="brand-hub-card-arrow text-xs font-black text-[#FFDD00] flex items-center gap-1.5 mt-auto pt-2">
+                <strong className="text-sm sm:text-base text-slate-900 font-black group-hover:text-[#006569] transition-colors">{item.title}</strong>
+                <p className="text-xs text-slate-600 leading-relaxed font-medium">{item.description}</p>
+                <span className="brand-hub-card-arrow text-xs font-black text-[#006569] flex items-center gap-1.5 mt-auto pt-2">
                   <span>Buka</span>
                   <ArrowRight size={13} />
                 </span>

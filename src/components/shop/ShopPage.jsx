@@ -590,3 +590,4 @@ export function ShopPage() {
 }
 
 export default ShopPage;
+

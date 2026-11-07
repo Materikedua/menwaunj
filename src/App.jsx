@@ -150,12 +150,11 @@ const BerandaShopBanner = () => (
 );
 
 const BerandaTab = ({ onOpenSearch }) => (
-  <div className="flex-grow bg-[#051419] font-sans text-slate-100">
+  <div className="flex-grow bg-slate-50 font-sans text-slate-900">
     <BrandHome onOpenSearch={onOpenSearch} />
-    <BerandaShopBanner />
-    <HomeSections />
-    <BrandValues />
     <PrideSection />
+    <BrandValues />
+    <HomeSections />
   </div>
 );
 
@@ -228,9 +227,9 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(() => {
     try {
       const saved = localStorage.getItem('menwa_dark_mode');
-      return saved === null ? true : saved === 'true';
+      return saved === 'true';
     } catch {
-      return true;
+      return false;
     }
   });
   const [konamiUnlocked, setKonamiUnlocked] = useState(false);
@@ -437,7 +436,7 @@ export default function App() {
       <AppErrorBoundary>
         <div
           className={`min-h-screen flex flex-col font-sans selection:bg-[#006569] selection:text-[#FFDD00] transition-colors duration-300 ${
-            darkMode ? 'bg-[#041217] text-slate-100' : 'bg-[#06171d] text-slate-100'
+            darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
           }`}
         >
           <a href="#main-content" className="portal-skip-link">

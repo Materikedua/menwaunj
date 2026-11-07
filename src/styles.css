@@ -226,3 +226,166 @@ img {
 .animate-border-spin-slow { animation: borderSpin 6s linear infinite; }
 .animate-border-spin-fast { animation: borderSpin 2.8s linear infinite; }
 .animate-flame-pulse { animation: flamePulse 3s ease-in-out infinite; }
+
+/* ── Pride Statistics Section (Dark Contrast Accent) ── */
+.brand-pride {
+  padding: 95px 20px;
+  background: radial-gradient(circle at 50% 0%, #123c45, #031723 66%);
+  color: #fff;
+  overflow: hidden;
+  text-align: center;
+}
+.brand-pride .brand-container {
+  max-width: 1200px;
+  margin: auto;
+}
+.brand-pride-eyebrow {
+  font-size: 11px;
+  color: #ffdd00;
+  font-weight: 900;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+}
+.brand-pride h2 {
+  font-size: clamp(1.9rem, 4.5vw, 3.8rem);
+  font-weight: 950;
+  line-height: 1.25;
+  margin: 22px 0 8px;
+  color: #ffffff;
+}
+.brand-pride-lead {
+  color: #b4cccc;
+  margin: 0 auto 34px;
+  max-width: 600px;
+  font-size: 15px;
+}
+.brand-pride-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+.brand-pride-stat {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 240px;
+  padding: 25px 14px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+  transition: transform .26s ease, border-color .26s ease, box-shadow .26s ease;
+}
+.brand-pride-stat:hover {
+  transform: translateY(-5px);
+}
+.brand-pride-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  margin-bottom: 17px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+}
+.brand-pride-stat strong {
+  font-size: clamp(2.7rem, 4.3vw, 4.7rem);
+  line-height: 1;
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+}
+.brand-pride-stat strong i {
+  font-size: .6em;
+  font-style: normal;
+}
+.brand-pride-stat > span:last-child {
+  margin-top: 16px;
+  max-width: 180px;
+  color: #e0ebea;
+  text-transform: uppercase;
+  letter-spacing: .085em;
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 900;
+}
+.brand-pride .pride-line {
+  white-space: normal;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .2em;
+}
+.brand-pride .pride-prefix {
+  color: #ffffff;
+}
+.brand-pride .pride-typing__text {
+  color: #ffdd00;
+}
+.brand-pride .pride-typing__caret {
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: #ffdd00;
+  margin-left: 4px;
+  vertical-align: middle;
+  animation: menwa-caret 1s infinite;
+}
+
+.brand-pride-stat--teal {
+  --pride-tone: #4AD9C9;
+  --pride-bg: rgba(74, 217, 201, 0.14);
+  --pride-shadow: rgba(74, 217, 201, 0.25);
+  border-color: rgba(74, 217, 201, 0.3);
+}
+.brand-pride-stat--gold {
+  --pride-tone: #FFCF55;
+  --pride-bg: rgba(255, 207, 85, 0.14);
+  --pride-shadow: rgba(255, 207, 85, 0.25);
+  border-color: rgba(255, 207, 85, 0.3);
+}
+.brand-pride-stat--violet {
+  --pride-tone: #C0A2FF;
+  --pride-bg: rgba(192, 162, 255, 0.14);
+  --pride-shadow: rgba(192, 162, 255, 0.25);
+  border-color: rgba(192, 162, 255, 0.3);
+}
+.brand-pride-stat--coral {
+  --pride-tone: #FF986C;
+  --pride-bg: rgba(255, 152, 108, 0.14);
+  --pride-shadow: rgba(255, 152, 108, 0.25);
+  border-color: rgba(255, 152, 108, 0.3);
+}
+
+.brand-pride-stat .brand-pride-icon {
+  background: var(--pride-bg);
+  color: var(--pride-tone);
+  box-shadow: 0 8px 24px var(--pride-shadow);
+}
+.brand-pride-stat strong {
+  color: var(--pride-tone);
+}
+.brand-pride-stat:hover {
+  border-color: var(--pride-tone);
+  box-shadow: 0 24px 48px var(--pride-shadow);
+}
+@media (max-width: 767px) {
+  .brand-pride-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .brand-pride {
+    padding: 72px 16px;
+  }
+  .brand-pride-stat {
+    min-height: 180px;
+    padding: 20px 10px;
+  }
+  .brand-pride h2 {
+    font-size: clamp(1.65rem, 7vw, 3rem);
+  }
+}
