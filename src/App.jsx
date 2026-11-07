@@ -19,6 +19,7 @@ import {
   Images,
   Volume2,
   VolumeX,
+  ShoppingBag,
 } from 'lucide-react';
 import { useAuth } from './lib/authContext.jsx';
 import { UserAccountModal } from './components/UserAccountModal.jsx';
@@ -89,6 +90,9 @@ const PrivacyPolicyPage = lazy(() =>
 const TermsOfServicePage = lazy(() =>
   import('./components/LegalPages.jsx').then((m) => ({ default: m.TermsOfServicePage }))
 );
+const ShopPage = lazy(() =>
+  import('./components/shop/ShopPage.jsx').then((m) => ({ default: m.ShopPage }))
+);
 
 const PageLoadingFallback = () => (
   <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4 text-slate-400">
@@ -103,7 +107,6 @@ const PageLoadingFallback = () => (
 import { AppNavigation } from './components/AppNavigation.jsx';
 import { PrideSection } from './components/PrideSection.jsx';
 import { MakoTab, TabHero } from './components/tabs/MakoTab.jsx';
-import { PoloPreOrderSection } from './components/home/PoloPreOrderSection.jsx';
 
 const handleImgError = (e, text, bgColor = '006569', textColor = 'FFDD00') => {
   e.target.onerror = null;
@@ -112,10 +115,44 @@ const handleImgError = (e, text, bgColor = '006569', textColor = 'FFDD00') => {
 
 const RevealOnScroll = Reveal;
 
+const BerandaShopBanner = () => (
+  <section className="bg-gradient-to-r from-[#04161c] via-[#07252f] to-[#04161c] py-7 px-4 sm:px-6 lg:px-8 border-y border-white/10 relative overflow-hidden">
+    <div className="pointer-events-none absolute -right-20 -top-20 w-80 h-80 rounded-full bg-teal-500/10 blur-3xl" />
+    <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5 relative z-10">
+      <div className="flex items-center gap-4">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#006569] to-[#022a30] text-[#FFDD00] flex items-center justify-center font-black shrink-0 shadow-xl border border-cyan-400/40">
+          <ShoppingBag size={26} />
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-wider bg-[#FFDD00] text-slate-950 px-2.5 py-0.5 rounded-full shadow-sm">
+              OFFICIAL STORE 2026
+            </span>
+            <span className="text-xs font-bold text-cyan-300">Batch 01 Pre-Order Aktif</span>
+          </div>
+          <h4 className="text-base sm:text-lg font-black text-white mt-1">
+            Polo Shirt Menwa UNJ Tahun 2026 Tersedia di Subtab Shop
+          </h4>
+          <p className="text-xs text-slate-300 max-w-xl">
+            Material Motif Waffle Dry-Fit resmi Rp 150.000 IDR. Jelajahi mockup depan/belakang, tabel ukuran, dan kalkulator size di subtab /shop/.
+          </p>
+        </div>
+      </div>
+      <Link
+        to="/shop"
+        className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#FFDD00] to-amber-400 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-2xl hover:scale-105 transition flex items-center gap-2 shrink-0 cursor-pointer"
+      >
+        <span>Kunjungi Subtab Shop</span>
+        <ArrowRight size={16} />
+      </Link>
+    </div>
+  </section>
+);
+
 const BerandaTab = ({ onOpenSearch }) => (
   <div className="flex-grow bg-[#051419] font-sans text-slate-100">
     <BrandHome onOpenSearch={onOpenSearch} />
-    <PoloPreOrderSection />
+    <BerandaShopBanner />
     <HomeSections />
     <BrandValues />
     <PrideSection />
@@ -301,7 +338,9 @@ export default function App() {
     : PROGRAMS.find((p) => `/${p.slug}` === path);
 
   const activeTab =
-    path === '/informasi'
+    path === '/shop' || path === '/shop/'
+      ? 'shop'
+      : path === '/informasi'
       ? 'informasi'
       : path === '/gallery'
       ? 'gallery'
@@ -323,6 +362,7 @@ export default function App() {
     setIsMobileMenuOpen(false);
     navigate(
       {
+        shop: '/shop',
         gallery: '/gallery',
         informasi: '/informasi',
         kegiatan: '/kc',
@@ -340,7 +380,9 @@ export default function App() {
 
   useEffect(() => {
     let customTitle = null;
-    if (path.startsWith('/verifikasi-surat')) {
+    if (path === '/shop' || path === '/shop/') {
+      customTitle = 'Official Store & Pre-Order Polo Shirt 2026 | Menwa UNJ';
+    } else if (path.startsWith('/verifikasi-surat')) {
       customTitle = 'Verifikasi E-Dispensasi Resmi | Menwa UNJ';
     } else if (path.startsWith('/official/')) {
       const slugPart = path.split('/')[2] || '';
@@ -524,9 +566,18 @@ export default function App() {
                 )
               ) : path === '/informasi' ? (
                 <InformationHub onOpenSearch={() => setSearchOpen(true)} />
+              ) : path === '/shop' || path === '/shop/' ? (
+                <Suspense fallback={<PageLoadingFallback />}>
+                  <ShopPage />
+                </Suspense>
               ) : (
                 <>
                   {activeTab === 'beranda' && <BerandaTab onOpenSearch={() => setSearchOpen(true)} />}
+                  {activeTab === 'shop' && (
+                    <Suspense fallback={<PageLoadingFallback />}>
+                      <ShopPage />
+                    </Suspense>
+                  )}
                   {activeTab === 'struktur' && <StrukturOrganisasiTab onNavigate={handleQuickSearch} />}
                   {activeTab === 'pendidikan' && (
                     <PendidikanTab

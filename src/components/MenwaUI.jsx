@@ -119,9 +119,8 @@ export const Reveal = ({ children, className = '', delay = 0, from = 'up', once 
     <div
       ref={ref}
       style={{ transitionDelay: `${delay}ms` }}
-      className={`transition-all duration-[800ms] ease-[cubic-bezier(.16,1,.3,1)] ${
-        shown ? 'opacity-100 translate-x-0 translate-y-0 scale-100' : `opacity-0 ${hidden}`
-      } ${className}`}
+      className={`transition-all duration-[800ms] ease-[cubic-bezier(.16,1,.3,1)] ${shown ? 'opacity-100 translate-x-0 translate-y-0 scale-100' : `opacity-0 ${hidden}`
+        } ${className}`}
     >
       {children}
     </div>
@@ -602,9 +601,8 @@ export const TabSwitch = ({ tabKey, children }) => {
 
   return (
     <div
-      className={`transition-all duration-500 ease-[cubic-bezier(.16,1,.3,1)] ${
-        state === 'in' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-      }`}
+      className={`transition-all duration-500 ease-[cubic-bezier(.16,1,.3,1)] ${state === 'in' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}
     >
       {render}
     </div>

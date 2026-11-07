@@ -502,7 +502,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
         {/* ==================================================================
             FLOATING GLASSMORPHIC WORKSPACE CANVAS
             ================================================================== */}
-        <section className="lg:col-span-9 xl:col-span-10 rounded-[2.5rem] bg-white/92 backdrop-blur-2xl text-[#092D32] shadow-2xl border border-white/80 p-6 sm:p-10 flex flex-col justify-between space-y-7 overflow-y-auto">
+        <section className="lg:col-span-9 xl:col-span-10 rounded-[2.5rem] bg-[#071f26]/90 backdrop-blur-2xl text-slate-100 shadow-2xl border border-white/12 p-6 sm:p-10 flex flex-col justify-between space-y-7 overflow-y-auto">
           <div className="space-y-6">
             <ParticipantConsoleHeader
               activeModule={activeModule}

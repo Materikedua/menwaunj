@@ -380,7 +380,7 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
                       {item.url.startsWith('/') ? (
                         <Link
                           to={item.url}
-                          className="w-full py-1.5 text-center text-[11px] font-bold text-slate-500 hover:text-[#006569] flex items-center justify-center gap-1 transition"
+                          className="w-full py-1.5 text-center text-[11px] font-bold text-cyan-300 hover:text-[#FFDD00] flex items-center justify-center gap-1 transition"
                         >
                           <span>{item.ctaText}</span>
                           <ChevronRight size={13} />
@@ -390,7 +390,7 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
                           href={item.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="w-full py-1.5 text-center text-[11px] font-bold text-slate-500 hover:text-[#006569] flex items-center justify-center gap-1 transition"
+                          className="w-full py-1.5 text-center text-[11px] font-bold text-cyan-300 hover:text-[#FFDD00] flex items-center justify-center gap-1 transition"
                         >
                           <span>Tautan Eksternal</span>
                           <ExternalLink size={12} />

@@ -150,6 +150,11 @@ export const NavBar = ({
                         }`}
                     >
                       <span>{item.label}</span>
+                      {item.badge && (
+                        <span className="px-1.5 py-0.2 rounded-full text-[8.5px] font-black uppercase tracking-wider bg-[#FFDD00] text-slate-950 shadow-sm">
+                          {item.badge}
+                        </span>
+                      )}
                       {item.children && (
                         <ChevronDown
                           size={12}
@@ -206,6 +211,11 @@ export const NavBar = ({
                           <span className="text-xs font-black uppercase tracking-wider text-[#FFDD00] flex items-center gap-1.5">
                             {item.icon}
                             <span>{item.label}</span>
+                      {item.badge && (
+                        <span className="px-1.5 py-0.2 rounded-full text-[8.5px] font-black uppercase tracking-wider bg-[#FFDD00] text-slate-950 shadow-sm">
+                          {item.badge}
+                        </span>
+                      )}
                           </span>
                           <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider">
                             Pilih program
@@ -297,6 +307,11 @@ export const NavBar = ({
                     <div className="px-4 py-2 text-[11px] font-black uppercase tracking-wider text-[#FFDD00] flex items-center gap-2">
                       <span className="text-amber-400">{item.icon}</span>
                       <span>{item.label}</span>
+                      {item.badge && (
+                        <span className="px-1.5 py-0.2 rounded-full text-[8.5px] font-black uppercase tracking-wider bg-[#FFDD00] text-slate-950 shadow-sm">
+                          {item.badge}
+                        </span>
+                      )}
                     </div>
                     <div className="pl-3 space-y-1 border-l-2 border-[#006569]/40 ml-4">
                       {item.children.map((child) => (

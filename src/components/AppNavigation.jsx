@@ -15,6 +15,7 @@ import {
   Flame,
   User,
   ShieldCheck,
+  ShoppingBag,
 } from 'lucide-react';
 import { NavBar } from './NavBar.jsx';
 import { MusicPlayer } from './MusicPlayer.jsx';
@@ -38,6 +39,13 @@ export const NAV_ITEMS = [
     label: 'Pusat Informasi',
     icon: <SearchIcon size={20} />,
     desc: 'Direktori terpadu layanan & panduan.',
+  },
+  {
+    id: 'shop',
+    label: 'Shop',
+    badge: 'Pre-Order',
+    icon: <ShoppingBag size={20} />,
+    desc: 'Official Merchandise & Polo Shirt 2026.',
   },
   {
     id: 'kegiatan',

@@ -448,9 +448,9 @@ export function InformationHub({ onOpenSearch }) {
       >
         <div className="brand-section-heading">
           <div>
-            <span className="brand-section-overline">DIREKTORI PORTAL</span>
-            <h2 id="brand-hub-directory-title">Informasi &amp; Layanan</h2>
-            <p>{items.length} akses tersedia.</p>
+            <span className="brand-section-overline text-teal-400 font-black tracking-widest text-xs">DIREKTORI PORTAL</span>
+            <h2 id="brand-hub-directory-title" className="text-white font-black text-2xl sm:text-3xl">Informasi &amp; Layanan</h2>
+            <p className="text-slate-300 text-sm mt-1">{items.length} akses tersedia.</p>
           </div>
         </div>
 
@@ -466,7 +466,7 @@ export function InformationHub({ onOpenSearch }) {
               <button
                 type="button"
                 key={cat}
-                className={isActive ? 'neu-pill-tab-dark' : 'neu-pill-tab'}
+                className={isActive ? 'neu-pill-tab-dark active' : 'neu-pill-tab'}
                 aria-pressed={isActive}
                 onClick={() => {
                   playTactileClick('pill');
@@ -487,25 +487,25 @@ export function InformationHub({ onOpenSearch }) {
                 <span className="brand-hub-card-icon">
                   <PortalIcon kind={item.to || item.category} size={22} />
                 </span>
-                <span className="brand-hub-card-tag font-bold text-[10px] uppercase text-[#006569] bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
+                <span className="brand-hub-card-tag font-bold text-[10px] uppercase text-[#2dd4bf] bg-teal-950/70 px-2.5 py-0.5 rounded-md border border-teal-500/30">
                   {item.category}
                 </span>
-                <strong className="text-sm sm:text-base text-slate-900 font-black">{item.title}</strong>
-                <p className="text-xs text-slate-600 leading-snug font-medium">{item.description}</p>
-                <span className="brand-hub-card-arrow text-xs font-black text-[#006569] flex items-center gap-1 mt-auto pt-2">
+                <strong className="text-sm sm:text-base text-white font-black group-hover:text-[#FFDD00] transition-colors">{item.title}</strong>
+                <p className="text-xs text-slate-300 leading-relaxed font-medium">{item.description}</p>
+                <span className="brand-hub-card-arrow text-xs font-black text-[#FFDD00] flex items-center gap-1.5 mt-auto pt-2">
                   <span>Buka</span>
                   <ArrowRight size={13} />
                 </span>
               </>
             );
             return item.to ? (
-              <Link key={item.title} to={item.to} className="brand-hub-card neu-card p-4 sm:p-5 hover:-translate-y-1.5 transition">
+              <Link key={item.title} to={item.to} className="brand-hub-card neu-card p-4 sm:p-5 hover:-translate-y-1.5 transition group">
                 {content}
               </Link>
             ) : (
               <a
                 key={item.title}
-                className="brand-hub-card neu-card p-4 sm:p-5 hover:-translate-y-1.5 transition"
+                className="brand-hub-card neu-card p-4 sm:p-5 hover:-translate-y-1.5 transition group"
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"

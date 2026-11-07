@@ -141,6 +141,7 @@ export const TAB_PATHS = {
   geranat_voting: '/geranat/voting',
   charity_voting: '/charity/voting',
   portal_peserta: '/portal-peserta',
+  shop: '/shop',
   privacy: '/privacy',
   terms: '/terms',
 };
