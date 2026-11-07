@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { CheckCircle2, AlertCircle, Clock, KeyRound, Lock, Eye, RotateCcw, History, ArrowLeft, ArrowRight, Share2, HelpCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.jsx';
 import {

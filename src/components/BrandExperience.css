@@ -92,9 +92,26 @@
 .brand-hub-head h1 {font-size:clamp(2.7rem,6vw,5.7rem);line-height:1.08;letter-spacing:-.06em;font-weight:950;margin:27px 0 0;}
 .brand-hub-head h1 em {font-style:normal;color:#f6da66;}
 .brand-hub-head p{max-width:675px;font-size:15px;line-height:1.85;color:#c5d8d4;margin:22px 0 0;}
-.brand-hub-searchbox {position:relative;z-index:2;display:flex;align-items:center;gap:13px;max-width:740px;margin-top:32px;padding:10px 13px 10px 19px;background:#fff;border-radius:18px;color:#006569;box-shadow:0 20px 55px rgba(0,0,0,.2);}
-.brand-hub-searchbox input {flex:1;min-width:0;border:0;outline:0;font-size:14px;padding:12px 0;color:#102e30;background:transparent;}
-.brand-hub-searchbox button{font-size:11px;font-weight:900;border-radius:9px;background:#edf3f2;color:#427473;padding:10px;}
+.brand-glass-search-container {
+  background: rgba(255, 255, 255, 0.14) !important;
+  backdrop-filter: blur(28px) saturate(190%) contrast(110%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(110%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow:
+    0 24px 60px -10px rgba(0, 0, 0, 0.45),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.4),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+.brand-glass-search-container:focus-within {
+  border-color: rgba(255, 221, 0, 0.65) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  box-shadow:
+    0 28px 70px -10px rgba(0, 0, 0, 0.55),
+    0 0 24px rgba(255, 221, 0, 0.25),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.5) !important;
+}
+
 .brand-hub-results {padding-top:85px;padding-bottom:115px;}
 .brand-hub-filters{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 15px;margin-bottom:18px;scrollbar-width:thin;}
 .brand-hub-filters button{white-space:nowrap;border-radius:999px;border:1px solid #cbded9;background:#fff;padding:10px 16px;font-size:11px;font-weight:850;color:#41656b;cursor:pointer;transition:background .2s ease,color .2s ease;}

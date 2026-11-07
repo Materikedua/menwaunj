@@ -41,8 +41,8 @@ export const NAV_ITEMS = [
     desc: 'Direktori terpadu layanan & panduan.',
   },
   {
-    id: 'shop',
-    label: 'Shop',
+    id: 'toko',
+    label: 'Toko',
     badge: 'Pre-Order',
     icon: <ShoppingBag size={20} />,
     desc: 'Official Merchandise & Polo Shirt 2026.',

@@ -19,6 +19,7 @@ import {
   Activity,
   CreditCard,
   Building,
+  X,
 } from 'lucide-react';
 import { Link, navigate } from '../lib/router.jsx';
 import { HeroStage, HeroLogo, Reveal } from './MenwaUI.jsx';
@@ -232,36 +233,16 @@ export function BrandHome({ onOpenSearch }) {
             “Penyempurnaan Pengabdian dengan Ilmu Pengetahuan dan Ilmu Olah Keprajuritan.”
           </p>
 
-          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/55 bg-gradient-to-r from-[#006569]/55 to-[#00383b]/65 px-5 py-1.5 text-[11px] font-black uppercase tracking-widest text-[#FFDD00] shadow-md">
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/55 bg-gradient-to-r from-[#006569]/55 to-[#00383b]/65 px-5 py-2 text-[11px] font-black uppercase tracking-widest text-[#FFDD00] shadow-md">
             <ShieldCheck size={15} /> WIDYA CASTRENA DHARMA SIDDHA
           </div>
 
-          {/* Kawah Candradimuka Banner (Image 3) */}
-          <div className="mt-4 max-w-2xl rounded-2xl border border-teal-400/25 bg-[#051c24]/85 px-6 py-3 text-center shadow-xl backdrop-blur-md">
-            <div className="text-sm sm:text-base font-black text-[#FFDD00] tracking-wide">
-              Kawah Candradimuka Mahasiswa Intelektual &amp; Berjiwa Ksatria
-            </div>
-            <div className="text-xs text-slate-200 mt-0.5 font-medium">
-              Menempa Disiplin, Kepemimpinan Lapangan, dan Prestasi Nasional
-            </div>
-          </div>
-
-          {/* Action Buttons with 3D Glassmorphism (Image 1) */}
+          {/* Action Buttons with 3D Glassmorphism */}
           <div className="brand-hero-actions mt-7 flex flex-wrap justify-center gap-3">
-            <a
-              href="https://wa.me/6281525823503?text=Halo%20Piket%20Mako%20Menwa%20UNJ%2C%20saya%20memerlukan%20informasi%2Fbantuan"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => playTactileClick('gold')}
-              className="neu-btn-gold px-6 py-3.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-xl"
-            >
-              <span>HUBUNGI PIKET MAKO 24 JAM</span>
-              <ExternalLink size={16} />
-            </a>
             <Link
               to="/informasi"
-              onClick={() => playTactileClick('press')}
-              className="neu-btn-primary px-5 py-3.5 rounded-full text-xs font-black flex items-center gap-2 shadow-lg text-white"
+              onClick={() => playTactileClick('gold')}
+              className="neu-btn-gold px-6 py-3.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-xl"
             >
               <span>Pusat Informasi</span>
               <ArrowRight size={16} />
@@ -269,7 +250,7 @@ export function BrandHome({ onOpenSearch }) {
             <Link
               to="/gallery"
               onClick={() => playTactileClick('press')}
-              className="neu-btn px-5 py-3.5 rounded-full text-xs font-bold flex items-center gap-2 text-slate-800 bg-white/90"
+              className="neu-btn-primary px-5 py-3.5 rounded-full text-xs font-black flex items-center gap-2 shadow-lg text-white"
             >
               <span>Galeri Kegiatan</span>
               <Sparkles size={16} />
@@ -447,27 +428,42 @@ export function InformationHub({ onOpenSearch }) {
 
           <form
             onSubmit={runAiSearch}
-            className="neu-search-capsule max-w-2xl w-full p-2 sm:p-2.5 mt-5 flex items-center gap-2.5 shadow-2xl"
+            className="brand-glass-search-container max-w-3xl w-full mt-7 relative flex items-center gap-3 p-2.5 sm:p-3.5 rounded-full shadow-2xl transition-all duration-300"
           >
-            <Search size={18} className="text-[#006569] shrink-0 ml-2" />
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/15 border border-white/25 flex items-center justify-center shrink-0 text-[#FFDD00] shadow-inner">
+              <Search size={22} />
+            </div>
             <input
               value={q}
               onChange={(e) => {
                 setQ(e.target.value);
                 setNoMatch(false);
               }}
-              placeholder="Ketik: pendaftaran, jadwal latihan, mako, surat..."
+              placeholder="Cari direktori: pendaftaran, juknis, struktur, formulir, mako..."
               type="search"
               aria-label="Cari informasi"
-              style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
-              className="flex-1 min-w-0 bg-transparent text-slate-950 text-xs sm:text-sm font-bold outline-none placeholder:text-slate-400"
+              className="flex-1 min-w-0 bg-transparent text-white text-sm sm:text-base font-bold outline-none placeholder:text-white/60 px-2"
             />
+            {q && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQ('');
+                  setNoMatch(false);
+                }}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 text-white/80 hover:text-white flex items-center justify-center transition shrink-0 cursor-pointer"
+                aria-label="Hapus pencarian"
+              >
+                <X size={16} />
+              </button>
+            )}
             <button
               type="submit"
               disabled={searching || !q.trim()}
-              className="neu-btn-primary px-4 py-2 rounded-full text-xs font-black text-[#FFDD00] shrink-0 disabled:opacity-40 shadow-sm cursor-pointer"
+              className="neu-btn-primary px-5 sm:px-7 py-3 sm:py-3.5 rounded-full text-xs sm:text-sm font-black text-white shrink-0 disabled:opacity-40 shadow-lg cursor-pointer flex items-center gap-2"
             >
-              {searching ? 'Mencari…' : 'Cari →'}
+              <span>{searching ? 'Mencari…' : 'Cari'}</span>
+              <ArrowRight size={15} />
             </button>
           </form>
 
