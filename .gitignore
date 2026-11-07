@@ -8,3 +8,5 @@ coverage/
 !.env.example
 *.zip
 backup_menwaunj_github_before_replace.zip
+.stitch*
+.agents/

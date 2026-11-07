@@ -36,7 +36,97 @@ export function ParticipantModuleBeranda({
   selectedTimelineId,
   setSelectedTimelineId,
   isGuestMode,
+  progress = {},
+  scoringSummary = {},
+  ADMIN_MILESTONES = [],
 }) {
+  const allTeamMembers = [
+    ...(portalData?.pasukanList || []),
+    ...(portalData?.officialList || []),
+  ];
+  const sp = portalData?.schoolProfile || {};
+  const completedMilestonesCount = (ADMIN_MILESTONES || []).filter((m) => m.done).length;
+  const adminOverviewPct = Math.round((completedMilestonesCount / 7) * 100);
+
+  const MODULE_CARDS = [
+    {
+      id: 'profil',
+      number: '01',
+      title: 'Profil Instansi Sekolah',
+      subtitle: sp.kabupatenKota ? `${sp.jalan || ''}, ${sp.kabupatenKota}` : 'Logo sekolah, NPSN, & alamat 6 kolom resmi',
+      progress: progress?.profilPct || 0,
+      statusText: progress?.profilPct === 100 ? 'Lengkap Terisi' : `${progress?.profilPct || 0}% Terisi`,
+      accentBg: 'from-teal-500/15 to-emerald-500/5',
+      accentText: 'text-[#006569]',
+      barColor: '#006569',
+      icon: Building2,
+    },
+    {
+      id: 'pemberkasan',
+      number: '02',
+      title: 'Berkas Persyaratan Juknis',
+      subtitle: `${progress?.berkasCount || 0} dari 5 dokumen PDF/JPG wajib telah terunggah`,
+      progress: progress?.berkasPct || 0,
+      statusText: `${progress?.berkasCount || 0}/5 Dokumen`,
+      accentBg: 'from-emerald-500/15 to-teal-500/5',
+      accentText: 'text-emerald-700',
+      barColor: '#059669',
+      icon: FolderOpen,
+    },
+    {
+      id: 'biodata',
+      number: '03',
+      title: 'Komposisi Pasukan & Official',
+      subtitle: `${progress?.pasukanCount || 0}/18 Pasukan · ${progress?.officialCount || 0}/2 Official`,
+      progress: progress?.biodataPct || 0,
+      statusText: `${progress?.biodataCount || 0}/20 Personel`,
+      accentBg: 'from-amber-500/20 to-yellow-500/5',
+      accentText: 'text-amber-800',
+      barColor: '#F59E0B',
+      icon: Users,
+      showAvatars: true,
+    },
+    {
+      id: 'timeline',
+      number: '04',
+      title: 'Timeline Teknis Perlombaan',
+      subtitle: 'Pendaftaran, Technical Meeting, Tes Track, hingga Hari H Pelaksanaan',
+      progress: 100,
+      statusText: '6 Tahap Resmi',
+      accentBg: 'from-blue-500/15 to-sky-500/5',
+      accentText: 'text-blue-700',
+      barColor: '#2563EB',
+      icon: Calendar,
+    },
+    {
+      id: 'penilaian',
+      number: '05',
+      title: 'Blanko Penilaian Dewan Juri',
+      subtitle: `Rekap 10 aspek penilaian (A–J), pengurangan (-${scoringSummary?.totalPenalty || 0}), & bonus (+${scoringSummary?.totalBonus || 0})`,
+      progress: progress?.penilaianPct || 0,
+      statusText:
+        (progress?.scoredAspectsCount || 0) > 0
+          ? `${scoringSummary?.finalScore || 0} / ${scoringSummary?.totalMax || 0} Poin`
+          : 'Penilaian Tertutup',
+      accentBg: 'from-purple-500/15 to-indigo-500/5',
+      accentText: 'text-indigo-800',
+      barColor: '#4F46E5',
+      icon: Trophy,
+    },
+    {
+      id: 'bantuan',
+      number: '06',
+      title: 'Pusat Unduh Juknis & Bantuan',
+      subtitle: 'Juknis PDF resmi GERANAT, formulir blanko surat, tata tertib, dan kontak panitia siaga 24/7',
+      progress: 100,
+      statusText: 'Panduan Siap',
+      accentBg: 'from-slate-500/15 to-slate-400/5',
+      accentText: 'text-slate-700',
+      barColor: '#64748B',
+      icon: ShieldCheck,
+    },
+  ];
+
   return (
               <div className="space-y-8 animate-fade-in">
                 {/* DUA KARTU SOROTAN UTAMA (TOP HIGHLIGHT CARDS) */}
@@ -110,7 +200,7 @@ export function ParticipantModuleBeranda({
 
                     <div className="mt-6 pt-4 border-t border-slate-200/70 flex items-center justify-between gap-3">
                       <span className="text-xs font-semibold text-slate-500">
-                        Berkas wajib: <strong className="font-mono text-white">{progress.berkasCount}/5</strong> terunggah
+                        Berkas wajib: <strong className="font-mono text-white">{progress?.berkasCount || 0}/5</strong> terunggah
                       </span>
                       <button
                         type="button"
@@ -146,7 +236,7 @@ export function ParticipantModuleBeranda({
 
                         <div className="text-right shrink-0">
                           <span className="font-mono text-2xl font-black text-white tabular-nums">
-                            {progress.biodataCount}<span className="text-sm text-slate-400">/20</span>
+                            {progress?.biodataCount || 0}<span className="text-sm text-slate-400">/20</span>
                           </span>
                           <span className="block text-[10px] font-bold text-amber-700 uppercase">
                             Personel
@@ -161,7 +251,7 @@ export function ParticipantModuleBeranda({
                             Pasukan Peleton
                           </span>
                           <strong className="font-mono text-base font-black text-white tabular-nums">
-                            {progress.pasukanCount} / 18
+                            {progress?.pasukanCount || 0} / 18
                           </strong>
                         </div>
                         <div className="rounded-xl bg-[#F5F8F6] border border-slate-200/80 p-3">
@@ -169,7 +259,7 @@ export function ParticipantModuleBeranda({
                             Official Tim
                           </span>
                           <strong className="font-mono text-base font-black text-[#006569] tabular-nums">
-                            {progress.officialCount} / 2
+                            {progress?.officialCount || 0} / 2
                           </strong>
                         </div>
                         <div className="rounded-xl bg-amber-50/70 border border-amber-200 p-3">
@@ -177,8 +267,8 @@ export function ParticipantModuleBeranda({
                             Skor Evaluasi
                           </span>
                           <strong className="font-mono text-base font-black text-amber-900 tabular-nums">
-                            {progress.scoredAspectsCount > 0
-                              ? `${scoringSummary.finalScore} Poin`
+                            {(progress?.scoredAspectsCount || 0) > 0
+                              ? `${scoringSummary?.finalScore || 0} Poin`
                               : 'Tertutup'}
                           </strong>
                         </div>

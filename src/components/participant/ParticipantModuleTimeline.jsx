@@ -7,10 +7,13 @@ import {
 } from 'lucide-react';
 
 export function ParticipantModuleTimeline({
-  TIMELINE_EVENTS,
+  TIMELINE_EVENTS = [],
   selectedTimelineId,
   setSelectedTimelineId,
 }) {
+  const stages = TIMELINE_EVENTS || [];
+  const selectedTimelineObj =
+    stages.find((s) => s.id === selectedTimelineId) || stages[0];
   return (
               <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6 animate-fade-in">
                 <div className="border-b border-slate-100 pb-4">
@@ -27,7 +30,7 @@ export function ParticipantModuleTimeline({
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                   <div className="lg:col-span-5 space-y-2.5">
-                    {OFFICIAL_TIMELINE_STAGES.map((stage) => {
+                    {stages.map((stage) => {
                       const isSelected = stage.id === selectedTimelineId;
                       return (
                         <button

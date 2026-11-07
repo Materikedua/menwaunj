@@ -11,12 +11,16 @@ import {
 
 export function ParticipantModuleProfil({
   handleProfileSubmit,
-  profileForm,
+  profileForm = {},
   setProfileForm,
-  profileErrors,
+  profileErrors = {},
+  setProfileErrors,
   handleLogoUpload,
   savingProfile,
   isGuestMode,
+  canEdit = true,
+  progress = {},
+  profileFieldRefs,
 }) {
   return (
               <div className="neu-card rounded-3xl p-6 sm:p-8 space-y-6 animate-fade-in">
@@ -33,15 +37,17 @@ export function ParticipantModuleProfil({
                     </p>
                   </div>
                   <span className="font-mono text-xs font-black text-[#059669]">
-                    Kelengkapan: {progress.profilPct}%
+                    Kelengkapan: {progress?.profilPct || 0}%
                   </span>
                 </div>
 
-                <form onSubmit={handleSaveSchoolProfile} className="space-y-6">
+                <form onSubmit={handleProfileSubmit} className="space-y-6">
                   {/* a. Logo Sekolah */}
                   <div
                     ref={(el) => {
-                      profileFieldRefs.current.logoDataUrl = el;
+                      if (profileFieldRefs?.current) {
+                        profileFieldRefs.current.logoDataUrl = el;
+                      }
                     }}
                     className={`rounded-2xl border-2 border-dashed p-5 transition ${
                       profileErrors.logoDataUrl
@@ -72,7 +78,7 @@ export function ParticipantModuleProfil({
                             <input
                               type="file"
                               accept=".jpg,.jpeg,.png,.svg,.webp,image/jpeg,image/png,image/svg+xml,image/webp"
-                              onChange={handleSchoolLogoChange}
+                              onChange={handleLogoUpload}
                               className="hidden"
                             />
                           </label>
@@ -98,7 +104,9 @@ export function ParticipantModuleProfil({
                   {/* b. Nama Sekolah */}
                   <div
                     ref={(el) => {
-                      profileFieldRefs.current.schoolName = el;
+                      if (profileFieldRefs?.current) {
+                        profileFieldRefs.current.schoolName = el;
+                      }
                     }}
                   >
                     <label className="block text-xs font-black uppercase tracking-wider text-[#092D32] mb-1.5">
@@ -151,7 +159,9 @@ export function ParticipantModuleProfil({
                         <div
                           key={field.key}
                           ref={(el) => {
-                            profileFieldRefs.current[field.key] = el;
+                            if (profileFieldRefs?.current) {
+                              profileFieldRefs.current[field.key] = el;
+                            }
                           }}
                         >
                           <label className="block text-xs font-bold text-[#092D32] mb-1">

@@ -18,6 +18,15 @@ import {
 } from 'lucide-react';
 import { TeamIdCardPreview } from './TeamIdCardPreview.jsx';
 
+const PASUKAN_POSITIONS = [
+  'Komandan Peleton',
+  'Pengibar',
+  'Baki',
+  'Pasukan Inti',
+  'Pasukan Cadangan',
+];
+const OFFICIAL_POSITIONS = ['Official 1', 'Official 2'];
+
 export function ParticipantModuleBiodata({
   canEdit,
   totalPasukan,
@@ -26,6 +35,7 @@ export function ParticipantModuleBiodata({
   exportOfficialZipArchive,
   isExportingZip,
   printTeamRosterPdf,
+  handleDownloadTeamCardsPdf,
   isGuestMode,
   showPasukanForm,
   setShowPasukanForm,
@@ -51,7 +61,9 @@ export function ParticipantModuleBiodata({
   handleEditOfficial,
   handleDeleteOfficial,
   detectedSchoolName,
+  progress = {},
 }) {
+  const onDownloadCards = handleDownloadTeamCardsPdf || printTeamRosterPdf || openKtaViewer;
   return (
               <div className="space-y-6 animate-fade-in">
                 <div className="neu-card rounded-3xl p-6 sm:p-8 space-y-5">
@@ -105,8 +117,8 @@ export function ParticipantModuleBiodata({
 
                       <button
                         type="button"
-                        onClick={handleDownloadTeamCardsPdf}
-                        disabled={progress.biodataCount === 0}
+                        onClick={onDownloadCards}
+                        disabled={(progress?.biodataCount || 0) === 0}
                         className="px-4 py-2.5 rounded-2xl neu-btn-gold disabled:opacity-40 text-[#092D32] font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition cursor-pointer"
                       >
                         <Printer size={15} />
@@ -118,17 +130,17 @@ export function ParticipantModuleBiodata({
                   <div className="rounded-2xl neu-card-sm p-4 space-y-2">
                     <div className="flex items-center justify-between text-xs font-bold">
                       <span className="text-[#092D32]">
-                        Progres Pengisian Biodata Kontingen ({progress.biodataCount} / 20 Data)
+                        Progres Pengisian Biodata Kontingen ({progress?.biodataCount || 0} / 20 Data)
                       </span>
                       <span className="font-mono font-black text-[#059669] tabular-nums">
-                        {progress.biodataPct}% Selesai
+                        {progress?.biodataPct || 0}% Selesai
                       </span>
                     </div>
                     <div className="w-full h-2.5 rounded-full neu-inset overflow-hidden p-0.5">
                       <div
                         className="h-full rounded-full transition-all duration-500"
                         style={{
-                          width: `${progress.biodataPct}%`,
+                          width: `${progress?.biodataPct || 0}%`,
                           background: 'linear-gradient(90deg, #006569 0%, #059669 100%)',
                         }}
                       />

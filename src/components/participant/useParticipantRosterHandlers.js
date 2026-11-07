@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { saveOfficialPortal, compressImageFile } from '../../firebase.js';
 import { validateImageFile } from './participantUtils.js';
 
@@ -35,7 +36,10 @@ export function useParticipantRosterHandlers({
   editingOfficialId,
   setEditingOfficialId,
   setShowOfficialForm,
+  profileFieldRefs: externalProfileFieldRefs,
 }) {
+  const internalProfileFieldRefs = useRef({});
+  const profileFieldRefs = externalProfileFieldRefs || internalProfileFieldRefs;
   const handleSchoolLogoChange = async (e) => {
     if (!canEdit) {
       showToast('Mode Tamu: Akses edit dibatasi.');
@@ -463,14 +467,21 @@ export function useParticipantRosterHandlers({
 
   return {
     handleSchoolLogoChange,
-    handleProfileSubmit,
-    handleDocUpload,
+    handleProfileSubmit: handleSaveSchoolProfile,
+    handleSaveSchoolProfile,
+    handleDocUpload: handleDocumentUpload,
+    handleDocumentUpload,
     handleDeleteDocument,
-    handlePasukanPhotoUpload,
-    handleSavePasukan,
+    handleVerifyDocumentByAdmin,
+    handlePasukanPhotoUpload: handlePasukanPhotoChange,
+    handlePasukanPhotoChange,
+    handleSavePasukan: handleSubmitPasukan,
+    handleSubmitPasukan,
     handleDeletePasukan,
-    handleOfficialPhotoUpload,
-    handleSaveOfficial,
+    handleOfficialPhotoUpload: handleOfficialPhotoChange,
+    handleOfficialPhotoChange,
+    handleSaveOfficial: handleSubmitOfficial,
+    handleSubmitOfficial,
     handleDeleteOfficial,
     handleEditPasukan,
     handleCancelPasukanForm,

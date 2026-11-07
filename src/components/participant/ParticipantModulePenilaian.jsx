@@ -13,6 +13,11 @@ import {
   FileSpreadsheet,
   Printer,
 } from 'lucide-react';
+import {
+  GERANAT_SCORING_GROUPS,
+  GERANAT_PENALTY_ITEMS,
+  GERANAT_BONUS_ITEMS,
+} from '../../data/geranatScoringData.js';
 
 export function ParticipantModulePenilaian({
   totalNilaiAkhir,
@@ -30,6 +35,7 @@ export function ParticipantModulePenilaian({
   handleSaveJuryVerification,
   handleDownloadScoringCsv,
   handleDownloadScoringRecapPdf,
+  scoringSummary = {},
 }) {
   return (
               <div className="space-y-6 animate-fade-in">

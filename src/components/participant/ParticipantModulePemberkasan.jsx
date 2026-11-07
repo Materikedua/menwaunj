@@ -12,13 +12,17 @@ import {
 } from 'lucide-react';
 
 export function ParticipantModulePemberkasan({
-  REQUIRED_DOCS,
+  REQUIRED_DOCS = [],
   portalData,
   docUploadError,
   uploadingDocId,
   handleDocUpload,
   handleDeleteDocument,
   isGuestMode,
+  canEdit = true,
+  hasAdminAccess = false,
+  handleVerifyDocumentByAdmin,
+  progress = {},
 }) {
   return (
               <div className="neu-card rounded-3xl p-6 sm:p-8 space-y-6 animate-fade-in">
@@ -35,7 +39,7 @@ export function ParticipantModulePemberkasan({
                     </p>
                   </div>
                   <span className="font-mono text-xs font-black text-[#059669]">
-                    {progress.berkasCount} / 5 Dokumen Terunggah ({progress.berkasPct}%)
+                    {progress?.berkasCount || 0} / 5 Dokumen Terunggah ({progress?.berkasPct || 0}%)
                   </span>
                 </div>
 
@@ -47,7 +51,7 @@ export function ParticipantModulePemberkasan({
                 )}
 
                 <div className="space-y-4">
-                  {OFFICIAL_REQUIRED_DOCUMENTS.map((docItem) => {
+                  {(REQUIRED_DOCS || []).map((docItem) => {
                     const uploaded = portalData?.documents?.[docItem.id];
                     const isVerified = uploaded?.status === 'terverifikasi';
                     return (
@@ -119,7 +123,7 @@ export function ParticipantModulePemberkasan({
                               <input
                                 type="file"
                                 accept=".pdf,.jpg,.jpeg,.png,.webp"
-                                onChange={(e) => handleDocumentUpload(docItem, e)}
+                                onChange={(e) => handleDocUpload && handleDocUpload(docItem, e)}
                                 className="hidden"
                               />
                             </label>
@@ -128,7 +132,7 @@ export function ParticipantModulePemberkasan({
                           {uploaded && hasAdminAccess && (
                             <button
                               type="button"
-                              onClick={() => handleVerifyDocumentByAdmin(docItem.id)}
+                              onClick={() => handleVerifyDocumentByAdmin && handleVerifyDocumentByAdmin(docItem.id)}
                               className="px-3 py-2.5 rounded-2xl bg-[#059669] hover:bg-emerald-700 text-white font-bold text-xs cursor-pointer"
                             >
                               {isVerified ? 'Batalkan Verifikasi' : 'Verifikasi'}

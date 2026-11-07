@@ -1,24 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { CheckCircle2, AlertCircle, Clock, KeyRound, Lock, Eye, RotateCcw, History, ArrowLeft, ArrowRight, Share2, HelpCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.jsx';
-import {
-  normalizeWaNumber,
-  getAllOfficialPortals,
-  getOfficialPortalBySlug,
-  getOfficialPortalByWhatsApp,
-  saveOfficialPortal,
-  subscribeToOfficialPortal,
-  saveOfficialPortalSnapshot,
-  restoreOfficialPortalSnapshot,
-  compressImageFile,
-} from '../firebase.js';
-import {
-  GERANAT_SCORING_GROUPS,
-  GERANAT_PENALTY_ITEMS,
-  GERANAT_BONUS_ITEMS,
-  OFFICIAL_REQUIRED_DOCUMENTS,
-  OFFICIAL_TIMELINE_STAGES,
-} from '../data/geranatScoringData.js';
+import { normalizeWaNumber, getAllOfficialPortals, getOfficialPortalBySlug, getOfficialPortalByWhatsApp, saveOfficialPortal, subscribeToOfficialPortal, saveOfficialPortalSnapshot, restoreOfficialPortalSnapshot, compressImageFile } from '../firebase.js';
+import { GERANAT_SCORING_GROUPS, GERANAT_PENALTY_ITEMS, GERANAT_BONUS_ITEMS, OFFICIAL_REQUIRED_DOCUMENTS, OFFICIAL_TIMELINE_STAGES } from '../data/geranatScoringData.js';
 import { navigate } from '../lib/router.jsx';
 import { OfficialSecurityGate } from './OfficialSecurityGate.jsx';
 import { OfficialPinChangeModal } from './OfficialPinChangeModal.jsx';
@@ -35,12 +19,7 @@ import { ParticipantModuleBiodata } from './participant/ParticipantModuleBiodata
 import { ParticipantModuleTimeline } from './participant/ParticipantModuleTimeline.jsx';
 import { ParticipantModulePenilaian } from './participant/ParticipantModulePenilaian.jsx';
 import { ParticipantModuleBantuan } from './participant/ParticipantModuleBantuan.jsx';
-import {
-  computePortalProgress,
-  calculateScoringSummary,
-  downloadScoringCsv,
-  printHtmlDocument,
-} from './participant/participantUtils.js';
+import { computePortalProgress, calculateScoringSummary, downloadScoringCsv, printHtmlDocument } from './participant/participantUtils.js';
 import { printTeamCardsPdf, printScoringRecapPdf } from './participant/participantPdfTemplates.jsx';
 import { getDockItems, getAdminMilestones } from './participant/participantMilestones.js';
 
@@ -353,6 +332,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
     activeSlug,
     setDocUploadError,
     setUploadingDocId,
+    profileFieldRefs,
     pasukanForm,
     setPasukanForm,
     pasukanErrors,
@@ -623,6 +603,9 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                 selectedTimelineId={selectedTimelineId}
                 setSelectedTimelineId={setSelectedTimelineId}
                 isGuestMode={isGuestMode}
+                progress={progress}
+                scoringSummary={scoringSummary}
+                ADMIN_MILESTONES={ADMIN_MILESTONES}
               />
             )}
 
@@ -632,9 +615,13 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                 profileForm={profileForm}
                 setProfileForm={setProfileForm}
                 profileErrors={profileErrors}
+                setProfileErrors={setProfileErrors}
                 handleLogoUpload={handleSchoolLogoChange}
                 savingProfile={savingProfile}
                 isGuestMode={isGuestMode}
+                canEdit={canEdit}
+                progress={progress}
+                profileFieldRefs={profileFieldRefs}
               />
             )}
 
@@ -647,6 +634,10 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                 handleDocUpload={handleDocUpload}
                 handleDeleteDocument={handleDeleteDocument}
                 isGuestMode={isGuestMode}
+                canEdit={canEdit}
+                hasAdminAccess={hasAdminAccess}
+                handleVerifyDocumentByAdmin={handleVerifyDocumentByAdmin}
+                progress={progress}
               />
             )}
 
@@ -659,6 +650,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                 exportOfficialZipArchive={exportOfficialZipArchive}
                 isExportingZip={isExportingZip}
                 printTeamRosterPdf={printTeamRosterPdf}
+                handleDownloadTeamCardsPdf={handleDownloadTeamCardsPdf}
                 isGuestMode={isGuestMode}
                 showPasukanForm={showPasukanForm}
                 setShowPasukanForm={setShowPasukanForm}
@@ -684,6 +676,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                 handleEditOfficial={handleEditOfficial}
                 handleDeleteOfficial={handleDeleteOfficial}
                 detectedSchoolName={detectedSchoolName}
+                progress={progress}
               />
             )}
 
@@ -712,6 +705,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                 handleSaveJuryVerification={handleSaveJuryVerification}
                 handleDownloadScoringCsv={handleDownloadScoringCsvAction}
                 handleDownloadScoringRecapPdf={handleDownloadScoringRecapPdf}
+                scoringSummary={scoringSummary}
               />
             )}
 

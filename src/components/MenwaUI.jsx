@@ -350,15 +350,14 @@ export const HeroStage = ({
 }) => {
   const ref = useRef(null);
   const [activeSceneIdx, setActiveSceneIdx] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
-    if (!scenes || scenes.length <= 1 || isPaused) return;
+    if (!scenes || scenes.length <= 1) return;
     const interval = setInterval(() => {
       setActiveSceneIdx((prev) => (prev + 1) % scenes.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, [scenes, isPaused]);
+  }, [scenes]);
 
   useEffect(() => {
     if (!interactive()) return;
@@ -489,39 +488,6 @@ export const HeroStage = ({
 
       <div className="relative z-10 w-full flex flex-col items-center">
         {children}
-
-        {/* 5-Scene Interactive Tactical Track Controller */}
-        {scenes && scenes.length > 1 && (
-          <div
-            className="relative z-20 mt-6 inline-flex items-center gap-1.5 p-1.5 rounded-full bg-black/55 border border-white/20 backdrop-blur-md shadow-2xl"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-          >
-            <span className="text-[10px] font-mono font-black uppercase tracking-wider text-[#FFDD00] px-3 hidden sm:inline-block">
-              HERO TRACK
-            </span>
-            {scenes.map((sc, idx) => (
-              <button
-                key={sc.id || idx}
-                type="button"
-                onClick={() => setActiveSceneIdx(idx)}
-                className={`px-3 py-1 rounded-full text-xs font-mono font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeSceneIdx === idx
-                    ? 'bg-[#006569] text-[#FFDD00] shadow-md border border-[#FFDD00]/40 scale-105'
-                    : 'text-slate-300 hover:text-white hover:bg-white/10'
-                }`}
-                title={sc.title}
-              >
-                <span>0{idx + 1}</span>
-                {activeSceneIdx === idx && (
-                  <span className="text-[10px] font-sans font-normal text-teal-200 hidden md:inline truncate max-w-[130px]">
-                    • {sc.title.replace(/^Hero Scene \d+:\s*/, '')}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     </section>
   );
