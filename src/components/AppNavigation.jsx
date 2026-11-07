@@ -43,7 +43,6 @@ export const NAV_ITEMS = [
   {
     id: 'toko',
     label: 'Toko',
-    badge: 'Pre-Order',
     icon: <ShoppingBag size={20} />,
     desc: 'Official Merchandise & Polo Shirt 2026.',
   },

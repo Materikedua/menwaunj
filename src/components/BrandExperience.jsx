@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Link, navigate } from '../lib/router.jsx';
 import { HeroStage, HeroLogo, Reveal } from './MenwaUI.jsx';
+import { useCanvasStore } from '../lib/canvasStore.jsx';
 import PortalIcon from './PortalIcon.jsx';
 import { resolvePortalPath } from '../lib/portalSearch.js';
 import { DynamicCanvasZone } from './DynamicCanvasZone.jsx';
@@ -195,15 +196,40 @@ const EventStoryCard = ({ to, image, eyebrow, title, meta, description, variant 
 );
 
 export function BrandHome({ onOpenSearch }) {
+  const { contentRegistry = [] } = useCanvasStore() || {};
+
+  const heroScenes = useMemo(() => {
+    const defaultScenes = [
+      { id: 'CNT-BERANDA-HERO-1', title: 'Hero Scene 01: Apel Kehormatan Korps Satuan UNJ', photo: '/foto-kampus-unj.jpg', caption: 'Plaza Kampus A UNJ' },
+      { id: 'CNT-BERANDA-HERO-2', title: 'Hero Scene 02: Ksatria Cendekia VIII', photo: '/kegiatan/kc-menwa-unj.jpg', caption: 'Latihan Integrasi Pemuda Nusantara' },
+      { id: 'CNT-BERANDA-HERO-3', title: 'Hero Scene 03: Youth Spark Seminar Nasional', photo: '/kegiatan/youth-spark-2026.webp', caption: 'Seminar Nasional Kepemimpinan' },
+      { id: 'CNT-BERANDA-HERO-4', title: 'Hero Scene 04: Gerakan Paskibra Semangat VII', photo: '/geranat-menwa-unj.png', caption: 'LFPB & Variasi Formasi Paskibra' },
+      { id: 'CNT-BERANDA-HERO-5', title: 'Hero Scene 05: Bina Teritorial & Pengabdian', photo: '/dokumentasi/pengabdian25.svg', caption: 'Bakti Pertiwi & Bela Negara' },
+    ];
+
+    return defaultScenes.map((def, idx) => {
+      const reg = contentRegistry.find((item) => (
+        (item.contentId === def.id || (idx === 0 && item.contentId === 'CNT-BERANDA-HERO')) && item.isActive !== false
+      ));
+      return {
+        id: def.id,
+        title: reg?.title || def.title,
+        caption: reg?.caption || def.caption,
+        photo: reg?.imageUrl || def.photo,
+      };
+    });
+  }, [contentRegistry]);
+
   return (
     <div className="brand-home">
-      {/* Live Web Short-Video Cinematic Hero Stage */}
+      {/* Live Web Short-Video Cinematic Hero Stage with 5 Scenes from Mako Ops */}
       <HeroStage
         className="brand-legacy-hero py-20 md:py-28"
-        photo="/foto-kampus-unj.jpg"
+        photo={heroScenes[0]?.photo || '/foto-kampus-unj.jpg'}
         blur={2.2}
         dim={0.56}
         liveCinema={true}
+        scenes={heroScenes}
       >
         <Reveal className="brand-legacy-inner relative z-20 mx-auto flex max-w-5xl flex-col items-center px-4 text-center">
           <div className="mb-5">
