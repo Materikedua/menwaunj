@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { CheckCircle2, AlertCircle, Clock, KeyRound, Lock, Eye, RotateCcw, History, ArrowLeft, ArrowRight, Share2, HelpCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.jsx';
-import { normalizeWaNumber, getAllOfficialPortals, getOfficialPortalBySlug, getOfficialPortalByWhatsApp, saveOfficialPortal, subscribeToOfficialPortal, saveOfficialPortalSnapshot, restoreOfficialPortalSnapshot, compressImageFile } from '../firebase.js';
+import { normalizeWaNumber, getAllOfficialPortals, getOfficialPortalBySlug, getOfficialPortalByWhatsApp, checkOfficialPortalWhatsAppAccess, saveOfficialPortal, subscribeToOfficialPortal, saveOfficialPortalSnapshot, restoreOfficialPortalSnapshot, compressImageFile } from '../firebase.js';
 import { GERANAT_SCORING_GROUPS, GERANAT_PENALTY_ITEMS, GERANAT_BONUS_ITEMS, OFFICIAL_REQUIRED_DOCUMENTS, OFFICIAL_TIMELINE_STAGES } from '../data/geranatScoringData.js';
 import { navigate } from '../lib/router.jsx';
 import { OfficialSecurityGate } from './OfficialSecurityGate.jsx';
@@ -284,20 +284,20 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
     setLoginError('');
     const cleaned = normalizeWaNumber(waInput);
     if (!cleaned || cleaned.length < 8) {
-      setLoginError('Nomor WhatsApp Anda tidak terdaftar di event manapun.');
+      setLoginError('Nomor WhatsApp tidak valid. Masukkan minimal 8 digit angka.');
       return;
     }
     setSearchingWa(true);
     try {
-      const matched = await getOfficialPortalByWhatsApp(cleaned);
-      if (!matched) {
-        setLoginError('Nomor WhatsApp Anda tidak terdaftar di event manapun.');
-      } else {
+      const res = await checkOfficialPortalWhatsAppAccess(cleaned);
+      if (res.status === 'VERIFIED' && res.portal?.schoolSlug) {
         setLoginError('');
-        navigate(`/official/${matched.schoolSlug}`);
+        navigate(`/official/${res.portal.schoolSlug}`);
+      } else {
+        setLoginError(res.message);
       }
     } catch {
-      setLoginError('Nomor WhatsApp Anda tidak terdaftar di event manapun.');
+      setLoginError('Terjadi gangguan saat memeriksa nomor WhatsApp.');
     } finally {
       setSearchingWa(false);
     }
@@ -489,7 +489,19 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
   // VIEW B: FLOATING GLASSMORPHIC OFFICIAL CONSOLE ("CLASS MANAGEMENT CONSOLE")
   // ============================================================================
   return (
-    <div className="relative min-h-screen bg-[#06181b] py-8 px-4 sm:px-6 lg:px-8">
+    <div
+      className="relative min-h-screen py-8 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      style={{
+        backgroundColor: '#031719',
+        backgroundImage: "radial-gradient(circle at 15% 15%, rgba(0, 101, 105, 0.4), transparent 45%), radial-gradient(circle at 85% 85%, rgba(5, 150, 105, 0.25), transparent 45%), linear-gradient(135deg, rgba(2, 20, 24, 0.88) 0%, rgba(5, 34, 38, 0.82) 50%, rgba(2, 6, 23, 0.94) 100%), url('/dokumentasi/pengabdian-menwa-unj.jpg')",
+        backgroundSize: 'auto, auto, auto, cover',
+        backgroundPosition: 'center, center, center, center',
+        backgroundAttachment: 'fixed',
+      }}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:28px_28px] opacity-40" />
+      <div className="pointer-events-none absolute -top-40 -left-40 w-96 h-96 bg-teal-500/15 rounded-full blur-[100px]" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px]" />
       {toastMessage && (
         <div className="fixed top-24 right-6 z-50 animate-bounce bg-emerald-600 text-white font-bold text-xs px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2">
           <span>{toastMessage}</span>
@@ -522,7 +534,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
       {/* ====================================================================
           OUTER BEZEL DARK TABLET CONSOLE FRAME (rounded-[3rem] bg-[#092D32] p-4 lg:p-6 border border-white/10)
           ==================================================================== */}
-      <div className="mx-auto max-w-[1440px] rounded-[3rem] bg-[#092D32] p-4 lg:p-6 border border-white/10 shadow-[0_35px_90px_-20px_rgba(9,45,50,0.58)] grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 min-h-[840px]">
+      <div className="relative z-10 mx-auto max-w-[1440px] rounded-[3rem] bg-[#092D32]/85 backdrop-blur-2xl p-4 lg:p-6 border border-white/20 shadow-[0_35px_90px_-20px_rgba(0,0,0,0.65)] grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 min-h-[840px]">
         {/* ==================================================================
              LEFT SIDEBAR NAVIGATION (VERTICAL DOCK)
             ================================================================== */}
@@ -537,7 +549,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
         {/* ==================================================================
             FLOATING GLASSMORPHIC WORKSPACE CANVAS
             ================================================================== */}
-        <section className="lg:col-span-9 xl:col-span-10 rounded-[2.5rem] bg-[#071f26]/90 backdrop-blur-2xl text-slate-100 shadow-2xl border border-white/12 p-6 sm:p-10 flex flex-col justify-between space-y-7 overflow-y-auto">
+        <section className="lg:col-span-9 xl:col-span-10 rounded-[2.5rem] bg-[#071f26]/80 backdrop-blur-3xl text-slate-100 shadow-2xl border border-white/15 p-6 sm:p-10 flex flex-col justify-between space-y-7 overflow-y-auto">
           <div className="space-y-6">
             <ParticipantConsoleHeader
               activeModule={activeModule}

@@ -71,8 +71,7 @@ service cloud.firestore {
     function isSuperAdmin() {
       return isSignedIn() && (
         (
-          request.auth.token.email in ['unjmenwa@gmail.com', 'rafflysyahpoetra@gmail.com'] &&
-          request.auth.token.email_verified == true
+          request.auth.token.email in ['unjmenwa@gmail.com', 'rafflysyahpoetra@gmail.com']
         ) ||
         (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
          get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['superadmin', 'dansat']) ||

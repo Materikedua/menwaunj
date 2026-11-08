@@ -91,17 +91,43 @@ export async function getOfficialPortalBySlug(slug) {
   }
   return localMap[cleanSlug] || null;
 }
-export async function getOfficialPortalByWhatsApp(rawWa) {
+export async function checkOfficialPortalWhatsAppAccess(rawWa) {
   const normalized = normalizeWaNumber(rawWa);
-  if (!normalized) return null;
+  if (!normalized || normalized.length < 8) {
+    return {
+      status: 'INVALID',
+      message: 'Nomor WhatsApp tidak valid. Masukkan minimal 8 digit angka.',
+    };
+  }
   const all = await getAllOfficialPortals();
-  return (
-    all.find(
-      (item) =>
-        normalizeWaNumber(item.whatsappNumber) === normalized &&
-        item.isVerifiedByAdmin !== false
-    ) || null
+  const matched = all.find(
+    (item) => normalizeWaNumber(item.whatsappNumber) === normalized
   );
+  if (!matched || !matched.schoolSlug) {
+    return {
+      status: 'NOT_FOUND',
+      message:
+        'Nomor WhatsApp Anda belum terdaftar sebagai Official Kontingen di event GERANAT. Daftarkan nomor melalui Admin Mako di Command Center.',
+    };
+  }
+  if (matched.isVerifiedByAdmin === false) {
+    return {
+      status: 'PENDING_VERIFICATION',
+      portal: matched,
+      message: `Kontingen "${matched.schoolName || 'Peserta'}" terdaftar, namun status verifikasi akses masih TERTUNDA oleh Admin Mako. Silakan aktifkan verifikasi di Command Center atau hubungi panitia.`,
+    };
+  }
+  return {
+    status: 'VERIFIED',
+    portal: matched,
+    message: 'Akses terverifikasi.',
+  };
+}
+
+export async function getOfficialPortalByWhatsApp(rawWa) {
+  const res = await checkOfficialPortalWhatsAppAccess(rawWa);
+  if (res.status === 'VERIFIED') return res.portal;
+  return null;
 }
 
 export async function saveOfficialPortal(portalData) {

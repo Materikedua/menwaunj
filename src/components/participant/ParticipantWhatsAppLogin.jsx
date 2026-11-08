@@ -3,9 +3,8 @@ import {
   Phone,
   AlertCircle,
   ArrowRight,
-  ShieldCheck,
-  FileText,
   Shield,
+  Loader2,
 } from 'lucide-react';
 import { playTactileClick } from '../../lib/tactileAudio.js';
 import { navigate } from '../../lib/router.jsx';
@@ -51,7 +50,7 @@ export function ParticipantWhatsAppLogin({
           Selamat Datang
         </h2>
         <p className="mt-1.5 text-xs text-slate-500 font-semibold leading-relaxed max-w-xs mx-auto">
-          Masukkan kredensial nomor WhatsApp official untuk melanjutkan
+          Masukkan nomor WhatsApp official kontingen untuk melanjutkan
         </p>
 
         <form onSubmit={handleWaLoginSubmit} className="mt-7 text-left space-y-4">
@@ -86,8 +85,15 @@ export function ParticipantWhatsAppLogin({
             onClick={() => playTactileClick('press')}
             className="w-full py-3.5 pl-6 pr-3.5 rounded-full bg-gradient-to-r from-[#006569] to-[#008f95] hover:from-[#005256] hover:to-[#007a7f] text-white font-black text-sm sm:text-base tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-60 shadow-lg shadow-[#006569]/20 transition"
           >
-            <span className="mx-auto pl-6">
-              {searchingWa ? 'Memeriksa Kontingen...' : 'Login Official'}
+            <span className="mx-auto pl-6 flex items-center gap-2">
+              {searchingWa ? (
+                <>
+                  <Loader2 size={16} className="animate-spin text-[#FFDD00]" />
+                  <span>Memeriksa Kontingen...</span>
+                </>
+              ) : (
+                <span>Login Official</span>
+              )}
             </span>
             <span className="w-9 h-9 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-[#FFDD00] shrink-0 shadow-inner">
               <ArrowRight size={17} />
@@ -95,47 +101,15 @@ export function ParticipantWhatsAppLogin({
           </button>
         </form>
 
-        {/* Pemisah "ATAU MASUK MELALUI" */}
-        <div className="flex items-center gap-3 my-6">
-          <div className="h-[1.5px] flex-1 bg-slate-200" />
-          <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
-            ATAU MASUK MELALUI
-          </span>
-          <div className="h-[1.5px] flex-1 bg-slate-200" />
-        </div>
-
-        {/* Deretan Tombol Sosial */}
-        <div className="flex items-center justify-center gap-4">
-          <button
-            type="button"
-            onClick={() => navigate('/geranat')}
-            title="Halaman Utama GERANAT"
-            className="p-3 rounded-2xl bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-[#006569]/30 cursor-pointer text-[#006569] shadow-xs transition"
-          >
-            <ShieldCheck size={22} />
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/informasi')}
-            title="Pusat Informasi & Pendaftaran"
-            className="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 cursor-pointer text-slate-700 shadow-xs transition"
-          >
-            <FileText size={21} />
-          </button>
-          {isPrivilegedOfficer && (
-            <button
-              type="button"
-              onClick={() => navigate('/mako-ops')}
-              title="Mako Command Center (Admin)"
-              className="p-3 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-200 cursor-pointer text-amber-700 shadow-xs transition"
-            >
-              <Shield size={22} />
-            </button>
-          )}
-        </div>
-
+        {/* Khusus Admin / Superadmin: Mako Command Center */}
         {isPrivilegedOfficer && (
-          <div className="mt-6 pt-4 border-t border-slate-200 space-y-3 text-left">
+          <div className="mt-6 pt-4 border-t border-slate-200 space-y-3 text-left animate-fade-in">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black tracking-widest text-[#006569] uppercase">
+                OTORISASI KOMANDO MAKO
+              </span>
+            </div>
+
             {allPortals.length > 0 && (
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
@@ -147,7 +121,7 @@ export function ParticipantWhatsAppLogin({
                     onChange={(e) => {
                       if (e.target.value) navigate(`/official/${e.target.value}`);
                     }}
-                    className="w-full bg-transparent text-xs font-bold text-slate-800 focus:outline-none"
+                    className="w-full bg-transparent text-xs font-bold text-slate-800 focus:outline-none cursor-pointer"
                   >
                     <option value="" disabled className="text-slate-500">
                       -- Pilih Subdomain Sekolah ({allPortals.length} Terdaftar) --
@@ -161,19 +135,19 @@ export function ParticipantWhatsAppLogin({
                 </div>
               </div>
             )}
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => navigate('/mako-ops')}
-                className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#006569] hover:underline cursor-pointer"
-              >
-                <Shield size={14} /> Kelola Pendaftaran &amp; Direktori Sekolah di Command Center
-              </button>
-            </div>
+
+            <button
+              type="button"
+              onClick={() => navigate('/mako-ops')}
+              className="w-full py-2.5 px-4 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-xs"
+            >
+              <Shield size={14} className="text-amber-700" />
+              <span>Buka Mako Command Center</span>
+            </button>
           </div>
         )}
 
-        <div className="mt-5 text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">
+        <div className="mt-6 text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">
           PORTAL OFFICIAL TERVERIFIKASI · MENWA UNJ
         </div>
       </div>

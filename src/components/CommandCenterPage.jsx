@@ -88,7 +88,26 @@ import { generateBukuPasukanHtml } from './OfficialBukuPasukanGenerator.jsx';
   const [resetPinModalPortal, setResetPinModalPortal] = useState(null);
   const [adminNewPinInput, setAdminNewPinInput] = useState('123456');
   const [resetPinSuccessMsg, setResetPinSuccessMsg] = useState('');
- const loadAdminOfficialPortals = async () => { setLoadingPortals(true); try { const list = await getAllOfficialPortals(); setAdminOfficialPortals(list); } finally { setLoadingPortals(false); } }; useEffect(() => { if (activeTab === 'official_portals') { loadAdminOfficialPortals(); } }, [activeTab]); const handleAdminCreateSchool = async (e) => { e.preventDefault(); if (!newSchoolName.trim()) return; const cleanWa = normalizeWaNumber(newSchoolWa); if (!cleanWa) { setPortalActionMsg('Nomor WhatsApp wajib diisi angka valid.'); return; } const cleanSlug = slugifySchoolName(newSchoolName); await saveOfficialPortal({ schoolSlug: cleanSlug, schoolName: newSchoolName.trim(), whatsappNumber: cleanWa, nomorUrut: newSchoolNoUrut.trim() || `KONTINGEN-${String(adminOfficialPortals.length + 1).padStart(2, '0')}`, isVerifiedByAdmin: newSchoolVerified, schoolProfile: { schoolName: newSchoolName.trim(), jalan: '', rtRw: '', kelurahan: '', kecamatan: '', kabupatenKota: '', provinsi: '', } }); setNewSchoolName(''); setNewSchoolWa(''); setNewSchoolNoUrut(''); setPortalActionMsg(`Kontingen "${newSchoolName.trim()}" (/official/${cleanSlug}) berhasil didaftarkan dan diverifikasi!`); await loadAdminOfficialPortals(); setTimeout(() => setPortalActionMsg(''), 4000); }; const handleAdminToggleVerification = async (portal) => { const nextStatus = !portal.isVerifiedByAdmin; await saveOfficialPortal({ ...portal, isVerifiedByAdmin: nextStatus }); await loadAdminOfficialPortals(); setPortalActionMsg(`Status verifikasi ${portal.schoolName} diubah: ${nextStatus ? 'TERVERIFIKASI AKTIF' : 'NONAKTIF'}`); setTimeout(() => setPortalActionMsg(''), 3000); }; 
+ const loadAdminOfficialPortals = async () => { setLoadingPortals(true); try { const list = await getAllOfficialPortals(); setAdminOfficialPortals(list); } finally { setLoadingPortals(false); } }; useEffect(() => { if (activeTab === 'official_portals') { loadAdminOfficialPortals(); } }, [activeTab]); const handleAdminCreateSchool = async (e) => { e.preventDefault(); if (!newSchoolName.trim()) return; const cleanWa = normalizeWaNumber(newSchoolWa); if (!cleanWa) { setPortalActionMsg('Nomor WhatsApp wajib diisi angka valid.'); return; } const cleanSlug = slugifySchoolName(newSchoolName); await saveOfficialPortal({ schoolSlug: cleanSlug, schoolName: newSchoolName.trim(), whatsappNumber: cleanWa, nomorUrut: newSchoolNoUrut.trim() || `KONTINGEN-${String(adminOfficialPortals.length + 1).padStart(2, '0')}`, isVerifiedByAdmin: newSchoolVerified, schoolProfile: { schoolName: newSchoolName.trim(), jalan: '', rtRw: '', kelurahan: '', kecamatan: '', kabupatenKota: '', provinsi: '', } }); setNewSchoolName(''); setNewSchoolWa(''); setNewSchoolNoUrut(''); setPortalActionMsg(`Kontingen "${newSchoolName.trim()}" (/official/${cleanSlug}) berhasil didaftarkan dan diverifikasi!`); await loadAdminOfficialPortals(); setTimeout(() => setPortalActionMsg(''), 4000); }; const handleAdminToggleVerification = async (portal) => {
+    try {
+      const currentVerified = portal.isVerifiedByAdmin !== false;
+      const nextStatus = !currentVerified;
+      setAdminOfficialPortals((prev) =>
+        prev.map((p) =>
+          p.schoolSlug === portal.schoolSlug ? { ...p, isVerifiedByAdmin: nextStatus } : p
+        )
+      );
+      await saveOfficialPortal({ ...portal, isVerifiedByAdmin: nextStatus });
+      await loadAdminOfficialPortals();
+      setPortalActionMsg(
+        `Status verifikasi ${portal.schoolName} diubah: ${nextStatus ? 'TERVERIFIKASI AKTIF (Akses Login Dibuka)' : 'TERTUNDA'}`
+      );
+      setTimeout(() => setPortalActionMsg(''), 4000);
+    } catch (err) {
+      alert(`Gagal mengubah status verifikasi: ${err.message || 'Izin ditolak'}`);
+      await loadAdminOfficialPortals();
+    }
+  }; 
   const handleAdminResetPin = async (e) => {
     e.preventDefault();
     if (!resetPinModalPortal) return;
@@ -144,7 +163,15 @@ import { generateBukuPasukanHtml } from './OfficialBukuPasukanGenerator.jsx';
       iframe.contentWindow?.print();
     }, 350);
   };
-const handleAdminDeletePortal = async (slug, name) => { if (!confirm(`Hapus seluruh data subdomain dan berkas kontingen "${name}"?`)) return; await deleteOfficialPortal(slug); await loadAdminOfficialPortals(); setPortalActionMsg(`Subdomain /official/${slug} telah dihapus.`); setTimeout(() => setPortalActionMsg(''), 3000); }; const handleFirebaseGoogleSignIn = async () => { setAuthError(''); setAuthLoading(true); try { const loggedUser = await signInWithGoogle(); if (loggedUser?.email) { loginWithGoogle(loggedUser.email, userRole?.toUpperCase() || 'STAFF_ADMIN', loggedUser.displayName || 'Perwira Komando'); } } catch (err) { setAuthError(err.message || 'Gagal melakukan autentikasi Google Firebase.'); } finally { setAuthLoading(false); } }; const handleFirebaseEmailSignIn = async (e) => { e.preventDefault(); setAuthError(''); setAuthLoading(true); try { const loggedUser = await signInWithEmail(loginEmail.trim(), loginPassword); if (loggedUser?.email) { loginWithGoogle(loggedUser.email, userRole?.toUpperCase() || 'STAFF_ADMIN', loggedUser.displayName || 'Perwira Komando'); } } catch (err) { setAuthError('Email atau kata sandi tidak valid atau tidak memiliki hak akses RBAC.'); } finally { setAuthLoading(false); } }; const handlePromptSubmit = (e) => { e.preventDefault(); if (!promptText.trim()) return; proposeNaturalLanguage(promptText); setPromptText(''); }; /* Auto-Convert */   const handleNewImageUpload = async (e, replaceContentId = null, targetTabOverride = null) => {
+const handleAdminDeletePortal = async (slug, name) => { if (!confirm(`Hapus seluruh data subdomain dan berkas kontingen "${name}"?`)) return; await deleteOfficialPortal(slug); await loadAdminOfficialPortals(); setPortalActionMsg(`Subdomain /official/${slug} telah dihapus.`); setTimeout(() => setPortalActionMsg(''), 3000); }; const handleFirebaseGoogleSignIn = async () => { setAuthError(''); setAuthLoading(true); try { const loggedUser = await signInWithGoogle(); if (loggedUser?.email) {
+        const emLow = loggedUser.email.toLowerCase();
+        const isSuper = emLow === 'unjmenwa@gmail.com' || emLow === 'rafflysyahpoetra@gmail.com';
+        loginWithGoogle(
+          loggedUser.email,
+          isSuper ? 'SUPERADMIN' : (userRole?.toUpperCase() || 'STAFF_ADMIN'),
+          loggedUser.displayName || 'Perwira Komando'
+        );
+      } } catch (err) { setAuthError(err.message || 'Gagal melakukan autentikasi Google Firebase.'); } finally { setAuthLoading(false); } }; const handleFirebaseEmailSignIn = async (e) => { e.preventDefault(); setAuthError(''); setAuthLoading(true); try { const loggedUser = await signInWithEmail(loginEmail.trim(), loginPassword); if (loggedUser?.email) { loginWithGoogle(loggedUser.email, userRole?.toUpperCase() || 'STAFF_ADMIN', loggedUser.displayName || 'Perwira Komando'); } } catch (err) { setAuthError('Email atau kata sandi tidak valid atau tidak memiliki hak akses RBAC.'); } finally { setAuthLoading(false); } }; const handlePromptSubmit = (e) => { e.preventDefault(); if (!promptText.trim()) return; proposeNaturalLanguage(promptText); setPromptText(''); }; /* Auto-Convert */   const handleNewImageUpload = async (e, replaceContentId = null, targetTabOverride = null) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setIsUploadingSvg(true);

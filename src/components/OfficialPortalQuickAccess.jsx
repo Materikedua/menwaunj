@@ -1,22 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  FileText,
-  UserCheck,
   Shield,
   Phone,
   AlertCircle,
-  X,
   ArrowRight,
-  LogIn,
   Loader2,
   ExternalLink,
-  Sparkles,
   Users,
-  ShieldCheck,
-  Lock,
+  ChevronDown,
+  ChevronUp,
+  X,
+  CheckCircle2,
 } from 'lucide-react';
-import { normalizeWaNumber, getOfficialPortalByWhatsApp } from '../firebase.js';
+import { normalizeWaNumber, checkOfficialPortalWhatsAppAccess } from '../firebase.js';
 import { navigate } from '../lib/router.jsx';
+import { useAuth } from '../hooks/useAuth.jsx';
 
 export function OfficialPortalQuickAccess({
   isOpen: controlledIsOpen,
@@ -24,6 +22,13 @@ export function OfficialPortalQuickAccess({
   showTriggerBanner = true,
   className = '',
 }) {
+  const { user, isSuperAdmin } = useAuth();
+  const isSuperUser = Boolean(
+    isSuperAdmin ||
+    user?.email === 'unjmenwa@gmail.com' ||
+    user?.email === 'rafflysyahpoetra@gmail.com'
+  );
+
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalOpen;
   const setIsOpen =
@@ -36,20 +41,12 @@ export function OfficialPortalQuickAccess({
   const [waInput, setWaInput] = useState('');
   const [searchingWa, setSearchingWa] = useState(false);
   const [loginError, setLoginError] = useState('');
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen) {
-        setIsOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, setIsOpen]);
+  const [loginSuccess, setLoginSuccess] = useState('');
 
   const handleWhatsAppLogin = async (e) => {
     e?.preventDefault();
     setLoginError('');
+    setLoginSuccess('');
     const cleaned = normalizeWaNumber(waInput);
     if (!cleaned || cleaned.length < 8) {
       setLoginError('Nomor WhatsApp tidak valid. Masukkan minimal 8 digit angka.');
@@ -58,15 +55,15 @@ export function OfficialPortalQuickAccess({
 
     setSearchingWa(true);
     try {
-      const matched = await getOfficialPortalByWhatsApp(cleaned);
-      if (!matched || !matched.schoolSlug) {
-        setLoginError(
-          'Nomor WhatsApp Anda tidak terdaftar sebagai Official Kontingen di event GERANAT.'
-        );
+      const res = await checkOfficialPortalWhatsAppAccess(cleaned);
+      if (res.status === 'VERIFIED' && res.portal?.schoolSlug) {
+        setLoginSuccess(`Akses terverifikasi untuk kontingen ${res.portal.schoolName || ''}. Membuka konsol...`);
+        setTimeout(() => {
+          setIsOpen(false);
+          navigate(`/official/${res.portal.schoolSlug}`);
+        }, 600);
       } else {
-        setLoginError('');
-        setIsOpen(false);
-        navigate(`/official/${matched.schoolSlug}`);
+        setLoginError(res.message);
       }
     } catch (err) {
       console.warn('Gagal login portal official:', err);
@@ -75,6 +72,115 @@ export function OfficialPortalQuickAccess({
       setSearchingWa(false);
     }
   };
+
+  const renderInlineLoginForm = () => (
+    <div className="max-w-xl mx-auto rounded-[2.5rem] bg-white/95 backdrop-blur-md border border-slate-200/90 p-6 sm:p-8 shadow-xl text-center space-y-4">
+      {/* Tile Logo 3D Elevated */}
+      <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-3xl neu-logo-tile p-3 flex items-center justify-center relative overflow-hidden shadow-md">
+        <img
+          src="/logo-menwa-unj.png"
+          alt="Menwa UNJ"
+          className="w-full h-full object-contain relative z-10"
+        />
+      </div>
+
+      <div>
+        <h3 className="text-xl sm:text-2xl font-black text-[#092D32] tracking-tight">
+          Selamat Datang
+        </h3>
+        <p className="mt-1 text-xs text-slate-500 font-semibold leading-relaxed max-w-sm mx-auto">
+          Masukkan nomor WhatsApp official kontingen untuk membuka konsol peserta
+        </p>
+      </div>
+
+      {loginError && (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3.5 text-rose-700 text-xs flex items-start gap-2.5 text-left animate-fade-in shadow-xs">
+          <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-600" />
+          <span className="font-bold leading-snug">{loginError}</span>
+        </div>
+      )}
+
+      {loginSuccess && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3.5 text-emerald-800 text-xs flex items-center gap-2.5 text-left animate-fade-in shadow-xs">
+          <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
+          <span className="font-bold leading-snug">{loginSuccess}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleWhatsAppLogin} className="space-y-3.5 text-left pt-1">
+        <div className="bg-white border-2 border-slate-300 focus-within:border-[#006569] focus-within:ring-2 focus-within:ring-[#006569]/20 rounded-2xl px-4 py-3 flex items-center gap-2.5 shadow-inner transition-all">
+          <Phone size={18} className="text-[#006569] shrink-0" />
+          <span className="text-[#006569] font-black text-sm select-none">+62</span>
+          <input
+            type="tel"
+            value={waInput}
+            onChange={(e) => {
+              setWaInput(e.target.value);
+              if (loginError) setLoginError('');
+              if (loginSuccess) setLoginSuccess('');
+            }}
+            placeholder="812xxxxxxxx"
+            style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
+            className="w-full bg-white text-black font-mono placeholder:text-slate-400 font-black text-sm sm:text-base focus:outline-none"
+          />
+        </div>
+
+        <div className="space-y-2 pt-1">
+          <button
+            type="submit"
+            disabled={searchingWa}
+            className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-sm tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-60 shadow-lg hover:shadow-xl transition-all"
+          >
+            <span className="mx-auto pl-6 flex items-center gap-2">
+              {searchingWa ? (
+                <>
+                  <Loader2 size={16} className="animate-spin text-[#FFDD00]" />
+                  <span>Memeriksa Nomor...</span>
+                </>
+              ) : (
+                <span>Login Official</span>
+              )}
+            </span>
+            <span className="w-8 h-8 rounded-full bg-white/15 border border-white/25 flex items-center justify-center text-[#FFDD00] shrink-0">
+              <ArrowRight size={16} />
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="w-full py-2.5 rounded-full neu-btn text-slate-600 hover:text-rose-600 font-black text-xs uppercase tracking-wider cursor-pointer text-center transition"
+          >
+            Batal / Tutup
+          </button>
+        </div>
+      </form>
+
+      {/* Akses Khusus Command Center (Hanya Muncul jika Akun Google Superadmin) */}
+      {isSuperUser && (
+        <div className="pt-3 border-t border-slate-200 space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="h-[1px] flex-1 bg-slate-200" />
+            <span className="text-[10px] font-black tracking-widest text-[#006569] uppercase">
+              OTORISASI KOMANDO AKTIF
+            </span>
+            <div className="h-[1px] flex-1 bg-slate-200" />
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setIsOpen(false);
+              navigate('/mako-ops');
+            }}
+            className="w-full py-2.5 px-4 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-xs"
+          >
+            <Shield size={15} className="text-amber-700" />
+            <span>Masuk ke Mako Command Center</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -123,12 +229,12 @@ export function OfficialPortalQuickAccess({
                 <div className="mt-8 flex flex-wrap items-center gap-3.5 w-full sm:w-auto">
                   <button
                     type="button"
-                    onClick={() => setIsOpen(true)}
+                    onClick={() => setIsOpen(!isOpen)}
                     className="w-full sm:w-auto inline-flex items-center justify-between gap-4 pl-7 pr-4 py-3.5 rounded-full neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-xs sm:text-sm uppercase tracking-wider cursor-pointer shadow-lg hover:shadow-xl transition-all"
                   >
-                    <span>Masuk Portal Official</span>
+                    <span>{isOpen ? 'Tutup Formulir Login' : 'Masuk Portal Official'}</span>
                     <span className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-[#FFDD00]">
-                      <ArrowRight size={16} />
+                      {isOpen ? <ChevronUp size={16} /> : <ArrowRight size={16} />}
                     </span>
                   </button>
 
@@ -163,183 +269,21 @@ export function OfficialPortalQuickAccess({
                 </div>
               </div>
             </div>
+
+            {/* Expands Downward Inline When Clicked */}
+            {isOpen && (
+              <div className="mt-10 pt-8 border-t border-slate-200/80 w-full animate-fade-in">
+                {renderInlineLoginForm()}
+              </div>
+            )}
           </div>
         </section>
       )}
 
-      {/* ======================================================================
-          DRAWER SLIDE-OVER LOGIN WHATSAPP OFFICIAL (3D NEUMORPHIC AUTH)
-          ====================================================================== */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end font-sans">
-          <div
-            onClick={() => setIsOpen(false)}
-            aria-label="Tutup popup portal official"
-            className="fixed inset-0 bg-slate-950/55 backdrop-blur-sm transition-opacity animate-fade-in"
-          />
-
-          <div
-            className="relative z-10 w-full max-w-md h-full bg-gradient-to-br from-[#EEF5F6] via-[#F5F8F6] to-[#F9FBFA] border-l-2 border-white/85 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="portal-official-title"
-          >
-            {/* Ambient Background Glows */}
-            <div className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 rounded-full bg-teal-500/10 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-20 -right-16 w-56 h-56 rounded-full bg-amber-500/10 blur-3xl" />
-
-            {/* Top Bar Drawer — Pinned Permanently at Top, Never Scrolls Away */}
-            <div className="shrink-0 z-30 bg-[#F5F8F6]/95 backdrop-blur-md border-b border-white/80 px-5 sm:px-6 py-3.5 flex items-center justify-between shadow-xs">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl neu-logo-tile text-[#006569] flex items-center justify-center font-bold">
-                  <UserCheck size={18} />
-                </div>
-                <div>
-                  <h4 id="portal-official-title" className="text-xs font-black uppercase tracking-wider text-[#092D32]">
-                    Portal Official Kontingen
-                  </h4>
-                  <span className="text-[10px] text-slate-500 font-semibold">
-                    GERANAT Satuan Menwa UNJ
-                  </span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="px-3 py-1.5 rounded-xl neu-btn text-rose-700 hover:text-rose-800 flex items-center gap-1.5 font-black text-xs uppercase tracking-wider cursor-pointer shadow-xs transition hover:scale-105 active:scale-95"
-                title="Tutup (Escape)"
-                aria-label="Tutup panel login official"
-              >
-                <X size={15} />
-                <span>Tutup</span>
-              </button>
-            </div>
-
-            {/* Body Kartu 3D Login — Compact & Fitted */}
-            <div className="relative z-10 p-4 sm:p-6 flex-1 overflow-y-auto flex flex-col justify-center">
-              <div className="relative rounded-[2.5rem] neu-card p-6 sm:p-7 text-center space-y-4">
-                {/* Tombol X Cepat Langsung di Sudut Kartu */}
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="absolute top-4 right-4 w-8 h-8 rounded-full neu-btn text-slate-500 hover:text-rose-600 flex items-center justify-center cursor-pointer shadow-xs transition hover:scale-110 active:scale-95 z-20"
-                  aria-label="Tutup panel login official"
-                  title="Tutup (Escape)"
-                >
-                  <X size={15} />
-                </button>
-
-                {/* Tile Logo 3D Elevated */}
-                <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-3xl neu-logo-tile p-3 flex items-center justify-center relative overflow-hidden">
-                  <img
-                    src="/logo-menwa-unj.png"
-                    alt="Menwa UNJ"
-                    className="w-full h-full object-contain relative z-10"
-                  />
-                </div>
-
-                <div>
-                  <h3 className="text-xl sm:text-2xl font-black text-[#092D32] tracking-tight">
-                    Selamat Datang
-                  </h3>
-                  <p className="mt-1 text-xs text-slate-500 font-semibold leading-relaxed">
-                    Masukkan nomor WhatsApp official kontingen untuk melanjutkan
-                  </p>
-                </div>
-
-                {loginError && (
-                  <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3.5 text-rose-700 text-xs flex items-start gap-2.5 text-left animate-fade-in">
-                    <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-600" />
-                    <span className="font-bold leading-snug">{loginError}</span>
-                  </div>
-                )}
-
-                <form onSubmit={handleWhatsAppLogin} className="space-y-3.5 text-left">
-                  <div className="bg-white border-2 border-slate-300 focus-within:border-[#006569] focus-within:ring-2 focus-within:ring-[#006569]/20 rounded-2xl px-4 py-3 flex items-center gap-2.5 shadow-inner transition-all">
-                    <Phone size={18} className="text-[#006569] shrink-0" />
-                    <span className="text-[#006569] font-black text-sm select-none">+62</span>
-                    <input
-                      type="tel"
-                      value={waInput}
-                      onChange={(e) => {
-                        setWaInput(e.target.value);
-                        if (loginError) setLoginError('');
-                      }}
-                      placeholder="812xxxxxxxx"
-                      style={{ color: '#000000', backgroundColor: '#FFFFFF' }}
-                      className="w-full bg-white text-black font-mono placeholder:text-slate-400 font-black text-sm sm:text-base focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <button
-                      type="submit"
-                      disabled={searchingWa}
-                      className="w-full py-3.5 pl-6 pr-3.5 rounded-full neu-btn-primary bg-gradient-to-r from-[#006569] via-[#092D32] to-[#004d50] text-[#FFDD00] hover:text-white font-black text-sm tracking-wide flex items-center justify-between cursor-pointer disabled:opacity-60 shadow-lg hover:shadow-xl transition-all"
-                    >
-                      <span className="mx-auto pl-6 flex items-center gap-2">
-                        {searchingWa ? (
-                          <>
-                            <Loader2 size={16} className="animate-spin text-[#FFDD00]" />
-                            <span>Memeriksa...</span>
-                          </>
-                        ) : (
-                          <span>Login Official</span>
-                        )}
-                      </span>
-                      <span className="w-8 h-8 rounded-full bg-white/15 border border-white/25 flex items-center justify-center text-[#FFDD00] shrink-0">
-                        <ArrowRight size={16} />
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setIsOpen(false)}
-                      className="w-full py-2.5 rounded-full neu-btn text-slate-600 hover:text-rose-600 font-black text-xs uppercase tracking-wider cursor-pointer text-center transition"
-                    >
-                      Batal / Tutup
-                    </button>
-                  </div>
-                </form>
-
-                {/* Pemisah "ATAU MASUK MELALUI" */}
-                <div className="flex items-center gap-3 pt-0.5">
-                  <div className="h-[1.5px] flex-1 bg-gradient-to-r from-transparent via-slate-300/80 to-slate-300/80" />
-                  <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                    ATAU MASUK MELALUI
-                  </span>
-                  <div className="h-[1.5px] flex-1 bg-gradient-to-l from-transparent via-slate-300/80 to-slate-300/80" />
-                </div>
-
-                {/* Deretan Tombol Sosial 3D */}
-                <div className="flex items-center justify-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsOpen(false);
-                      navigate('/official');
-                    }}
-                    title="Buka Konsol Penuh /official"
-                    className="neu-social-btn cursor-pointer text-[#006569]"
-                  >
-                    <ExternalLink size={20} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsOpen(false);
-                      navigate('/geranat');
-                    }}
-                    title="Halaman Utama GERANAT"
-                    className="neu-social-btn cursor-pointer text-[#092D32]"
-                  >
-                    <ShieldCheck size={22} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* Standalone Display if showTriggerBanner is false and isOpen is true */}
+      {!showTriggerBanner && isOpen && (
+        <div className={`w-full py-6 font-sans ${className}`}>
+          {renderInlineLoginForm()}
         </div>
       )}
     </>
