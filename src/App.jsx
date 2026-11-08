@@ -44,7 +44,8 @@ import { syncDocumentMetadata } from './lib/seo.js';
 import { MusicPlayer } from './components/MusicPlayer.jsx';
 import { LaptopMotion } from './components/MotionAssets.jsx';
 import { BrandHome, BrandValues, InformationHub } from './components/BrandExperience.jsx';
-import { CommandPalette, PageWayfinder, BackToTop } from './components/PortalUtilities.jsx';
+import { CommandPalette, BackToTop } from './components/PortalUtilities.jsx';
+import { TacticalWelcomeIntro } from './components/TacticalWelcomeIntro.jsx';
 import { CanvasProvider } from './lib/canvasStore.jsx';
 import { DynamicCanvasZone } from './components/DynamicCanvasZone.jsx';
 import { PWAInstallBanner } from './components/PWAInstallBanner.jsx';
@@ -440,9 +441,7 @@ export default function App() {
             darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
           }`}
         >
-          <a href="#main-content" className="portal-skip-link">
-            Langsung ke konten utama
-          </a>
+          <TacticalWelcomeIntro />
           <MotionStyles />
           <ScrollProgress />
           <CursorGlow />
@@ -519,8 +518,6 @@ export default function App() {
           <Suspense fallback={null}>
             <BankApprovalBanner />
           </Suspense>
-
-          <PageWayfinder path={path} />
 
           <main className="flex-grow flex flex-col" id="main-content">
             <TabSwitch tabKey={path}>

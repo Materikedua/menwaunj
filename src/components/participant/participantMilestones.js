@@ -8,14 +8,25 @@ import {
   HelpCircle,
 } from 'lucide-react';
 
-export function getDockItems(progress, scoringSummary) {
+export function getDockItems(progress = {}, scoringSummary = {}) {
+  const p = progress || {};
+  const s = scoringSummary || {};
+
+  const overall = p.overallPct ?? p.overallPercentage ?? 0;
+  const profil = p.profilPct ?? 0;
+  const berkasCount = p.berkasCount ?? 0;
+  const berkasPct = p.berkasPct ?? 0;
+  const biodataCount = p.biodataCount ?? 0;
+  const biodataPct = p.biodataPct ?? 0;
+  const finalScore = s.finalScore ?? 0;
+
   return [
-    { id: 'beranda', label: 'Beranda Kontingen', icon: LayoutGrid, badge: `${progress.overallPct}%` },
-    { id: 'profil', label: 'Profil Sekolah', icon: Building2, badge: `${progress.profilPct}%`, pct: progress.profilPct },
-    { id: 'pemberkasan', label: 'Pemberkasan', icon: FileText, badge: `${progress.berkasCount}/5`, pct: progress.berkasPct },
-    { id: 'biodata', label: 'Biodata Pasukan', icon: Users, badge: `${progress.biodataCount}/20`, pct: progress.biodataPct },
-    { id: 'timeline', label: 'Timeline Acara', icon: Calendar, badge: '6 Tahap', pct: progress.timelinePct },
-    { id: 'penilaian', label: 'Rekap Nilai Juri', icon: Award, badge: `${scoringSummary.finalScore}`, pct: progress.penilaianPct },
+    { id: 'beranda', label: 'Beranda Kontingen', icon: LayoutGrid, badge: `${overall}%`, pct: overall },
+    { id: 'profil', label: 'Profil Sekolah', icon: Building2, badge: `${profil}%`, pct: profil },
+    { id: 'pemberkasan', label: 'Pemberkasan', icon: FileText, badge: `${berkasCount}/5`, pct: berkasPct },
+    { id: 'biodata', label: 'Biodata Pasukan', icon: Users, badge: `${biodataCount}/20`, pct: biodataPct },
+    { id: 'timeline', label: 'Timeline Acara', icon: Calendar, badge: '6 Tahap' },
+    { id: 'penilaian', label: 'Rekap Nilai Juri', icon: Award, badge: finalScore > 0 ? `${finalScore} Poin` : 'Tertutup' },
     { id: 'bantuan', label: 'Bantuan & Juknis', icon: HelpCircle, badge: 'Siaga 24/7' },
   ];
 }

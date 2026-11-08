@@ -5,7 +5,6 @@ import {
   AlertCircle,
   ArrowRight,
   Loader2,
-  ExternalLink,
   Users,
   ChevronDown,
   ChevronUp,
@@ -236,15 +235,6 @@ export function OfficialPortalQuickAccess({
                     <span className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-[#FFDD00]">
                       {isOpen ? <ChevronUp size={16} /> : <ArrowRight size={16} />}
                     </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => navigate('/official')}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full neu-btn bg-white hover:bg-slate-50 text-[#092D32] border border-slate-200/90 font-black text-xs uppercase tracking-wider cursor-pointer shadow-sm hover:shadow transition-all"
-                  >
-                    <span>Buka Halaman Penuh</span>
-                    <ExternalLink size={14} className="text-[#006569]" />
                   </button>
                 </div>
               </div>

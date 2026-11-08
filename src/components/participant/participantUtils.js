@@ -20,42 +20,86 @@ export function validateImageFile(file) {
 }
 
 export function computePortalProgress(portal) {
-  if (!portal) return { overallPercentage: 0 };
-  let score = 0;
-  const maxScore = 100;
+  if (!portal) {
+    return {
+      overallPercentage: 0,
+      overallPct: 0,
+      profilPct: 0,
+      berkasCount: 0,
+      berkasPct: 0,
+      pasukanCount: 0,
+      officialCount: 0,
+      biodataCount: 0,
+      biodataPct: 0,
+      timelineCount: 6,
+      timelinePct: 100,
+      scoredAspectsCount: 0,
+    };
+  }
 
-  // Profil sekolah: 25 poin
+  // 1. Profil Sekolah (Bobot 25 Poin)
+  let profilPoints = 0;
   const p = portal.schoolProfile || {};
-  if (p.schoolName && p.schoolName.trim()) score += 5;
-  if (p.jalan && p.jalan.trim()) score += 5;
-  if (p.kelurahan || p.kecamatan) score += 5;
-  if (p.kabupatenKota) score += 5;
-  if (p.provinsi) score += 5;
+  if (p.schoolName && p.schoolName.trim()) profilPoints += 5;
+  if (p.jalan && p.jalan.trim()) profilPoints += 5;
+  if (p.kelurahan || p.kecamatan) profilPoints += 5;
+  if (p.kabupatenKota && p.kabupatenKota.trim()) profilPoints += 5;
+  if (p.provinsi && p.provinsi.trim()) profilPoints += 5;
+  const profilPct = Math.round((profilPoints / 25) * 100);
 
-  // Pemberkasan: 30 poin (6 dokumen wajib @ 5 poin)
+  // 2. Pemberkasan Persyaratan Juknis (Bobot 35 Poin - 5 Dokumen Wajib)
   const docs = portal.documents || {};
-  const docKeys = [
-    'suratTugas',
-    'rekomendasiKepsek',
-    'kesediaanTaatAturan',
-    'buktiBayar',
-    'izinOrtuKolektif',
-    'kartuPelajarKolektif',
+  const docGroups = [
+    ['suratTugas', 'surat-tugas', 'suratTugasKolektif'],
+    ['rekomendasiKepsek', 'rekomendasi-kepsek', 'rekomendasi'],
+    ['kesediaanTaatAturan', 'kesediaan-taat-aturan', 'pernyataan'],
+    ['buktiBayar', 'bukti-bayar', 'bukti-pendaftaran', 'buktiPembayaran'],
+    ['izinOrtuKolektif', 'izin-ortu', 'kartuPelajarKolektif', 'kartu-pelajar'],
   ];
-  docKeys.forEach((key) => {
-    if (docs[key]?.url || docs[key]?.fileDataUrl) score += 5;
+
+  let berkasCount = 0;
+  docGroups.forEach((aliases) => {
+    const isUploaded = aliases.some(
+      (key) => docs[key]?.url || docs[key]?.fileDataUrl || docs[key]?.fileName
+    );
+    if (isUploaded) berkasCount += 1;
   });
+  const berkasPct = Math.min(100, Math.round((berkasCount / 5) * 100));
+  const berkasPoints = (berkasCount / 5) * 35;
 
-  // Biodata Pasukan: 25 poin (minimal 10 anggota @ 2.5 poin)
+  // 3. Biodata Personel Tim (Bobot 40 Poin - Kuota 18 Pasukan + 2 Official = 20 Personel)
   const pasukan = portal.pasukanList || [];
-  score += Math.min(25, pasukan.length * 2.5);
-
-  // Biodata Official: 20 poin (minimal 2 official @ 10 poin)
   const officials = portal.officialList || [];
-  score += Math.min(20, officials.length * 10);
+  const pasukanCount = pasukan.length;
+  const officialCount = officials.length;
+  const biodataCount = Math.min(20, pasukanCount + officialCount);
+  const biodataPct = Math.min(100, Math.round((biodataCount / 20) * 100));
+  const biodataPoints = (biodataCount / 20) * 40;
 
-  const overallPercentage = Math.min(maxScore, Math.round(score));
-  return { overallPercentage };
+  // Skor aspek penilaian juri yang sudah terisi
+  const scores = portal.scores || {};
+  const scoredAspectsCount = Object.keys(scores).filter(
+    (k) => scores[k] !== undefined && scores[k] !== null && scores[k] !== ''
+  ).length;
+
+  // Total Kelengkapan Kontingen Resmi (Maks 100% - Timeline TIDAK dihitung)
+  const totalScore = profilPoints + berkasPoints + biodataPoints;
+  const overallPct = Math.min(100, Math.round(totalScore));
+
+  return {
+    overallPercentage: overallPct,
+    overallPct,
+    profilPct,
+    berkasCount,
+    berkasPct,
+    pasukanCount,
+    officialCount,
+    biodataCount,
+    biodataPct,
+    timelineCount: 6,
+    timelinePct: 100,
+    scoredAspectsCount,
+  };
 }
 
 export function calculateScoringSummary(portalData) {

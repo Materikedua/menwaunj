@@ -250,7 +250,7 @@ export function ParticipantModuleBeranda({
                           <span className="text-[10px] font-bold text-slate-500 uppercase block">
                             Pasukan Peleton
                           </span>
-                          <strong className="font-mono text-base font-black text-white tabular-nums">
+                          <strong className="font-mono text-base font-black text-[#092D32] tabular-nums">
                             {progress?.pasukanCount || 0} / 18
                           </strong>
                         </div>
@@ -420,7 +420,7 @@ export function ParticipantModuleBeranda({
                                 </span>
                               )}
 
-                              <span className="inline-flex items-center gap-1 text-xs font-black px-3.5 py-1.5 rounded-xl bg-slate-100 group-hover:bg-[#006569] text-white group-hover:text-[#FFDD00] transition-all shadow-xs">
+                              <span className="inline-flex items-center gap-1 text-xs font-black px-3.5 py-1.5 rounded-xl bg-slate-100 group-hover:bg-[#006569] text-[#092D32] group-hover:text-[#FFDD00] transition-all shadow-xs">
                                 <span>Buka</span>
                                 <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
                               </span>
