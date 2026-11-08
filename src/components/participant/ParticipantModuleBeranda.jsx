@@ -143,10 +143,10 @@ export function ParticipantModuleBeranda({
                             <span className="text-[11px] font-black uppercase tracking-wider text-[#006569]">
                               SOROTAN ADMINISTRASI
                             </span>
-                            <h3 className="text-lg font-black text-white leading-snug">
+                            <h3 className="text-lg font-black text-[#092D32] leading-snug">
                               Kelengkapan Berkas &amp; Juknis
                             </h3>
-                            <p className="text-xs text-slate-300 mt-0.5">
+                            <p className="text-xs text-slate-600 mt-0.5">
                               {completedMilestonesCount} dari 7 persyaratan utama terverifikasi
                             </p>
                           </div>
@@ -200,7 +200,7 @@ export function ParticipantModuleBeranda({
 
                     <div className="mt-6 pt-4 border-t border-slate-200/70 flex items-center justify-between gap-3">
                       <span className="text-xs font-semibold text-slate-500">
-                        Berkas wajib: <strong className="font-mono text-white">{progress?.berkasCount || 0}/5</strong> terunggah
+                        Berkas wajib: <strong className="font-mono text-[#006569]">{progress?.berkasCount || 0}/5</strong> terunggah
                       </span>
                       <button
                         type="button"
@@ -225,17 +225,17 @@ export function ParticipantModuleBeranda({
                             <span className="text-[11px] font-black uppercase tracking-wider text-amber-700">
                               SOROTAN PASUKAN &amp; EVALUASI
                             </span>
-                            <h3 className="text-lg font-black text-white leading-snug">
+                            <h3 className="text-lg font-black text-[#092D32] leading-snug">
                               Kuota Personel &amp; Rekap Juri
                             </h3>
-                            <p className="text-xs text-slate-300 mt-0.5">
+                            <p className="text-xs text-slate-600 mt-0.5">
                               16 Pasukan Inti + 2 Cadangan + 2 Official Pendamping
                             </p>
                           </div>
                         </div>
 
                         <div className="text-right shrink-0">
-                          <span className="font-mono text-2xl font-black text-white tabular-nums">
+                          <span className="font-mono text-2xl font-black text-[#092D32] tabular-nums">
                             {progress?.biodataCount || 0}<span className="text-sm text-slate-400">/20</span>
                           </span>
                           <span className="block text-[10px] font-bold text-amber-700 uppercase">
@@ -330,7 +330,7 @@ export function ParticipantModuleBeranda({
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="text-base sm:text-lg font-black text-white">
+                      <h3 className="text-base sm:text-lg font-black text-[#092D32]">
                         Semua Modul Manajemen Kontingen
                       </h3>
                       <p className="text-xs text-slate-300">
@@ -366,10 +366,10 @@ export function ParticipantModuleBeranda({
                             <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">
                               MODUL {card.number}
                             </div>
-                            <h4 className="text-base font-black text-white group-hover:text-[#006569] transition mt-0.5">
+                            <h4 className="text-base font-black text-[#092D32] group-hover:text-[#006569] transition mt-0.5">
                               {card.title}
                             </h4>
-                            <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                            <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                               {card.subtitle}
                             </p>
                           </div>
@@ -377,7 +377,7 @@ export function ParticipantModuleBeranda({
                           <div className="mt-5 pt-3.5 border-t border-slate-200/60 space-y-2.5">
                             <div className="flex items-center justify-between text-[11px] font-bold">
                               <span className="text-slate-500">Progres Modul</span>
-                              <span className="font-mono font-black text-white tabular-nums">
+                              <span className="font-mono font-black text-[#006569] tabular-nums">
                                 {card.progress}%
                               </span>
                             </div>

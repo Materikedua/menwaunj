@@ -11,7 +11,7 @@ export function ParticipantConsoleSidebar({
   isGuestMode,
 }) {
   return (
-    <aside className="lg:col-span-3 xl:col-span-2 text-white flex flex-col justify-between py-3 px-2 sm:px-3">
+    <aside className="lg:col-span-3 xl:col-span-2 bg-[#092D32] rounded-3xl p-4 sm:p-5 text-white flex flex-col justify-between shadow-md border border-slate-700/50">
       <div className="space-y-6">
         {/* Tablet OS Top Window Dots & Brand Lockup */}
         <div className="px-2 space-y-4">

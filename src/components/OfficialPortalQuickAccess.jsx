@@ -34,8 +34,8 @@ export function OfficialPortalQuickAccess({
   const setIsOpen =
     controlledOnClose !== undefined
       ? (val) => {
-          if (!val) controlledOnClose();
-        }
+        if (!val) controlledOnClose();
+      }
       : setInternalOpen;
 
   const [waInput, setWaInput] = useState('');

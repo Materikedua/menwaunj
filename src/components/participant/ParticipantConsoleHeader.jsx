@@ -33,13 +33,13 @@ export function ParticipantConsoleHeader({
   handleLockSession,
 }) {
   return (
-    <header className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 pb-5 border-b border-white/10">
+    <header className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 pb-5 border-b border-slate-200">
       <div className="flex items-start sm:items-center gap-3.5">
         {activeModule !== 'beranda' && (
           <button
             type="button"
             onClick={() => setActiveModule('beranda')}
-            className="p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-white cursor-pointer shrink-0"
+            className="p-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[#092D32] cursor-pointer shrink-0"
             title="Kembali ke Beranda Kontingen"
           >
             <ArrowLeft size={16} />
@@ -47,16 +47,16 @@ export function ParticipantConsoleHeader({
         )}
         <div>
           {/* Breadcrumb Navigasi */}
-          <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold text-slate-300">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold text-slate-500">
             <span>Portal Official</span>
             <ChevronRight size={13} className="text-slate-400" />
-            <span className="text-[#FFDD00]">{detectedSchoolName}</span>
+            <span className="text-[#006569]">{detectedSchoolName}</span>
             <span aria-hidden="true">·</span>
-            <span className="font-mono text-cyan-300">
+            <span className="font-mono text-emerald-700 font-bold">
               {isGuestMode ? 'Mode Tamu (Hanya Baca)' : 'Dilindungi 6-Digit PIN'}
             </span>
           </div>
-          <h1 className="mt-1 text-xl sm:text-2xl font-black text-white tracking-tight">
+          <h1 className="mt-1 text-xl sm:text-2xl font-black text-[#092D32] tracking-tight">
             {detectedSchoolName}
           </h1>
         </div>

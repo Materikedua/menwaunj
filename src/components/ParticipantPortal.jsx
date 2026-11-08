@@ -489,19 +489,8 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
   // VIEW B: FLOATING GLASSMORPHIC OFFICIAL CONSOLE ("CLASS MANAGEMENT CONSOLE")
   // ============================================================================
   return (
-    <div
-      className="relative min-h-screen py-8 px-4 sm:px-6 lg:px-8 overflow-hidden"
-      style={{
-        backgroundColor: '#031719',
-        backgroundImage: "radial-gradient(circle at 15% 15%, rgba(0, 101, 105, 0.4), transparent 45%), radial-gradient(circle at 85% 85%, rgba(5, 150, 105, 0.25), transparent 45%), linear-gradient(135deg, rgba(2, 20, 24, 0.88) 0%, rgba(5, 34, 38, 0.82) 50%, rgba(2, 6, 23, 0.94) 100%), url('/dokumentasi/pengabdian-menwa-unj.jpg')",
-        backgroundSize: 'auto, auto, auto, cover',
-        backgroundPosition: 'center, center, center, center',
-        backgroundAttachment: 'fixed',
-      }}
-    >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:28px_28px] opacity-40" />
-      <div className="pointer-events-none absolute -top-40 -left-40 w-96 h-96 bg-teal-500/15 rounded-full blur-[100px]" />
-      <div className="pointer-events-none absolute -bottom-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px]" />
+    <div className="min-h-screen py-6 sm:py-8 px-3 sm:px-6 lg:px-8 bg-slate-100 text-slate-900">
+            <div className="pointer-events-none absolute -bottom-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px]" />
       {toastMessage && (
         <div className="fixed top-24 right-6 z-50 animate-bounce bg-emerald-600 text-white font-bold text-xs px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2">
           <span>{toastMessage}</span>
@@ -534,7 +523,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
       {/* ====================================================================
           OUTER BEZEL DARK TABLET CONSOLE FRAME (rounded-[3rem] bg-[#092D32] p-4 lg:p-6 border border-white/10)
           ==================================================================== */}
-      <div className="relative z-10 mx-auto max-w-[1440px] rounded-[3rem] bg-[#092D32]/85 backdrop-blur-2xl p-4 lg:p-6 border border-white/20 shadow-[0_35px_90px_-20px_rgba(0,0,0,0.65)] grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 min-h-[840px]">
+      <div className="mx-auto max-w-[1440px] grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 min-h-[840px]">
         {/* ==================================================================
              LEFT SIDEBAR NAVIGATION (VERTICAL DOCK)
             ================================================================== */}
@@ -549,7 +538,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
         {/* ==================================================================
             FLOATING GLASSMORPHIC WORKSPACE CANVAS
             ================================================================== */}
-        <section className="lg:col-span-9 xl:col-span-10 rounded-[2.5rem] bg-[#071f26]/80 backdrop-blur-3xl text-slate-100 shadow-2xl border border-white/15 p-6 sm:p-10 flex flex-col justify-between space-y-7 overflow-y-auto">
+        <section className="lg:col-span-9 xl:col-span-10 rounded-3xl bg-white text-slate-900 shadow-md border border-slate-200/90 p-6 sm:p-10 flex flex-col justify-between space-y-7 overflow-y-auto">
           <div className="space-y-6">
             <ParticipantConsoleHeader
               activeModule={activeModule}
@@ -728,7 +717,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
           </div>
 
           {/* Bottom Console Footer */}
-          <footer className="pt-5 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-4 text-xs text-[#64748B]">
+          <footer className="pt-5 border-t border-slate-200 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
             <span>
               Konsol Resmi Kontingen · Subdomain:{' '}
               <strong className="font-mono text-[#006569]">/official/{activeSlug}</strong>
