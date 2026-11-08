@@ -1,4 +1,4 @@
-import { firestore } from '../firebase.js';
+import { firestore, storage, storageRef, uploadString, getDownloadURL } from '../firebase.js';
 import { collection, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import { hashOfficialSecurityPin, verifyOfficialSecurityPin, isOfficialPinConfigured, evaluatePinLockout, computeNextFailedPinState, stripHeavyBase64FromSnapshot, sanitizeOfficialPortalForFirestore } from './securityAndDbUtils.js';
 
@@ -217,12 +217,14 @@ export async function saveOfficialPortal(portalData) {
   const payload = sanitizeOfficialPortalForFirestore(rawPayload);
 
   // Sinkronisasi berkas dokumen dan foto kontingen ke Firebase Storage
-  if (storage && payload.documents && typeof payload.documents === 'object') {
+  const activeStorage = typeof storage !== 'undefined' ? storage : null;
+  const canUploadStorage = Boolean(activeStorage && storageRef && uploadString && getDownloadURL);
+  if (canUploadStorage && payload.documents && typeof payload.documents === 'object') {
     for (const [docId, docObj] of Object.entries(payload.documents)) {
       if (docObj && docObj.fileDataUrl && docObj.fileDataUrl.startsWith('data:')) {
         try {
           const ext = (docObj.fileName?.split('.').pop() || 'pdf').toLowerCase();
-          const sRef = storageRef(storage, `official_portals/${schoolSlug}/documents/${docId}.${ext}`);
+          const sRef = storageRef(activeStorage, `official_portals/${schoolSlug}/documents/${docId}.${ext}`);
           await uploadString(sRef, docObj.fileDataUrl, 'data_url');
           const dUrl = await getDownloadURL(sRef);
           payload.documents[docId] = {
@@ -237,12 +239,12 @@ export async function saveOfficialPortal(portalData) {
     }
   }
 
-  if (storage && Array.isArray(payload.pasukanList)) {
+  if (canUploadStorage && Array.isArray(payload.pasukanList)) {
     for (let i = 0; i < payload.pasukanList.length; i++) {
       const p = payload.pasukanList[i];
       if (p && p.photoDataUrl && p.photoDataUrl.startsWith('data:')) {
         try {
-          const sRef = storageRef(storage, `official_portals/${schoolSlug}/photos/pasukan-${i + 1}.webp`);
+          const sRef = storageRef(activeStorage, `official_portals/${schoolSlug}/photos/pasukan-${i + 1}.webp`);
           await uploadString(sRef, p.photoDataUrl, 'data_url');
           const pUrl = await getDownloadURL(sRef);
           payload.pasukanList[i] = {
@@ -257,12 +259,12 @@ export async function saveOfficialPortal(portalData) {
     }
   }
 
-  if (storage && Array.isArray(payload.officialList)) {
+  if (canUploadStorage && Array.isArray(payload.officialList)) {
     for (let i = 0; i < payload.officialList.length; i++) {
       const o = payload.officialList[i];
       if (o && o.photoDataUrl && o.photoDataUrl.startsWith('data:')) {
         try {
-          const sRef = storageRef(storage, `official_portals/${schoolSlug}/photos/official-${i + 1}.webp`);
+          const sRef = storageRef(activeStorage, `official_portals/${schoolSlug}/photos/official-${i + 1}.webp`);
           await uploadString(sRef, o.photoDataUrl, 'data_url');
           const oUrl = await getDownloadURL(sRef);
           payload.officialList[i] = {
@@ -627,4 +629,35 @@ export async function restoreOfficialPortalSnapshot(schoolSlug) {
     documents: { ...(portal.documents || {}), ...(snap.documents || {}) },
     activityLogs: logs.slice(0, 15),
   });
-}
+}
+export async function toggleOfficialPortalVerification(schoolSlug, isVerified) {
+  if (!schoolSlug) throw new Error('Slug sekolah wajib diisi');
+  const cleanSlug = slugifySchoolName(schoolSlug);
+  const localMap = readLocalOfficialCache();
+  const existing = localMap[cleanSlug] || {};
+  const nextVerified = typeof isVerified === 'boolean' ? isVerified : existing.isVerifiedByAdmin === false;
+
+  const updated = {
+    ...existing,
+    schoolSlug: cleanSlug,
+    isVerifiedByAdmin: nextVerified,
+    updatedAt: new Date().toISOString(),
+  };
+  localMap[cleanSlug] = updated;
+  writeLocalOfficialCache(localMap);
+
+  try {
+    await updateDoc(doc(firestore, 'official_portals', cleanSlug), {
+      isVerifiedByAdmin: nextVerified,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    try {
+      await setDoc(doc(firestore, 'official_portals', cleanSlug), updated, { merge: true });
+    } catch (e) {
+      console.warn('Firestore toggle verification warning (saved locally):', e);
+    }
+  }
+
+  return updated;
+}
