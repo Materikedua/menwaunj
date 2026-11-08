@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "id-ID"
+early_access: false
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "draft"
+    drafts: false
+  path_filters:
+    - "!**/node_modules/**"
+    - "!**/dist/**"
+    - "!**/.git/**"
+    - "!**/*.min.js"
+    - "!**/*.lock"
+    - "!**/.stitch*"
+  path_instructions:
+    - path: "src/**"
+      instructions: |
+        - Batasan ketat: pastikan setiap file source code tidak melebihi 750 baris (<= 750 lines).
+        - Pastikan seluruh React hooks mematuhi Rules of Hooks (tidak dipanggil di dalam kondisi/loop atau setelah early return).
+        - Desain visual: gunakan palet tactical academic Menwa UNJ (#006569 emerald, #092D32 dark slate, #FFDD00 gold).
+        - Error handling: amankan operasi asynchronous Firestore, Firebase, dan navigator clipboard dengan penanganan try/catch.
+chat:
+  auto_reply: true
