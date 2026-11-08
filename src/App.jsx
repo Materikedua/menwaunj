@@ -553,7 +553,7 @@ export default function App() {
                   <ParticipantPortal schoolSlugProp={decodeURIComponent(path.split('/')[2] || '')} />
                 </Suspense>
               ) : path === '/portal-peserta' || path === '/official' ? (
-                <div className="bg-[#051419] min-h-screen py-10 px-4 max-w-6xl mx-auto w-full text-slate-100">
+                <div className="bg-gradient-to-b from-slate-50 via-teal-50/20 to-slate-100 min-h-screen py-10 px-4 max-w-6xl mx-auto w-full text-slate-900">
                   <Suspense fallback={<PageLoadingFallback />}>
                     <ParticipantPortal />
                   </Suspense>

@@ -150,27 +150,27 @@ export function GamesPage({ onOpenAuth }) {
               <button
                 type="button"
                 onClick={() => handleTabChange('game')}
-                className={activeTab === 'game' ? 'neu-pill-tab-dark' : 'neu-pill-tab'}
+                className={`neu-pill-tab ${activeTab === 'game' ? 'active' : ''}`}
               >
-                <Gamepad2 size={16} className={activeTab === 'game' ? 'text-emerald-400' : 'text-teal-600'} />
+                <Gamepad2 size={16} className={activeTab === 'game' ? 'text-[#FFDD00]' : 'text-teal-600'} />
                 <span>1. Permainan & Tantangan</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleTabChange('leaderboard')}
-                className={activeTab === 'leaderboard' ? 'neu-pill-tab-dark' : 'neu-pill-tab'}
+                className={`neu-pill-tab ${activeTab === 'leaderboard' ? 'active' : ''}`}
               >
-                <Trophy size={16} className={activeTab === 'leaderboard' ? 'text-amber-400' : 'text-amber-500'} />
+                <Trophy size={16} className={activeTab === 'leaderboard' ? 'text-[#FFDD00]' : 'text-amber-500'} />
                 <span>2. Papan Peringkat</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleTabChange('rewards')}
-                className={activeTab === 'rewards' ? 'neu-pill-tab-dark' : 'neu-pill-tab'}
+                className={`neu-pill-tab ${activeTab === 'rewards' ? 'active' : ''}`}
               >
-                <Gift size={16} className={activeTab === 'rewards' ? 'text-pink-400' : 'text-purple-500'} />
+                <Gift size={16} className={activeTab === 'rewards' ? 'text-[#FFDD00]' : 'text-purple-500'} />
                 <span>3. Penukaran Hadiah</span>
                 <span className="text-[9px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 rounded-full ml-1">
                   Soon

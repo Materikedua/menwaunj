@@ -309,6 +309,7 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
     handleProfileSubmit,
     handleDocUpload,
     handleDeleteDocument,
+    handleVerifyDocumentByAdmin,
     handlePasukanPhotoUpload,
     handleSavePasukan,
     handleDeletePasukan,
@@ -368,6 +369,10 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
 
   const progress = useMemo(() => computePortalProgress(portalData), [portalData]);
   const completionProgress = progress?.overallPercentage || 0;
+
+  // Unconditional Hooks: DOCK_ITEMS & ADMIN_MILESTONES (Must be before any conditional return to prevent React Error #310)
+  const DOCK_ITEMS = useMemo(() => getDockItems(progress, scoringSummary), [progress, scoringSummary]);
+  const ADMIN_MILESTONES = useMemo(() => getAdminMilestones(portalData), [portalData]);
 
   const handleAdminScoreChange = async (aspectId, value) => {
     if (!hasAdminAccess || !activeSlug) return;
@@ -475,9 +480,6 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
   // ============================================================================
   // VIEW B: FLOATING GLASSMORPHIC OFFICIAL CONSOLE ("CLASS MANAGEMENT CONSOLE")
   // ============================================================================
-  const DOCK_ITEMS = useMemo(() => getDockItems(progress, scoringSummary), [progress, scoringSummary]);
-  const ADMIN_MILESTONES = useMemo(() => getAdminMilestones(portalData), [portalData]);
-
   return (
     <div className="relative min-h-screen bg-[#06181b] py-8 px-4 sm:px-6 lg:px-8">
       {toastMessage && (

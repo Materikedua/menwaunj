@@ -168,10 +168,7 @@ export function GeranatPodium() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 space-y-16">
-      {/* 1. Section Portal Official Sesuai Referensi Visual (Putih, Kuning, BorderBeam) */}
-      <OfficialPortalQuickAccess showTriggerBanner={true} />
-
-      {/* 2. SECTION PODIUM JUARA (Tanpa background gelap, warna dasar halaman / putih bersih) */}
+      {/* 1. SECTION PODIUM JUARA (Tanpa background gelap, warna dasar halaman / putih bersih) */}
       <section id="podium-geranat" className="relative w-full text-slate-900 scroll-mt-24">
         
         {/* Live Ticker Donasi Terkini (Jika ada) */}
@@ -655,6 +652,9 @@ export function GeranatPodium() {
           </div>
         )}
       </section>
+
+      {/* 2. Section Akses Masuk Portal Official (Diposisikan di Bawah Podium / Charity Vote) */}
+      <OfficialPortalQuickAccess showTriggerBanner={true} />
     </div>
   );
 }

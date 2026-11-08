@@ -78,3 +78,4 @@ A balance of proud Indonesian military heritage and state university academic in
   - Soft 3D extruded cards with dual-tone status headers for participant roster management.
   - Floating glassmorphic command console with pill navigation and golden status tags.
   - Clean authoritative administrative forms with inset input fields and 100% white card backings.
+
