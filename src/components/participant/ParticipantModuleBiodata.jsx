@@ -40,11 +40,15 @@ export function ParticipantModuleBiodata({
   showPasukanForm,
   setShowPasukanForm,
   editingPasukanId,
+  setEditingPasukanId,
   handleCancelPasukanForm,
   handleSavePasukan,
+  handleSubmitPasukan,
   pasukanForm,
   setPasukanForm,
   pasukanErrors,
+  setPasukanErrors,
+  pasukanFieldRefs,
   handlePasukanPhotoUpload,
   portalData,
   handleEditPasukan,
@@ -52,18 +56,26 @@ export function ParticipantModuleBiodata({
   showOfficialForm,
   setShowOfficialForm,
   editingOfficialId,
+  setEditingOfficialId,
   handleCancelOfficialForm,
   handleSaveOfficial,
+  handleSubmitOfficial,
   officialForm,
   setOfficialForm,
   officialErrors,
+  setOfficialErrors,
+  officialFieldRefs,
   handleOfficialPhotoUpload,
   handleEditOfficial,
   handleDeleteOfficial,
   detectedSchoolName,
   progress = {},
+  profileForm = {},
 }) {
   const onDownloadCards = handleDownloadTeamCardsPdf || printTeamRosterPdf || openKtaViewer;
+  const onSavePasukan = handleSubmitPasukan || handleSavePasukan;
+  const onSaveOfficial = handleSubmitOfficial || handleSaveOfficial;
+  const activeLogoUrl = profileForm?.logoDataUrl || portalData?.schoolProfile?.logoDataUrl || '';
   return (
               <div className="space-y-6 animate-fade-in">
                 <div className="neu-card rounded-3xl p-6 sm:p-8 space-y-5">
@@ -87,8 +99,8 @@ export function ParticipantModuleBiodata({
                           <button
                             type="button"
                             onClick={() => {
-                              setEditingPasukanId(null);
-                              setPasukanErrors({});
+                              if (setEditingPasukanId) setEditingPasukanId(null);
+                              if (setPasukanErrors) setPasukanErrors({});
                               setShowPasukanForm((prev) => !prev);
                               setShowOfficialForm(false);
                             }}
@@ -101,8 +113,8 @@ export function ParticipantModuleBiodata({
                           <button
                             type="button"
                             onClick={() => {
-                              setEditingOfficialId(null);
-                              setOfficialErrors({});
+                              if (setEditingOfficialId) setEditingOfficialId(null);
+                              if (setOfficialErrors) setOfficialErrors({});
                               setShowOfficialForm((prev) => !prev);
                               setShowPasukanForm(false);
                             }}
@@ -158,8 +170,11 @@ export function ParticipantModuleBiodata({
                       <button
                         type="button"
                         onClick={() => {
-                          setShowPasukanForm(false);
-                          setEditingPasukanId(null);
+                          if (handleCancelPasukanForm) handleCancelPasukanForm();
+                          else {
+                            setShowPasukanForm(false);
+                            if (setEditingPasukanId) setEditingPasukanId(null);
+                          }
                         }}
                         className="p-2 rounded-2xl neu-btn text-slate-600 hover:text-slate-950 cursor-pointer"
                       >
@@ -167,11 +182,11 @@ export function ParticipantModuleBiodata({
                       </button>
                     </div>
 
-                    <form onSubmit={handleSubmitPasukan} className="space-y-5">
+                    <form onSubmit={onSavePasukan} className="space-y-5">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div
                           ref={(el) => {
-                            pasukanFieldRefs.current.photoDataUrl = el;
+                            if (pasukanFieldRefs?.current) pasukanFieldRefs.current.photoDataUrl = el;
                           }}
                           className={`rounded-2xl border-2 border-dashed p-4 ${
                             pasukanErrors.photoDataUrl
@@ -200,7 +215,7 @@ export function ParticipantModuleBiodata({
                                 <input
                                   type="file"
                                   accept=".jpg,.jpeg,.png,.svg,.webp"
-                                  onChange={handlePasukanPhotoChange}
+                                  onChange={onPasukanPhotoChange}
                                   className="hidden"
                                 />
                               </label>
@@ -220,7 +235,7 @@ export function ParticipantModuleBiodata({
 
                         <div
                           ref={(el) => {
-                            pasukanFieldRefs.current.fullName = el;
+                            if (pasukanFieldRefs?.current) pasukanFieldRefs.current.fullName = el;
                           }}
                         >
                           <label className="block text-xs font-black uppercase text-[#092D32] mb-1">
@@ -233,7 +248,7 @@ export function ParticipantModuleBiodata({
                               onChange={(e) => {
                                 setPasukanForm({ ...pasukanForm, fullName: e.target.value });
                                 if (pasukanErrors.fullName) {
-                                  setPasukanErrors({ ...pasukanErrors, fullName: '' });
+                                  if (setPasukanErrors) setPasukanErrors({ ...pasukanErrors, fullName: '' });
                                 }
                               }}
                               style={{ color: '#020617' }}
@@ -263,7 +278,7 @@ export function ParticipantModuleBiodata({
 
                         <div
                           ref={(el) => {
-                            pasukanFieldRefs.current.position = el;
+                            if (pasukanFieldRefs?.current) pasukanFieldRefs.current.position = el;
                           }}
                         >
                           <label className="block text-xs font-black uppercase text-[#092D32] mb-1">
@@ -289,7 +304,7 @@ export function ParticipantModuleBiodata({
 
                         <div
                           ref={(el) => {
-                            pasukanFieldRefs.current.nisn = el;
+                            if (pasukanFieldRefs?.current) pasukanFieldRefs.current.nisn = el;
                           }}
                         >
                           <label className="block text-xs font-black uppercase text-[#092D32] mb-1">
@@ -303,7 +318,7 @@ export function ParticipantModuleBiodata({
                               onChange={(e) => {
                                 setPasukanForm({ ...pasukanForm, nisn: e.target.value });
                                 if (pasukanErrors.nisn) {
-                                  setPasukanErrors({ ...pasukanErrors, nisn: '' });
+                                  if (setPasukanErrors) setPasukanErrors({ ...pasukanErrors, nisn: '' });
                                 }
                               }}
                               style={{ color: '#020617' }}
@@ -326,7 +341,7 @@ export function ParticipantModuleBiodata({
                         <TeamIdCardPreview
                           person={pasukanForm}
                           schoolName={detectedSchoolName}
-                          schoolLogo={profileForm.logoDataUrl}
+                          schoolLogo={activeLogoUrl}
                           type="PASUKAN"
                           indexNumber={(portalData?.pasukanList?.length || 0) + 1}
                         />
@@ -336,8 +351,11 @@ export function ParticipantModuleBiodata({
                         <button
                           type="button"
                           onClick={() => {
-                            setShowPasukanForm(false);
-                            setEditingPasukanId(null);
+                            if (handleCancelPasukanForm) handleCancelPasukanForm();
+                            else {
+                              setShowPasukanForm(false);
+                              if (setEditingPasukanId) setEditingPasukanId(null);
+                            }
                           }}
                           className="px-5 py-2.5 rounded-2xl neu-btn text-slate-700 font-bold text-xs cursor-pointer"
                         >
@@ -364,8 +382,11 @@ export function ParticipantModuleBiodata({
                       <button
                         type="button"
                         onClick={() => {
-                          setShowOfficialForm(false);
-                          setEditingOfficialId(null);
+                          if (handleCancelOfficialForm) handleCancelOfficialForm();
+                          else {
+                            setShowOfficialForm(false);
+                            if (setEditingOfficialId) setEditingOfficialId(null);
+                          }
                         }}
                         className="p-2 rounded-2xl neu-btn text-slate-600 hover:text-slate-950 cursor-pointer"
                       >
@@ -373,11 +394,11 @@ export function ParticipantModuleBiodata({
                       </button>
                     </div>
 
-                    <form onSubmit={handleSubmitOfficial} className="space-y-5">
+                    <form onSubmit={onSaveOfficial} className="space-y-5">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div
                           ref={(el) => {
-                            officialFieldRefs.current.photoDataUrl = el;
+                            if (officialFieldRefs?.current) officialFieldRefs.current.photoDataUrl = el;
                           }}
                           className={`rounded-2xl border-2 border-dashed p-4 ${
                             officialErrors.photoDataUrl
@@ -406,7 +427,7 @@ export function ParticipantModuleBiodata({
                                 <input
                                   type="file"
                                   accept=".jpg,.jpeg,.png,.svg,.webp"
-                                  onChange={handleOfficialPhotoChange}
+                                  onChange={onOfficialPhotoChange}
                                   className="hidden"
                                 />
                               </label>
@@ -427,7 +448,7 @@ export function ParticipantModuleBiodata({
                         <div className="space-y-3">
                           <div
                             ref={(el) => {
-                              officialFieldRefs.current.fullName = el;
+                              if (officialFieldRefs?.current) officialFieldRefs.current.fullName = el;
                             }}
                           >
                             <label className="block text-xs font-black uppercase text-[#092D32] mb-1">
@@ -440,7 +461,7 @@ export function ParticipantModuleBiodata({
                                 onChange={(e) => {
                                   setOfficialForm({ ...officialForm, fullName: e.target.value });
                                   if (officialErrors.fullName) {
-                                    setOfficialErrors({ ...officialErrors, fullName: '' });
+                                    if (setOfficialErrors) setOfficialErrors({ ...officialErrors, fullName: '' });
                                   }
                                 }}
                                 style={{ color: '#020617' }}
@@ -483,8 +504,11 @@ export function ParticipantModuleBiodata({
                         <button
                           type="button"
                           onClick={() => {
-                            setShowOfficialForm(false);
-                            setEditingOfficialId(null);
+                            if (handleCancelOfficialForm) handleCancelOfficialForm();
+                            else {
+                              setShowOfficialForm(false);
+                              if (setEditingOfficialId) setEditingOfficialId(null);
+                            }
                           }}
                           className="px-5 py-2.5 rounded-2xl neu-btn text-slate-700 font-bold text-xs cursor-pointer"
                         >
@@ -528,7 +552,7 @@ export function ParticipantModuleBiodata({
                           <TeamIdCardPreview
                             person={p}
                             schoolName={detectedSchoolName}
-                            schoolLogo={profileForm.logoDataUrl}
+                            schoolLogo={activeLogoUrl}
                             type="PASUKAN"
                             indexNumber={idx + 1}
                           />
@@ -537,17 +561,21 @@ export function ParticipantModuleBiodata({
                               <button
                                 type="button"
                                 onClick={() => {
-                                  setEditingPasukanId(p.id);
-                                  setPasukanForm({
-                                    photoDataUrl: p.photoDataUrl || '',
-                                    photoFileName: p.photoFileName || '',
-                                    photoSizeKb: p.photoSizeKb || 0,
-                                    fullName: p.fullName || '',
-                                    position: p.position || 'Pasukan Inti',
-                                    nisn: p.nisn || '',
-                                  });
-                                  setShowPasukanForm(true);
-                                  setShowOfficialForm(false);
+                                  if (handleEditPasukan) {
+                                    handleEditPasukan(p);
+                                  } else {
+                                    if (setEditingPasukanId) setEditingPasukanId(p.id);
+                                    setPasukanForm({
+                                      photoDataUrl: p.photoDataUrl || '',
+                                      photoFileName: p.photoFileName || '',
+                                      photoSizeKb: p.photoSizeKb || 0,
+                                      fullName: p.fullName || '',
+                                      position: p.position || 'Pasukan Inti',
+                                      nisn: p.nisn || '',
+                                    });
+                                    setShowPasukanForm(true);
+                                    setShowOfficialForm(false);
+                                  }
                                 }}
                                 className="px-3 py-1 rounded-lg bg-[#F5F8F6] hover:bg-slate-200 text-[#092D32] text-xs font-bold flex items-center gap-1 cursor-pointer"
                               >
@@ -555,7 +583,7 @@ export function ParticipantModuleBiodata({
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDeletePasukan(p.id, p.fullName)}
+                                onClick={() => handleDeletePasukan && handleDeletePasukan(p.id, p.fullName)}
                                 className="px-3 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-[#E11D48] text-xs font-bold flex items-center gap-1 cursor-pointer"
                               >
                                 <Trash2 size={12} /> Hapus
@@ -570,7 +598,7 @@ export function ParticipantModuleBiodata({
                           <TeamIdCardPreview
                             person={o}
                             schoolName={detectedSchoolName}
-                            schoolLogo={profileForm.logoDataUrl}
+                            schoolLogo={activeLogoUrl}
                             type="OFFICIAL"
                             indexNumber={idx + 1}
                           />
@@ -579,16 +607,20 @@ export function ParticipantModuleBiodata({
                               <button
                                 type="button"
                                 onClick={() => {
-                                  setEditingOfficialId(o.id);
-                                  setOfficialForm({
-                                    photoDataUrl: o.photoDataUrl || '',
-                                    photoFileName: o.photoFileName || '',
-                                    photoSizeKb: o.photoSizeKb || 0,
-                                    fullName: o.fullName || '',
-                                    position: o.position || 'Official 1',
-                                  });
-                                  setShowOfficialForm(true);
-                                  setShowPasukanForm(false);
+                                  if (handleEditOfficial) {
+                                    handleEditOfficial(o);
+                                  } else {
+                                    if (setEditingOfficialId) setEditingOfficialId(o.id);
+                                    setOfficialForm({
+                                      photoDataUrl: o.photoDataUrl || '',
+                                      photoFileName: o.photoFileName || '',
+                                      photoSizeKb: o.photoSizeKb || 0,
+                                      fullName: o.fullName || '',
+                                      position: o.position || 'Official 1',
+                                    });
+                                    setShowOfficialForm(true);
+                                    setShowPasukanForm(false);
+                                  }
                                 }}
                                 className="px-3 py-1 rounded-lg bg-[#F5F8F6] hover:bg-slate-200 text-[#092D32] text-xs font-bold flex items-center gap-1 cursor-pointer"
                               >
@@ -596,7 +628,7 @@ export function ParticipantModuleBiodata({
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDeleteOfficial(o.id, o.fullName)}
+                                onClick={() => handleDeleteOfficial && handleDeleteOfficial(o.id, o.fullName)}
                                 className="px-3 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-[#E11D48] text-xs font-bold flex items-center gap-1 cursor-pointer"
                               >
                                 <Trash2 size={12} /> Hapus

@@ -305,46 +305,15 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
 
   // HANDLER TAB 1: PROFIL SEKOLAH
   const {
-    handleSchoolLogoChange,
-    handleProfileSubmit,
-    handleDocUpload,
-    handleDeleteDocument,
-    handleVerifyDocumentByAdmin,
-    handlePasukanPhotoUpload,
-    handleSavePasukan,
-    handleDeletePasukan,
-    handleOfficialPhotoUpload,
-    handleSaveOfficial,
-    handleDeleteOfficial,
-    handleEditPasukan,
-    handleCancelPasukanForm,
-    handleEditOfficial,
-    handleCancelOfficialForm,
+    handleSchoolLogoChange, handleProfileSubmit, handleDocUpload, handleDeleteDocument,
+    handleVerifyDocumentByAdmin, handlePasukanPhotoUpload, handleSavePasukan, handleDeletePasukan,
+    handleOfficialPhotoUpload, handleSaveOfficial, handleDeleteOfficial, handleEditPasukan,
+    handleCancelPasukanForm, handleEditOfficial, handleCancelOfficialForm,
   } = useParticipantRosterHandlers({
-    canEdit,
-    showToast,
-    profileForm,
-    setProfileForm,
-    profileErrors,
-    setProfileErrors,
-    setSavingProfile,
-    portalData,
-    setPortalData,
-    activeSlug,
-    setDocUploadError,
-    setUploadingDocId,
-    profileFieldRefs,
-    pasukanForm,
-    setPasukanForm,
-    pasukanErrors,
-    editingPasukanId,
-    setEditingPasukanId,
-    setShowPasukanForm,
-    officialForm,
-    setOfficialForm,
-    officialErrors,
-    editingOfficialId,
-    setEditingOfficialId,
+    canEdit, showToast, profileForm, setProfileForm, profileErrors, setProfileErrors,
+    setSavingProfile, portalData, setPortalData, activeSlug, setDocUploadError, setUploadingDocId,
+    profileFieldRefs, pasukanForm, setPasukanForm, pasukanErrors, editingPasukanId, setEditingPasukanId,
+    setShowPasukanForm, officialForm, setOfficialForm, officialErrors, editingOfficialId, setEditingOfficialId,
     setShowOfficialForm,
   });
 
@@ -384,6 +353,45 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
       ...portalData,
       schoolSlug: activeSlug,
       scores: currentScores,
+    });
+    if (updated) setPortalData(updated);
+  };
+
+  const handleSetAspectScore = (aspectId, rawScore, maxScore) => {
+    if (!hasAdminAccess) return;
+    const num =
+      rawScore === '' || rawScore === null
+        ? ''
+        : Math.min(maxScore, Math.max(0, Number(rawScore) || 0));
+    handleAdminScoreChange(aspectId, num);
+  };
+
+  const handleTogglePenalty = async (penItem, customPoints = null) => {
+    if (!hasAdminAccess || !activeSlug) return;
+    const currentPenalties = { ...(portalData?.penalties || {}) };
+    if (customPoints === null) {
+      if (currentPenalties[penItem.id]) delete currentPenalties[penItem.id];
+      else currentPenalties[penItem.id] = penItem.defaultPoints || 0;
+    } else {
+      currentPenalties[penItem.id] = Math.max(0, Number(customPoints) || 0);
+    }
+    const updated = await saveOfficialPortal({
+      ...portalData,
+      schoolSlug: activeSlug,
+      penalties: currentPenalties,
+    });
+    if (updated) setPortalData(updated);
+  };
+
+  const handleToggleBonus = async (bonusItem) => {
+    if (!hasAdminAccess || !activeSlug) return;
+    const currentBonuses = { ...(portalData?.bonuses || {}) };
+    if (currentBonuses[bonusItem.id]) delete currentBonuses[bonusItem.id];
+    else currentBonuses[bonusItem.id] = bonusItem.points || 0;
+    const updated = await saveOfficialPortal({
+      ...portalData,
+      schoolSlug: activeSlug,
+      bonuses: currentBonuses,
     });
     if (updated) setPortalData(updated);
   };
@@ -588,64 +596,46 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                 ================================================================ */}
             {activeModule === 'beranda' && (
               <ParticipantModuleBeranda
-                detectedSchoolName={detectedSchoolName}
-                activeSlug={activeSlug}
-                completionProgress={completionProgress}
-                portalData={portalData}
-                setActiveModule={setActiveModule}
-                totalPasukan={totalPasukan}
-                totalOfficial={totalOfficial}
-                openKtaViewer={openKtaViewer}
-                exportOfficialZipArchive={exportOfficialZipArchive}
-                isExportingZip={isExportingZip}
-                printNomorUrutPdf={printNomorUrutPdf}
-                printTeamRosterPdf={printTeamRosterPdf}
-                printPaktaIntegritasPdf={printPaktaIntegritasPdf}
-                TIMELINE_EVENTS={TIMELINE_EVENTS}
-                selectedTimelineId={selectedTimelineId}
-                setSelectedTimelineId={setSelectedTimelineId}
-                isGuestMode={isGuestMode}
-                progress={progress}
-                scoringSummary={scoringSummary}
-                ADMIN_MILESTONES={ADMIN_MILESTONES}
+                detectedSchoolName={detectedSchoolName} activeSlug={activeSlug}
+                completionProgress={completionProgress} portalData={portalData}
+                setActiveModule={setActiveModule} totalPasukan={totalPasukan} totalOfficial={totalOfficial}
+                openKtaViewer={openKtaViewer} exportOfficialZipArchive={exportOfficialZipArchive}
+                isExportingZip={isExportingZip} printNomorUrutPdf={printNomorUrutPdf}
+                printTeamRosterPdf={printTeamRosterPdf} printPaktaIntegritasPdf={printPaktaIntegritasPdf}
+                TIMELINE_EVENTS={TIMELINE_EVENTS} selectedTimelineId={selectedTimelineId}
+                setSelectedTimelineId={setSelectedTimelineId} isGuestMode={isGuestMode}
+                progress={progress} scoringSummary={scoringSummary} ADMIN_MILESTONES={ADMIN_MILESTONES}
               />
             )}
 
             {activeModule === 'profil' && (
               <ParticipantModuleProfil
-                handleProfileSubmit={handleProfileSubmit}
-                profileForm={profileForm}
-                setProfileForm={setProfileForm}
-                profileErrors={profileErrors}
-                setProfileErrors={setProfileErrors}
-                handleLogoUpload={handleSchoolLogoChange}
-                savingProfile={savingProfile}
-                isGuestMode={isGuestMode}
-                canEdit={canEdit}
-                progress={progress}
-                profileFieldRefs={profileFieldRefs}
+                handleProfileSubmit={handleProfileSubmit} profileForm={profileForm}
+                setProfileForm={setProfileForm} profileErrors={profileErrors}
+                setProfileErrors={setProfileErrors} handleLogoUpload={handleSchoolLogoChange}
+                savingProfile={savingProfile} isGuestMode={isGuestMode}
+                canEdit={canEdit} progress={progress} profileFieldRefs={profileFieldRefs}
               />
             )}
 
             {activeModule === 'pemberkasan' && (
               <ParticipantModulePemberkasan
-                REQUIRED_DOCS={REQUIRED_DOCS}
-                portalData={portalData}
-                docUploadError={docUploadError}
-                uploadingDocId={uploadingDocId}
-                handleDocUpload={handleDocUpload}
-                handleDeleteDocument={handleDeleteDocument}
-                isGuestMode={isGuestMode}
-                canEdit={canEdit}
-                hasAdminAccess={hasAdminAccess}
-                handleVerifyDocumentByAdmin={handleVerifyDocumentByAdmin}
-                progress={progress}
+                REQUIRED_DOCS={REQUIRED_DOCS} portalData={portalData} docUploadError={docUploadError}
+                uploadingDocId={uploadingDocId} handleDocUpload={handleDocUpload}
+                handleDeleteDocument={handleDeleteDocument} isGuestMode={isGuestMode}
+                canEdit={canEdit} hasAdminAccess={hasAdminAccess}
+                handleVerifyDocumentByAdmin={handleVerifyDocumentByAdmin} progress={progress}
               />
             )}
 
             {activeModule === 'biodata' && (
               <ParticipantModuleBiodata
                 canEdit={canEdit}
+                isGuestMode={isGuestMode}
+                progress={progress}
+                portalData={portalData}
+                detectedSchoolName={detectedSchoolName}
+                profileForm={profileForm}
                 totalPasukan={totalPasukan}
                 totalOfficial={totalOfficial}
                 openKtaViewer={openKtaViewer}
@@ -653,32 +643,34 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                 isExportingZip={isExportingZip}
                 printTeamRosterPdf={printTeamRosterPdf}
                 handleDownloadTeamCardsPdf={handleDownloadTeamCardsPdf}
-                isGuestMode={isGuestMode}
                 showPasukanForm={showPasukanForm}
                 setShowPasukanForm={setShowPasukanForm}
                 editingPasukanId={editingPasukanId}
+                setEditingPasukanId={setEditingPasukanId}
                 handleCancelPasukanForm={handleCancelPasukanForm}
                 handleSavePasukan={handleSavePasukan}
                 pasukanForm={pasukanForm}
                 setPasukanForm={setPasukanForm}
                 pasukanErrors={pasukanErrors}
+                setPasukanErrors={setPasukanErrors}
+                pasukanFieldRefs={pasukanFieldRefs}
                 handlePasukanPhotoUpload={handlePasukanPhotoUpload}
-                portalData={portalData}
                 handleEditPasukan={handleEditPasukan}
                 handleDeletePasukan={handleDeletePasukan}
                 showOfficialForm={showOfficialForm}
                 setShowOfficialForm={setShowOfficialForm}
                 editingOfficialId={editingOfficialId}
+                setEditingOfficialId={setEditingOfficialId}
                 handleCancelOfficialForm={handleCancelOfficialForm}
                 handleSaveOfficial={handleSaveOfficial}
                 officialForm={officialForm}
                 setOfficialForm={setOfficialForm}
                 officialErrors={officialErrors}
+                setOfficialErrors={setOfficialErrors}
+                officialFieldRefs={officialFieldRefs}
                 handleOfficialPhotoUpload={handleOfficialPhotoUpload}
                 handleEditOfficial={handleEditOfficial}
                 handleDeleteOfficial={handleDeleteOfficial}
-                detectedSchoolName={detectedSchoolName}
-                progress={progress}
               />
             )}
 
@@ -707,6 +699,10 @@ export function ParticipantPortal({ schoolSlugProp = '' }) {
                 handleSaveJuryVerification={handleSaveJuryVerification}
                 handleDownloadScoringCsv={handleDownloadScoringCsvAction}
                 handleDownloadScoringRecapPdf={handleDownloadScoringRecapPdf}
+                handleDownloadScoringPdf={handleDownloadScoringRecapPdf}
+                handleSetAspectScore={handleSetAspectScore}
+                handleTogglePenalty={handleTogglePenalty}
+                handleToggleBonus={handleToggleBonus}
                 scoringSummary={scoringSummary}
               />
             )}

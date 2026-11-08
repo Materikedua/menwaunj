@@ -35,8 +35,25 @@ export function ParticipantModulePenilaian({
   handleSaveJuryVerification,
   handleDownloadScoringCsv,
   handleDownloadScoringRecapPdf,
+  handleDownloadScoringPdf,
+  handleSetAspectScore: propSetAspectScore,
+  handleTogglePenalty: propTogglePenalty,
+  handleToggleBonus: propToggleBonus,
   scoringSummary = {},
 }) {
+  const onDownloadPdf = handleDownloadScoringPdf || handleDownloadScoringRecapPdf;
+  const handleSetAspectScore =
+    propSetAspectScore ||
+    ((aspectId, rawScore, maxScore) => {
+      if (!hasAdminAccess || typeof handleAdminScoreChange !== 'function') return;
+      const numeric =
+        rawScore === '' || rawScore === null
+          ? ''
+          : Math.min(maxScore, Math.max(0, Number(rawScore) || 0));
+      handleAdminScoreChange(aspectId, numeric);
+    });
+  const handleTogglePenalty = propTogglePenalty || (() => {});
+  const handleToggleBonus = propToggleBonus || (() => {});
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
@@ -64,7 +81,7 @@ export function ParticipantModulePenilaian({
             </button>
             <button
               type="button"
-              onClick={handleDownloadScoringPdf}
+              onClick={onDownloadPdf}
               className="px-4 py-2.5 rounded-xl bg-[#092D32] hover:bg-[#006569] text-[#FFDD00] font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition shadow-xs cursor-pointer"
             >
               <Printer size={15} />

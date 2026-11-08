@@ -30,3 +30,4 @@ reviews:
         - Error handling: amankan operasi asynchronous Firestore, Firebase, dan navigator clipboard dengan penanganan try/catch.
 chat:
   auto_reply: true
+
