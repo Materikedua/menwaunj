@@ -60,6 +60,7 @@ button:active:not(:disabled),
 }
 
 @media (max-width: 640px) {
+
   input,
   select,
   textarea {
@@ -68,6 +69,7 @@ button:active:not(:disabled),
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   ::before,
   ::after {
@@ -89,98 +91,253 @@ img {
 
 /* ── Lightweight CSS Motion Keyframes ── */
 @keyframes menwa-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-7px);
+  }
 }
 
 @keyframes menwa-fire {
-  0%, 100% { transform: translateY(1px) scale(.92) rotate(-2deg); }
-  50% { transform: translateY(-3px) scale(1.08) rotate(2deg); }
+
+  0%,
+  100% {
+    transform: translateY(1px) scale(.92) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-3px) scale(1.08) rotate(2deg);
+  }
 }
 
 @keyframes menwa-fire-core {
-  0%, 100% { transform: scale(.82); opacity: .8; }
-  50% { transform: scale(1.08); opacity: 1; }
+
+  0%,
+  100% {
+    transform: scale(.82);
+    opacity: .8;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
 }
 
 @keyframes menwa-plane {
-  0% { transform: translate3d(-28px, 12px, 0) rotate(-7deg); opacity: 0; }
-  12% { opacity: 1; }
-  55% { transform: translate3d(12px, -6px, 0) rotate(-2deg); }
-  100% { transform: translate3d(72px, -26px, 0) rotate(-2deg); opacity: 0; }
+  0% {
+    transform: translate3d(-28px, 12px, 0) rotate(-7deg);
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  55% {
+    transform: translate3d(12px, -6px, 0) rotate(-2deg);
+  }
+
+  100% {
+    transform: translate3d(72px, -26px, 0) rotate(-2deg);
+    opacity: 0;
+  }
 }
 
 @keyframes menwa-trail {
-  0% { transform: scaleX(.15); opacity: 0; }
-  20% { opacity: .7; }
-  100% { transform: scaleX(1); opacity: 0; }
+  0% {
+    transform: scaleX(.15);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: .7;
+  }
+
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
 }
 
 @keyframes menwa-code {
-  0%, 100% { width: 18%; }
-  50% { width: 62%; }
+
+  0%,
+  100% {
+    width: 18%;
+  }
+
+  50% {
+    width: 62%;
+  }
 }
 
 @keyframes menwa-caret {
-  0%, 45% { opacity: 1; }
-  46%, 100% { opacity: 0; }
+
+  0%,
+  45% {
+    opacity: 1;
+  }
+
+  46%,
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes menwa-card-front {
-  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
-  50% { transform: translate3d(4px, -7px, 0) rotate(-2deg); }
+
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+
+  50% {
+    transform: translate3d(4px, -7px, 0) rotate(-2deg);
+  }
 }
 
 @keyframes menwa-card-mid {
-  0%, 100% { transform: translate3d(0, 0, 0) rotate(-5deg); }
-  50% { transform: translate3d(-6px, -3px, 0) rotate(-9deg); }
+
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-5deg);
+  }
+
+  50% {
+    transform: translate3d(-6px, -3px, 0) rotate(-9deg);
+  }
 }
 
 @keyframes menwa-card-back {
-  0%, 100% { transform: translate3d(0, 0, 0) rotate(6deg); }
-  50% { transform: translate3d(7px, 0, 0) rotate(10deg); }
+
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(6deg);
+  }
+
+  50% {
+    transform: translate3d(7px, 0, 0) rotate(10deg);
+  }
 }
 
 @keyframes menwa-trophy-pop {
-  0% { transform: scale(.75) translateY(18px); opacity: 0; }
-  65% { transform: scale(1.06) translateY(-4px); opacity: 1; }
-  100% { transform: scale(1) translateY(0); opacity: 1; }
+  0% {
+    transform: scale(.75) translateY(18px);
+    opacity: 0;
+  }
+
+  65% {
+    transform: scale(1.06) translateY(-4px);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes menwa-ring {
-  0% { transform: scale(.65); opacity: .7; }
-  100% { transform: scale(1.45); opacity: 0; }
+  0% {
+    transform: scale(.65);
+    opacity: .7;
+  }
+
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
 }
 
 @keyframes menwa-kenburns {
-  0% { transform: scale(1.02) translate3d(0, 0, 0); }
-  50% { transform: scale(1.09) translate3d(-1.5%, -1%, 0); }
-  100% { transform: scale(1.02) translate3d(0, 0, 0); }
+  0% {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: scale(1.09) translate3d(-1.5%, -1%, 0);
+  }
+
+  100% {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
 }
 
 @keyframes menwa-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes menwa-blob {
-  0%, 100% { transform: scale(1) translate3d(0, 0, 0); }
-  33% { transform: scale(1.08) translate3d(12px, -18px, 0); }
-  66% { transform: scale(.94) translate3d(-14px, 10px, 0); }
+
+  0%,
+  100% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+
+  33% {
+    transform: scale(1.08) translate3d(12px, -18px, 0);
+  }
+
+  66% {
+    transform: scale(.94) translate3d(-14px, 10px, 0);
+  }
 }
 
 @keyframes menwa-anamorphic {
-  0% { transform: translateX(-150%) skewX(-20deg); opacity: 0; }
-  20% { opacity: 0.85; }
-  50% { transform: translateX(250%) skewX(-20deg); opacity: 0.85; }
-  100% { transform: translateX(350%) skewX(-20deg); opacity: 0; }
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 0.85;
+  }
+
+  50% {
+    transform: translateX(250%) skewX(-20deg);
+    opacity: 0.85;
+  }
+
+  100% {
+    transform: translateX(350%) skewX(-20deg);
+    opacity: 0;
+  }
 }
 
-.mu-kenburns { animation: menwa-kenburns 24s ease-in-out infinite alternate; will-change: transform; }
-.mu-float { animation: menwa-float 4.2s ease-in-out infinite; will-change: transform; }
-.mu-blob { animation: menwa-blob 16s ease-in-out infinite; will-change: transform; }
-.mu-delay-1 { animation-delay: -5s; }
-.mu-anamorphic { animation: menwa-anamorphic 9s cubic-bezier(0.4, 0, 0.2, 1) infinite; will-change: transform; }
+.mu-kenburns {
+  animation: menwa-kenburns 24s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.mu-float {
+  animation: menwa-float 4.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+.mu-blob {
+  animation: menwa-blob 16s ease-in-out infinite;
+  will-change: transform;
+}
+
+.mu-delay-1 {
+  animation-delay: -5s;
+}
+
+.mu-anamorphic {
+  animation: menwa-anamorphic 9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
 
 /* ── Global Dialog & Modal Zero-Glow Rule ── */
 [role="dialog"],
@@ -199,15 +356,23 @@ img {
 
 /* Animations for Podiums, Borders & Gamification */
 @keyframes borderSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes flamePulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 0 4px rgba(251, 191, 36, 0.15);
     border-color: rgba(245, 158, 11, 0.5);
   }
+
   50% {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), inset 0 0 6px rgba(251, 191, 36, 0.25);
     border-color: rgba(245, 158, 11, 0.7);
@@ -215,36 +380,68 @@ img {
 }
 
 @keyframes smoothFloatBob {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
-.animate-float-bob-1 { animation: smoothFloatBob 3.8s ease-in-out infinite; }
-.animate-float-bob-2 { animation: smoothFloatBob 4.4s ease-in-out infinite 0.6s; }
-.animate-float-bob-3 { animation: smoothFloatBob 4.0s ease-in-out infinite 1.2s; }
-.animate-border-spin { animation: borderSpin 4s linear infinite; }
-.animate-border-spin-slow { animation: borderSpin 6s linear infinite; }
-.animate-border-spin-fast { animation: borderSpin 2.8s linear infinite; }
-.animate-flame-pulse { animation: flamePulse 3s ease-in-out infinite; }
+.animate-float-bob-1 {
+  animation: smoothFloatBob 3.8s ease-in-out infinite;
+}
+
+.animate-float-bob-2 {
+  animation: smoothFloatBob 4.4s ease-in-out infinite 0.6s;
+}
+
+.animate-float-bob-3 {
+  animation: smoothFloatBob 4.0s ease-in-out infinite 1.2s;
+}
+
+.animate-border-spin {
+  animation: borderSpin 4s linear infinite;
+}
+
+.animate-border-spin-slow {
+  animation: borderSpin 6s linear infinite;
+}
+
+.animate-border-spin-fast {
+  animation: borderSpin 2.8s linear infinite;
+}
+
+.animate-flame-pulse {
+  animation: flamePulse 3s ease-in-out infinite;
+}
 
 /* ── Pride Statistics Section (Unified Seamless with Footer) ── */
 .brand-pride {
   padding: 95px 20px 48px;
   background-color: #020617;
-  background: radial-gradient(circle at 50% -15%, rgba(0, 101, 105, 0.22), transparent 70%), #020617;
+  background: #020617;
   color: #fff;
   overflow: hidden;
   text-align: center;
 }
+
 /* Seamless transition into footer */
-main:has(.brand-pride) + #footer-kontak,
-.brand-pride + #footer-kontak {
+main:has(.brand-pride)+#footer-kontak,
+.brand-pride+#footer-kontak {
+  border-top: none !important;
   border-top-color: transparent !important;
+  background-color: #020617 !important;
 }
+
 .brand-pride .brand-container {
   max-width: 1200px;
   margin: auto;
 }
+
 .brand-pride-eyebrow {
   font-size: 11px;
   color: #ffdd00;
@@ -252,6 +449,7 @@ main:has(.brand-pride) + #footer-kontak,
   letter-spacing: .24em;
   text-transform: uppercase;
 }
+
 .brand-pride h2 {
   font-size: clamp(1.9rem, 4.5vw, 3.8rem);
   font-weight: 950;
@@ -259,17 +457,20 @@ main:has(.brand-pride) + #footer-kontak,
   margin: 22px 0 8px;
   color: #ffffff;
 }
+
 .brand-pride-lead {
   color: #b4cccc;
   margin: 0 auto 34px;
   max-width: 600px;
   font-size: 15px;
 }
+
 .brand-pride-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
 }
+
 .brand-pride-stat {
   display: flex;
   align-items: center;
@@ -285,9 +486,11 @@ main:has(.brand-pride) + #footer-kontak,
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
   transition: transform .26s ease, border-color .26s ease, box-shadow .26s ease;
 }
+
 .brand-pride-stat:hover {
   transform: translateY(-5px);
 }
+
 .brand-pride-icon {
   display: grid;
   place-items: center;
@@ -298,17 +501,20 @@ main:has(.brand-pride) + #footer-kontak,
   border: 1px solid rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(8px);
 }
+
 .brand-pride-stat strong {
   font-size: clamp(2.7rem, 4.3vw, 4.7rem);
   line-height: 1;
   font-weight: 950;
   font-variant-numeric: tabular-nums;
 }
+
 .brand-pride-stat strong i {
   font-size: .6em;
   font-style: normal;
 }
-.brand-pride-stat > span:last-child {
+
+.brand-pride-stat>span:last-child {
   margin-top: 16px;
   max-width: 180px;
   color: #e0ebea;
@@ -318,6 +524,7 @@ main:has(.brand-pride) + #footer-kontak,
   line-height: 1.5;
   font-weight: 900;
 }
+
 .brand-pride .pride-line {
   white-space: normal;
   display: inline-flex;
@@ -326,12 +533,15 @@ main:has(.brand-pride) + #footer-kontak,
   justify-content: center;
   gap: .2em;
 }
+
 .brand-pride .pride-prefix {
   color: #ffffff;
 }
+
 .brand-pride .pride-typing__text {
   color: #ffdd00;
 }
+
 .brand-pride .pride-typing__caret {
   display: inline-block;
   width: 3px;
@@ -348,18 +558,21 @@ main:has(.brand-pride) + #footer-kontak,
   --pride-shadow: rgba(74, 217, 201, 0.25);
   border-color: rgba(74, 217, 201, 0.3);
 }
+
 .brand-pride-stat--gold {
   --pride-tone: #FFCF55;
   --pride-bg: rgba(255, 207, 85, 0.14);
   --pride-shadow: rgba(255, 207, 85, 0.25);
   border-color: rgba(255, 207, 85, 0.3);
 }
+
 .brand-pride-stat--violet {
   --pride-tone: #C0A2FF;
   --pride-bg: rgba(192, 162, 255, 0.14);
   --pride-shadow: rgba(192, 162, 255, 0.25);
   border-color: rgba(192, 162, 255, 0.3);
 }
+
 .brand-pride-stat--coral {
   --pride-tone: #FF986C;
   --pride-bg: rgba(255, 152, 108, 0.14);
@@ -372,25 +585,31 @@ main:has(.brand-pride) + #footer-kontak,
   color: var(--pride-tone);
   box-shadow: 0 8px 24px var(--pride-shadow);
 }
+
 .brand-pride-stat strong {
   color: var(--pride-tone);
 }
+
 .brand-pride-stat:hover {
   border-color: var(--pride-tone);
   box-shadow: 0 24px 48px var(--pride-shadow);
 }
+
 @media (max-width: 767px) {
   .brand-pride-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
+
   .brand-pride {
     padding: 72px 16px;
   }
+
   .brand-pride-stat {
     min-height: 180px;
     padding: 20px 10px;
   }
+
   .brand-pride h2 {
     font-size: clamp(1.65rem, 7vw, 3rem);
   }

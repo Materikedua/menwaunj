@@ -146,11 +146,14 @@ export function GamesPage({ onOpenAuth }) {
 
           {/* Subtab Navigation: Tactile 3.5D Pill Bar (Ref: Image 1) */}
           <nav aria-label="Menu Subtab Games" className="mt-8 flex justify-center">
-            <div className="neu-pill-bar max-w-full overflow-x-auto shadow-lg">
+            <div className="inline-flex items-center gap-1.5 p-1.5 rounded-full bg-white/95 border border-teal-200/80 shadow-lg max-w-full overflow-x-auto">
               <button
                 type="button"
                 onClick={() => handleTabChange('game')}
-                className={`neu-pill-tab ${activeTab === 'game' ? 'active' : ''}`}
+                className={`relative inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs font-black tracking-wide transition-all duration-200 cursor-pointer whitespace-nowrap ${activeTab === 'game'
+                    ? 'bg-gradient-to-r from-[#006569] to-[#092D32] text-white shadow-md shadow-[#006569]/30 ring-1 ring-white/20'
+                    : 'bg-transparent text-[#006569] hover:bg-slate-100/80 hover:text-[#092D32]'
+                  }`}
               >
                 <Gamepad2 size={16} className={activeTab === 'game' ? 'text-[#FFDD00]' : 'text-teal-600'} />
                 <span>1. Permainan & Tantangan</span>
@@ -159,7 +162,10 @@ export function GamesPage({ onOpenAuth }) {
               <button
                 type="button"
                 onClick={() => handleTabChange('leaderboard')}
-                className={`neu-pill-tab ${activeTab === 'leaderboard' ? 'active' : ''}`}
+                className={`relative inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs font-black tracking-wide transition-all duration-200 cursor-pointer whitespace-nowrap ${activeTab === 'leaderboard'
+                    ? 'bg-gradient-to-r from-[#006569] to-[#092D32] text-white shadow-md shadow-[#006569]/30 ring-1 ring-white/20'
+                    : 'bg-transparent text-[#006569] hover:bg-slate-100/80 hover:text-[#092D32]'
+                  }`}
               >
                 <Trophy size={16} className={activeTab === 'leaderboard' ? 'text-[#FFDD00]' : 'text-amber-500'} />
                 <span>2. Papan Peringkat</span>
@@ -168,7 +174,10 @@ export function GamesPage({ onOpenAuth }) {
               <button
                 type="button"
                 onClick={() => handleTabChange('rewards')}
-                className={`neu-pill-tab ${activeTab === 'rewards' ? 'active' : ''}`}
+                className={`relative inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs font-black tracking-wide transition-all duration-200 cursor-pointer whitespace-nowrap ${activeTab === 'rewards'
+                    ? 'bg-gradient-to-r from-[#006569] to-[#092D32] text-white shadow-md shadow-[#006569]/30 ring-1 ring-white/20'
+                    : 'bg-transparent text-[#006569] hover:bg-slate-100/80 hover:text-[#092D32]'
+                  }`}
               >
                 <Gift size={16} className={activeTab === 'rewards' ? 'text-[#FFDD00]' : 'text-purple-500'} />
                 <span>3. Penukaran Hadiah</span>
