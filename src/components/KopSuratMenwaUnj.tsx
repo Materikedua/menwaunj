@@ -28,75 +28,122 @@ export const KopSuratMenwaUnj: React.FC<KopSuratMenwaUnjProps> = ({
       style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}
       data-testid="kop-surat-menwa-unj-standard"
     >
-      <div className="flex items-center justify-between min-h-[96px]">
-        {/* Logo Kiri: Universitas Negeri Jakarta */}
-        <div
-          className="shrink-0 flex items-center justify-start"
-          style={{ width: '88px', height: '94px' }}
-        >
-          <img
-            src={c.logoUnjPath}
-            alt="Logo Universitas Negeri Jakarta"
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-contain"
-          />
-        </div>
-
-        {/* 5 Baris Teks Kop Surat Resmi (Arial 13.5pt & 9.5pt) */}
-        <div className="flex-1 text-center px-1 leading-[1.18]">
-          <div
-            style={{ fontSize: '13.5pt' }}
-            className="font-bold uppercase tracking-normal whitespace-nowrap text-black"
-          >
-            {c.baris1}
-          </div>
-          <div
-            style={{ fontSize: '13.5pt' }}
-            className="font-bold uppercase tracking-normal whitespace-nowrap text-black"
-          >
-            {c.baris2}
-          </div>
-          <div
-            style={{ fontSize: '9.5pt' }}
-            className="font-normal text-black mt-0.5 whitespace-nowrap"
-          >
-            {c.alamat}
-          </div>
-          <div
-            style={{ fontSize: '9.5pt' }}
-            className="font-normal text-black whitespace-nowrap"
-          >
-            {c.kontak}
-          </div>
-          <div
-            style={{ fontSize: '9.5pt' }}
-            className="font-normal text-black whitespace-nowrap"
-          >
-            Laman:{' '}
-            <a
-              href={c.lamanUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="text-[#0000ee] underline"
+      <table
+        id="kop-surat-table"
+        style={{
+          width: '100%',
+          borderCollapse: 'collapse',
+          borderSpacing: 0,
+          margin: 0,
+          padding: 0,
+        }}
+      >
+        <tbody>
+          <tr>
+            {/* Logo Kiri: Universitas Negeri Jakarta (Proposional Standar Resmi) */}
+            <td
+              style={{
+                width: '68px',
+                verticalAlign: 'middle',
+                textAlign: 'left',
+                padding: 0,
+              }}
             >
-              {c.lamanLabel}
-            </a>
-          </div>
-        </div>
+              <img
+                src={c.logoUnjPath}
+                alt="Logo Universitas Negeri Jakarta"
+                referrerPolicy="no-referrer"
+                width={62}
+                height={66}
+                style={{
+                  width: '62px',
+                  height: '66px',
+                  maxWidth: '62px',
+                  maxHeight: '66px',
+                  objectFit: 'contain',
+                  display: 'block',
+                }}
+              />
+            </td>
 
-        {/* Logo Kanan: Komando Resimen Mahasiswa Jayakarta */}
-        <div
-          className="shrink-0 flex items-center justify-end"
-          style={{ width: '96px', height: '94px' }}
-        >
-          <img
-            src={c.logoMenwaPath}
-            alt="Logo Menwa Jayakarta Satuan UNJ"
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-contain"
-          />
-        </div>
-      </div>
+            {/* 5 Baris Teks Kop Surat Resmi (Arial 12.5pt & 8.5pt) */}
+            <td
+              style={{
+                verticalAlign: 'middle',
+                textAlign: 'center',
+                padding: '0 4px',
+                lineHeight: 1.18,
+              }}
+            >
+              <div
+                style={{ fontSize: '12.5pt', fontWeight: 'bold' }}
+                className="uppercase tracking-normal whitespace-nowrap text-black font-sans"
+              >
+                {c.baris1}
+              </div>
+              <div
+                style={{ fontSize: '12.5pt', fontWeight: 'bold' }}
+                className="uppercase tracking-normal whitespace-nowrap text-black font-sans"
+              >
+                {c.baris2}
+              </div>
+              <div
+                style={{ fontSize: '8.5pt' }}
+                className="font-normal text-black mt-0.5 whitespace-nowrap font-sans"
+              >
+                {c.alamat}
+              </div>
+              <div
+                style={{ fontSize: '8.5pt' }}
+                className="font-normal text-black whitespace-nowrap font-sans"
+              >
+                {c.kontak}
+              </div>
+              <div
+                style={{ fontSize: '8.5pt' }}
+                className="font-normal text-black whitespace-nowrap font-sans"
+              >
+                Laman:{' '}
+                <a
+                  href={c.lamanUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[#0000ee] underline"
+                >
+                  {c.lamanLabel}
+                </a>
+              </div>
+            </td>
+
+            {/* Logo Kanan: Komando Resimen Mahasiswa Jayakarta */}
+            <td
+              style={{
+                width: '72px',
+                verticalAlign: 'middle',
+                textAlign: 'right',
+                padding: 0,
+              }}
+            >
+              <img
+                src={c.logoMenwaPath}
+                alt="Logo Menwa Jayakarta Satuan UNJ"
+                referrerPolicy="no-referrer"
+                width={68}
+                height={66}
+                style={{
+                  width: '68px',
+                  height: '66px',
+                  maxWidth: '68px',
+                  maxHeight: '66px',
+                  objectFit: 'contain',
+                  display: 'block',
+                  marginLeft: 'auto',
+                }}
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
       {/* Pembatas Kop Garis Ganda Resmi: Tipis (0.75pt) di Atas + Tebal (2.75pt) di Bawah */}
       <div className="w-full mt-1 mb-1.5" aria-hidden="true">

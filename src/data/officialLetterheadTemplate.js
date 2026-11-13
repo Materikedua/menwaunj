@@ -59,8 +59,8 @@ export const BLANK_LETTERHEAD_HTML = `<!DOCTYPE html>
       padding-bottom: 8px;
     }
     .kop-logo {
-      width: 82px;
-      height: 82px;
+      width: 64px;
+      height: 68px;
       object-fit: contain;
       flex-shrink: 0;
     }

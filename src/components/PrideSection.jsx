@@ -9,11 +9,53 @@ const ICON_MAP = {
   heart: HeartHandshake,
 };
 
-export const PrideText = () => (
-  <span className="pride-line">
-    <span className="pride-prefix">Menwa UNJ dalam Pencapaian &amp; Pengabdian</span>
-  </span>
-);
+const ROTATING_PHRASES = [
+  'Pencapaian & Pengabdian',
+  'Prestasi & Dedikasi',
+  'Pembinaan Bela Negara',
+  'Pengabdian Masyarakat',
+];
+
+export const PrideText = () => {
+  const [index, setIndex] = useState(0);
+  const [typed, setTyped] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const phrase = ROTATING_PHRASES[index];
+
+  useEffect(() => {
+    const pause = !deleting && typed === phrase;
+    const timer = setTimeout(
+      () => {
+        if (pause) {
+          setDeleting(true);
+          return;
+        }
+        if (deleting) {
+          const next = typed.slice(0, -1);
+          setTyped(next);
+          if (!next) {
+            setDeleting(false);
+            setIndex((i) => (i + 1) % ROTATING_PHRASES.length);
+          }
+        } else {
+          setTyped(phrase.slice(0, typed.length + 1));
+        }
+      },
+      pause ? 1800 : deleting ? 50 : 85
+    );
+    return () => clearTimeout(timer);
+  }, [typed, deleting, phrase]);
+
+  return (
+    <span className="pride-line">
+      <span className="pride-prefix">Menwa UNJ dalam </span>
+      <span className="pride-typing text-[#FFDD00]">
+        <span className="pride-typing__text">{typed}</span>
+        <span className="pride-typing__caret inline-block w-[3px] h-[0.9em] bg-[#FFDD00] ml-1.5 align-baseline animate-pulse" aria-hidden />
+      </span>
+    </span>
+  );
+};
 
 export const V3_STATS = UNIT_METRICS;
 
@@ -79,11 +121,8 @@ export const PrideSection = () => (
     <div className="brand-container">
       <span className="brand-pride-eyebrow">REKAM JEJAK &amp; KAPASITAS SATUAN</span>
       <h2 id="brand-pride-title">
-        Menwa UNJ dalam <span className="text-[#FFDD00]">Pencapaian &amp; Pengabdian</span>
+        <PrideText />
       </h2>
-      <p className="brand-pride-lead">
-        Data kumulatif pembinaan kader, siklus program kerja tahunan, penyelenggaraan kompetisi nasional, serta jangkauan bakti sosial kemanusiaan Satuan Universitas Negeri Jakarta.
-      </p>
       <div className="brand-pride-grid">
         {UNIT_METRICS.map((item) => (
           <PrideStat key={item.id} item={item} />

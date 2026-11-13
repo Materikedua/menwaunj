@@ -374,6 +374,10 @@ export const SmartAdminuSection: React.FC<SmartAdminuSectionProps> = ({
           }
           table { width: 100%; border-collapse: collapse; }
           td { padding: 1.5px 0; }
+          #kop-surat-table { width: 100% !important; margin-bottom: 2mm !important; }
+          #kop-surat-table img { display: block !important; }
+          #rincian-pelaksanaan-table { width: 100% !important; border-collapse: collapse !important; margin: 2.5mm 0 !important; }
+          #rincian-pelaksanaan-table td { padding: 1.5px 0 !important; }
         </style>
       </head>
       <body>
@@ -986,29 +990,76 @@ export const SmartAdminuSection: React.FC<SmartAdminuSectionProps> = ({
                     <strong>{activeTicketForLetter.serviceLabel}</strong> dengan rincian pelaksanaan sebagai berikut:
                   </p>
 
-                  <ol className="list-decimal pl-6 space-y-1 text-left">
-                    <li>
-                      Penanggung Jawab: <strong>{activeTicketForLetter.applicantName}</strong>
-                    </li>
-                    <li>
-                      Instansi / Ormawa: <strong>{activeTicketForLetter.institution}</strong>
-                    </li>
-                    <li>
-                      Hari / Tanggal Kegiatan: <strong>{activeTicketForLetter.eventDate}</strong>
-                    </li>
-                    <li>
-                      Tempat Pelaksanaan: <strong>{activeTicketForLetter.eventLocation}</strong>
-                    </li>
-                    <li>
-                      Kebutuhan Personel: <strong>{activeTicketForLetter.personnelRequested} Personel</strong>
-                    </li>
-                    <li>
-                      Kontak Narahubung: <strong>{activeTicketForLetter.contactPhone}</strong>
-                    </li>
-                    <li>
-                      Keterangan Lapangan: {activeTicketForLetter.notes}
-                    </li>
-                  </ol>
+                  <table
+                    id="rincian-pelaksanaan-table"
+                    style={{
+                      width: '100%',
+                      borderCollapse: 'collapse',
+                      margin: '8px 0',
+                      fontFamily: 'Arial, Helvetica, sans-serif',
+                      fontSize: '11pt',
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    <tbody>
+                      <tr>
+                        <td style={{ width: '22px', verticalAlign: 'top' }}>1.</td>
+                        <td style={{ width: '190px', verticalAlign: 'top' }}>Penanggung Jawab</td>
+                        <td style={{ width: '14px', verticalAlign: 'top' }}>:</td>
+                        <td style={{ verticalAlign: 'top' }}>
+                          <strong>{activeTicketForLetter.applicantName}</strong>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ verticalAlign: 'top' }}>2.</td>
+                        <td style={{ verticalAlign: 'top' }}>Instansi / Ormawa</td>
+                        <td style={{ verticalAlign: 'top' }}>:</td>
+                        <td style={{ verticalAlign: 'top' }}>
+                          <strong>{activeTicketForLetter.institution}</strong>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ verticalAlign: 'top' }}>3.</td>
+                        <td style={{ verticalAlign: 'top' }}>Hari / Tanggal Kegiatan</td>
+                        <td style={{ verticalAlign: 'top' }}>:</td>
+                        <td style={{ verticalAlign: 'top' }}>
+                          <strong>{activeTicketForLetter.eventDate}</strong>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ verticalAlign: 'top' }}>4.</td>
+                        <td style={{ verticalAlign: 'top' }}>Tempat Pelaksanaan</td>
+                        <td style={{ verticalAlign: 'top' }}>:</td>
+                        <td style={{ verticalAlign: 'top' }}>
+                          <strong>{activeTicketForLetter.eventLocation}</strong>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ verticalAlign: 'top' }}>5.</td>
+                        <td style={{ verticalAlign: 'top' }}>Kebutuhan Personel</td>
+                        <td style={{ verticalAlign: 'top' }}>:</td>
+                        <td style={{ verticalAlign: 'top' }}>
+                          <strong>{activeTicketForLetter.personnelRequested} Personel</strong>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ verticalAlign: 'top' }}>6.</td>
+                        <td style={{ verticalAlign: 'top' }}>Kontak Narahubung</td>
+                        <td style={{ verticalAlign: 'top' }}>:</td>
+                        <td style={{ verticalAlign: 'top' }}>
+                          <strong>{activeTicketForLetter.contactPhone}</strong>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ verticalAlign: 'top' }}>7.</td>
+                        <td style={{ verticalAlign: 'top' }}>Keterangan Lapangan</td>
+                        <td style={{ verticalAlign: 'top' }}>:</td>
+                        <td style={{ verticalAlign: 'top' }}>
+                          {activeTicketForLetter.notes || '-'}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
 
                   <p>
                     Demikian surat permohonan resmi ini kami sampaikan untuk ditindaklanjuti sesuai prosedur administrasi yang berlaku. Atas perhatian dan kerja sama Komando, kami ucapkan terima kasih.

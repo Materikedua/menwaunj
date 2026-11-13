@@ -61,13 +61,13 @@ export function generateBukuPasukanHtml(portalData) {
     * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     body { font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; color: #111827; background: #ffffff; margin: 0; padding: 0; font-size: 10.5pt; line-height: 1.35; }
     .kop-wrapper { display: flex; align-items: center; justify-content: space-between; padding-bottom: 4px; margin-bottom: 2px; }
-    .kop-logo-left { width: 84px; height: 90px; object-fit: contain; flex-shrink: 0; }
-    .kop-logo-right { width: 90px; height: 90px; object-fit: contain; flex-shrink: 0; }
-    .kop-center { text-align: center; flex: 1; padding: 0 12px; font-family: Arial, Helvetica, sans-serif; }
-    .kop-center .line-instansi { margin: 0; font-size: 13pt; font-weight: bold; letter-spacing: 0.5px; color: #000000; text-transform: uppercase; line-height: 1.2; }
-    .kop-center .line-panitia { margin: 2px 0 0 0; font-size: 11pt; font-weight: bold; letter-spacing: 0.5px; color: #000000; text-transform: uppercase; line-height: 1.2; }
-    .kop-center .line-alamat { margin: 3px 0 0 0; font-size: 9pt; color: #000000; line-height: 1.25; }
-    .kop-center .line-kontak { margin: 1px 0 0 0; font-size: 9pt; color: #000000; line-height: 1.25; }
+    .kop-logo-left { width: 62px; height: 66px; object-fit: contain; flex-shrink: 0; }
+    .kop-logo-right { width: 68px; height: 66px; object-fit: contain; flex-shrink: 0; }
+    .kop-center { text-align: center; flex: 1; padding: 0 10px; font-family: Arial, Helvetica, sans-serif; }
+    .kop-center .line-instansi { margin: 0; font-size: 12pt; font-weight: bold; letter-spacing: 0.5px; color: #000000; text-transform: uppercase; line-height: 1.18; }
+    .kop-center .line-panitia { margin: 2px 0 0 0; font-size: 10.5pt; font-weight: bold; letter-spacing: 0.5px; color: #000000; text-transform: uppercase; line-height: 1.18; }
+    .kop-center .line-alamat { margin: 2px 0 0 0; font-size: 8.5pt; color: #000000; line-height: 1.2; }
+    .kop-center .line-kontak { margin: 1px 0 0 0; font-size: 8.5pt; color: #000000; line-height: 1.2; }
     .kop-line-thin { border-top: 0.75pt solid #000000; margin-bottom: 2pt; margin-top: 4px; }
     .kop-line-thick { border-top: 2.75pt solid #000000; margin-bottom: 12px; }
     .doc-title { text-align: center; margin: 8px 0 12px 0; }

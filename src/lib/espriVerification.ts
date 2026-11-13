@@ -358,18 +358,18 @@ export function renderKopSuratHtmlString(
 <div style="font-family: Arial, Helvetica, sans-serif; color: #000000; width: 100%;">
   <table style="width: 100%; border-collapse: collapse; margin-bottom: 4px;">
     <tr>
-      <td style="width: 88px; vertical-align: middle; text-align: left;">
-        <img src="${escapeHtml(cleanOrigin + c.logoUnjPath)}" alt="Logo UNJ" style="width: 84px; height: 88px; object-fit: contain;" />
+      <td style="width: 68px; vertical-align: middle; text-align: left;">
+        <img src="${escapeHtml(cleanOrigin + c.logoUnjPath)}" alt="Logo UNJ" width="62" height="66" style="width: 62px; height: 66px; object-fit: contain;" />
       </td>
-      <td style="vertical-align: middle; text-align: center; line-height: 1.18;">
-        <div style="font-size: 13.5pt; font-weight: bold; text-transform: uppercase;">${escapeHtml(c.baris1)}</div>
-        <div style="font-size: 13.5pt; font-weight: bold; text-transform: uppercase;">${escapeHtml(c.baris2)}</div>
-        <div style="font-size: 9.5pt; margin-top: 2px;">${escapeHtml(c.alamat)}</div>
-        <div style="font-size: 9.5pt;">${escapeHtml(c.kontak)}</div>
-        <div style="font-size: 9.5pt;">Laman: <a href="${escapeHtml(c.lamanUrl)}" style="color: #0000ee; text-decoration: underline;">${escapeHtml(c.lamanLabel)}</a></div>
+      <td style="vertical-align: middle; text-align: center; line-height: 1.18; padding: 0 4px;">
+        <div style="font-size: 12.5pt; font-weight: bold; text-transform: uppercase;">${escapeHtml(c.baris1)}</div>
+        <div style="font-size: 12.5pt; font-weight: bold; text-transform: uppercase;">${escapeHtml(c.baris2)}</div>
+        <div style="font-size: 8.5pt; margin-top: 2px;">${escapeHtml(c.alamat)}</div>
+        <div style="font-size: 8.5pt;">${escapeHtml(c.kontak)}</div>
+        <div style="font-size: 8.5pt;">Laman: <a href="${escapeHtml(c.lamanUrl)}" style="color: #0000ee; text-decoration: underline;">${escapeHtml(c.lamanLabel)}</a></div>
       </td>
-      <td style="width: 96px; vertical-align: middle; text-align: right;">
-        <img src="${escapeHtml(cleanOrigin + c.logoMenwaPath)}" alt="Logo Menwa Jayakarta" style="width: 90px; height: 88px; object-fit: contain;" />
+      <td style="width: 72px; vertical-align: middle; text-align: right;">
+        <img src="${escapeHtml(cleanOrigin + c.logoMenwaPath)}" alt="Logo Menwa Jayakarta" width="68" height="66" style="width: 68px; height: 66px; object-fit: contain;" />
       </td>
     </tr>
   </table>
