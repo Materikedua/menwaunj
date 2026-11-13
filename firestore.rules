@@ -71,6 +71,7 @@ service cloud.firestore {
     function isSuperAdmin() {
       return isSignedIn() && (
         (
+          request.auth.token.email_verified == true &&
           request.auth.token.email in ['unjmenwa@gmail.com', 'rafflysyahpoetra@gmail.com']
         ) ||
         (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
@@ -173,6 +174,10 @@ service cloud.firestore {
         request.resource.data.fullName.size() <= 120 &&
         request.resource.data.institution is string &&
         request.resource.data.institution.size() <= 150 &&
+        (!('ticketId' in request.resource.data) ||
+         (request.resource.data.ticketId is string && request.resource.data.ticketId.size() <= 40)) &&
+        (!('documentPdfUrl' in request.resource.data) ||
+         (request.resource.data.documentPdfUrl is string && request.resource.data.documentPdfUrl.size() <= 1000)) &&
         (!('documentPdfBase64' in request.resource.data) ||
          (request.resource.data.documentPdfBase64 is string && request.resource.data.documentPdfBase64.size() <= 665600));
 
@@ -424,6 +429,104 @@ service cloud.firestore {
         allow read, create, delete: if isOwner(userId);
         allow update: if false;
       }
+    }
+
+    // ---------------------------------------------------------------
+    // 11. CMS Komando Beranda & Galeri (/site_cms_config/{configId})
+    // ---------------------------------------------------------------
+    function isValidSiteCmsConfig(data) {
+      return data.keys().hasAll(['version', 'updatedAt', 'updatedBy', 'heroScenes', 'sorotanGiat', 'programs', 'galleryAlbums']) &&
+        data.keys().hasOnly(['version', 'updatedAt', 'updatedBy', 'heroScenes', 'sorotanGiat', 'programs', 'galleryAlbums']) &&
+        data.version is string && data.version.size() >= 1 && data.version.size() <= 40 &&
+        data.updatedAt is string && data.updatedAt.size() >= 1 && data.updatedAt.size() <= 50 &&
+        data.updatedBy is string && data.updatedBy.size() >= 1 && data.updatedBy.size() <= 120 &&
+        data.heroScenes is list && data.heroScenes.size() >= 1 && data.heroScenes.size() <= 30 &&
+        data.sorotanGiat is list && data.sorotanGiat.size() >= 1 && data.sorotanGiat.size() <= 50 &&
+        data.programs is list && data.programs.size() >= 1 && data.programs.size() <= 30 &&
+        data.galleryAlbums is list && data.galleryAlbums.size() >= 1 && data.galleryAlbums.size() <= 60;
+    }
+
+    match /site_cms_config/{configId} {
+      allow read: if true;
+      allow create, update: if isStaffAdmin() && isValidId(configId) &&
+        configId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        isValidSiteCmsConfig(request.resource.data);
+      allow delete: if isSuperAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // 12. Smart Adminu & Tiket PAM (/adminu_tickets/{ticketId})
+    // ---------------------------------------------------------------
+    function isValidAdminuTicket(data, ticketId) {
+      return data.keys().hasAll([
+          'ticketId', 'createdAt', 'applicantName', 'institution', 'contactPhone',
+          'serviceCategory', 'serviceLabel', 'eventName', 'eventDate', 'eventLocation',
+          'personnelRequested', 'letterNumber', 'status', 'statusNote'
+        ]) &&
+        data.keys().hasOnly([
+          'ticketId', 'createdAt', 'applicantName', 'institution', 'contactPhone',
+          'contactEmail', 'serviceCategory', 'serviceLabel', 'eventName', 'eventDate',
+          'eventLocation', 'personnelRequested', 'notes', 'letterNumber', 'status', 'statusNote',
+          'attachmentPdfName', 'attachmentPdfUrl', 'attachmentPdfSizeKb', 'linkedLetterNumber'
+        ]) &&
+        data.ticketId == ticketId &&
+        data.createdAt is string && data.createdAt.size() <= 50 &&
+        data.applicantName is string && data.applicantName.size() >= 2 && data.applicantName.size() <= 120 &&
+        data.institution is string && data.institution.size() >= 2 && data.institution.size() <= 150 &&
+        data.contactPhone is string && data.contactPhone.size() >= 6 && data.contactPhone.size() <= 40 &&
+        (!('contactEmail' in data) || (data.contactEmail is string && data.contactEmail.size() <= 120)) &&
+        data.serviceCategory in [
+          'PAM_KEGIATAN',
+          'KEMITRAAN_INSTANSI',
+          'INSTRUKTUR_PELATIH',
+          'SARPRAS_KOMANDO',
+          'PENDAFTARAN_PROGRAM',
+          'DISPENSASI_IZIN'
+        ] &&
+        data.serviceLabel is string && data.serviceLabel.size() <= 120 &&
+        data.eventName is string && data.eventName.size() >= 2 && data.eventName.size() <= 180 &&
+        data.eventDate is string && data.eventDate.size() <= 40 &&
+        data.eventLocation is string && data.eventLocation.size() >= 2 && data.eventLocation.size() <= 180 &&
+        data.personnelRequested is number && data.personnelRequested >= 1 && data.personnelRequested <= 100 &&
+        (!('notes' in data) || (data.notes is string && data.notes.size() <= 1000)) &&
+        data.letterNumber is string && data.letterNumber.size() <= 80 &&
+        data.status in ['DITERIMA', 'DISETUJUI', 'VERIFIKASI_ADMINU', 'AUDIENSI_POLA_PAM', 'PERSONEL_DITUGASKAN'] &&
+        data.statusNote is string && data.statusNote.size() <= 400 &&
+        (!('attachmentPdfName' in data) || (data.attachmentPdfName is string && data.attachmentPdfName.size() <= 160)) &&
+        (!('attachmentPdfUrl' in data) || (data.attachmentPdfUrl is string && data.attachmentPdfUrl.size() <= 1000)) &&
+        (!('attachmentPdfSizeKb' in data) || (data.attachmentPdfSizeKb is number && data.attachmentPdfSizeKb >= 0 && data.attachmentPdfSizeKb <= 2048)) &&
+        (!('linkedLetterNumber' in data) || (data.linkedLetterNumber is string && data.linkedLetterNumber.size() <= 80));
+    }
+
+    match /adminu_tickets/{ticketId} {
+      // Publik dapat melacak 1 tiket berdasarkan ID resmi tanpa bisa melakukan scraping seluruh daftar pemohon
+      allow get: if true;
+      allow list: if isStaffAdmin();
+      allow create: if isValidId(ticketId) &&
+        ticketId.matches('^PAM-2026-[0-9]{3,6}$') &&
+        isValidAdminuTicket(request.resource.data, ticketId) &&
+        request.resource.data.status == 'DITERIMA';
+      allow update: if isValidId(ticketId) &&
+        isValidAdminuTicket(request.resource.data, ticketId) &&
+        request.resource.data.createdAt == resource.data.createdAt && (
+          (isStaffAdmin() &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusNote', 'linkedLetterNumber'])) ||
+          ((!('linkedLetterNumber' in resource.data) || resource.data.linkedLetterNumber == '') &&
+            resource.data.status in ['DISETUJUI', 'VERIFIKASI_ADMINU', 'AUDIENSI_POLA_PAM', 'PERSONEL_DITUGASKAN'] &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['linkedLetterNumber']) &&
+            request.resource.data.linkedLetterNumber is string &&
+            request.resource.data.linkedLetterNumber.matches('^B-[0-9]{3,5}/Web/[IVX]+/[0-9]{4}$'))
+        );
+      allow delete: if isSuperAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // 13. Registri Verifikasi Sertifikat Resmi (/certificates/{certId})
+    // ---------------------------------------------------------------
+    match /certificates/{certId} {
+      allow get: if true;
+      allow list: if isStaffAdmin();
+      allow write: if isStaffAdmin() && isValidId(certId);
     }
   }
 }

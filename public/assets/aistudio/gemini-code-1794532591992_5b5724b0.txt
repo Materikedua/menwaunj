@@ -1,0 +1,29 @@
+Execute a comprehensive architectural, feature, and security upgrade on the `menwaunj.or.id` codebase following all rules in `GEMINI.md`. Remember: ALL user-facing UI text, labels, and messages must be in authoritative Bahasa Indonesia.
+
+Implement these 4 core deliverables:
+
+1. **Data Consistency & Homepage UX Restructuring (`src/data/siteConfig.ts`):**
+   - Create `src/data/siteConfig.ts` as the single source of truth for organization stats, events, and gallery albums.
+   - Replace dummy/broken homepage metrics ("2+ Anggota Aktif", "1+ Penyelenggaraan Lomba") with credible cumulative unit figures (e.g., "50+ Anggota Aktif", "12 Program Kerja/Tahun", "8 Edisi Kompetisi Nasional", "1.000+ Penerima Manfaat Pengabdian").
+   - Fix the truncated section heading to "Menwa UNJ dalam Pencapaian & Pengabdian".
+   - Synchronize event dates and statuses (Ksatria Cendekia VIII, Youth Spark National Seminar, Geranat VII) across the Hero Slider, Program Unggulan, and Arsip Galeri.
+   - Consolidate redundant homepage blocks by merging "Orientasi Pengunjung" and "Program Unggulan" into a single role-based navigation matrix (Mahasiswa UNJ, Pelajar/Peserta Nasional, Mitra/Ormawa).
+   - Replace the public navbar badge "0EXP Akun" with a clean "Portal Anggota" button.
+
+2. **Full-Edit CMS & Tactical Wallboard (`/mako-ops`):**
+   - Upgrade `/mako-ops` into an internal Command CMS with **FULL EDIT** capabilities: authorized admins can add, delete, and edit **Titles**, **Captions/Descriptions**, **Categories**, **Dates**, **Locations**, and **Statuses** across Hero Scenes, Sorotan Giat, Program Unggulan, and Gallery Albums.
+   - Persist edits reactively via `localStorage` so homepage updates render immediately, and provide "Export JSON" / "Import JSON" buttons alongside a modular data adapter ready for Supabase.
+   - Include a top-bar mode toggle switching between **"Mode Editor Konten"** and **"Mode Monitor Mako (Tactical Kiosk)"** (a full-screen, zero-scroll command display for the Mako TV monitor at Gedung G R.107 showing daily Piket Mako schedules, nearest event countdowns, and incoming Adminu ticket queues).
+
+3. **Tactical 3D Map & High-Utility Public Services:**
+   - **Interactive 3D Tactical Operation Map:** Build a lightweight, lazy-loaded 3D terrain/globe visualization (Three.js / React Three Fiber) centered on Mako Menwa UNJ (Rawamangun, East Jakarta), plotting field operation coordinates (Cianjur & Karawang community service, UNJ Peduli Padang disaster relief) and national participant origins for KC VIII and Geranat VII. Include automatic fallback to an interactive 2D SVG map on low-spec mobile devices.
+   - **Digital Certificate Verification (`/verify`):** Create a public verification route where schools, universities, or QR code scans can validate official competition certificates (KC VIII, Geranat VII, Youth Spark) by Certificate ID, displaying verified winner metadata and command validation status.
+   - **Smart Adminu (`/adminu`) with Ticket Tracking:** Upgrade the event security (PAM) and partnership request form to auto-generate a unique tracking receipt (`PAM-2026-XXX`), a printable formal request letter preview, and a public status tracker.
+
+4. **Security Hardening (`src/utils/security.ts` & `/api/chat`):**
+   - Remove `/mako-ops` and `Mode Kiosk` links from the public footer. Guard `/mako-ops` with a Command Authentication Gate featuring 5-attempt / 5-minute rate-limiting lockout and auto-session timeout.
+   - Implement `src/utils/security.ts` to sanitize all CMS full-edit inputs and public form fields against XSS (`<script>`, `<iframe>`, inline event handlers, `javascript:` URIs) and strictly forbid `dangerouslySetInnerHTML`.
+   - Move Gemini chatbot calls to a secure serverless proxy pattern (`/api/chat`) referencing `process.env.GEMINI_API_KEY`, enforcing a 500-character input cap, basic prompt-injection sanitization, and client-side message cooldowns.
+   - Add honeypot fields and submission throttling to the Geranat VII E-Voting module and Adminu forms.
+
+Verify TypeScript compilation and provide a concise summary of all created and modified files upon completion.

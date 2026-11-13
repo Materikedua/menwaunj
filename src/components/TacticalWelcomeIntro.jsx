@@ -10,10 +10,17 @@ import { playTactileClick } from '../lib/tactileAudio.js';
  * - Zoom-out (scale 1.38) & fade-out transition at 1.45s
  */
 export function TacticalWelcomeIntro({ onFinish, logoSrc = '/logo-menwa-unj.png' }) {
-  const [fadingOut, setFadingOut] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const isAutoStart =
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('autostart') === '1';
+  const [fadingOut, setFadingOut] = useState(isAutoStart);
+  const [dismissed, setDismissed] = useState(isAutoStart);
 
   useEffect(() => {
+    if (isAutoStart) {
+      onFinish?.();
+      return undefined;
+    }
     // Jalankan efek audio lembut saat logo pop-in
     try {
       playTactileClick('hover');

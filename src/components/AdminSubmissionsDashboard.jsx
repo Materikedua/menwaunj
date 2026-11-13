@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'; import { FileText, Download, Search, Filter, CheckCircle2, Clock, XCircle, AlertCircle, RefreshCw, ExternalLink, ChevronDown, Building, User, Phone, Mail, Calendar, ShieldCheck, ArrowUpDown, FileSpreadsheet, Share2, Heart, Vote, Trash2, Sparkles, HelpCircle, X, GraduationCap } from 'lucide-react'; import { useAuth } from '../hooks/useAuth.jsx'; import { getAllSubmissionsForAdmin, updateSubmissionStatus, getAllVotingTransactionsForAdmin, getGeranatTeams, resetCharityVotingData, resetGamificationLeaderboard } from '../firebase.js';
+import React, { useState, useEffect, useMemo } from 'react'; import { FileText, Download, Search, Filter, CheckCircle2, Clock, XCircle, AlertCircle, RefreshCw, ExternalLink, ChevronDown, Building, User, Phone, Mail, Calendar, ShieldCheck, ArrowUpDown, FileSpreadsheet, Share2, Heart, Vote, Trash2, Sparkles, HelpCircle, X, GraduationCap, FolderOpen } from 'lucide-react'; import { useAuth } from '../hooks/useAuth.jsx'; import { getAllSubmissionsForAdmin, updateSubmissionStatus, getAllVotingTransactionsForAdmin, getGeranatTeams, resetCharityVotingData, resetGamificationLeaderboard, listFirebaseStorageDocuments } from '../firebase.js';
 import { openOrDownloadPdf } from '../lib/pdfUtils.js';
 
 export { openOrDownloadPdf };
@@ -16,6 +16,8 @@ export function AdminSubmissionsDashboard() { const { user, isAdmin: authIsAdmin
   );
   const hasFullAdminAccess = isSuperAdmin || authIsAdmin || isDansatOrWadan || isStafAdminu || userRole === 'superadmin' || isKesekretariatanOrPersonalia;
   const [submissions, setSubmissions] = useState([]);
+  const [storageDocs, setStorageDocs] = useState([]);
+  const [storageLoading, setStorageLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -25,7 +27,7 @@ export function AdminSubmissionsDashboard() { const { user, isAdmin: authIsAdmin
   const [selectedDetailItem, setSelectedDetailItem] = useState(null);
   /* State Modal Panduan Google Sheets */
   const [sheetsModalOpen, setSheetsModalOpen] = useState(false);
-  const [exportLoading, setExportLoading] = useState(false); const loadSubmissions = async () => { setLoading(true); try { const data = await getAllSubmissionsForAdmin(); setSubmissions(data || []); } catch (err) { console.warn('Gagal memuat berkas pendaftaran:', err); } finally { setLoading(false); } }; useEffect(() => { loadSubmissions(); }, []); /* Filter & Pencarian */ const filteredList = useMemo(() => {
+  const [exportLoading, setExportLoading] = useState(false); const loadSubmissions = async () => { setLoading(true); try { const data = await getAllSubmissionsForAdmin(); setSubmissions(data || []); } catch (err) { console.warn('Gagal memuat berkas pendaftaran:', err); } finally { setLoading(false); } if (hasFullAdminAccess) { setStorageLoading(true); try { const files = await listFirebaseStorageDocuments(); setStorageDocs(files || []); } catch { setStorageDocs([]); } finally { setStorageLoading(false); } } }; useEffect(() => { loadSubmissions(); }, [hasFullAdminAccess]); /* Filter & Pencarian */ const filteredList = useMemo(() => {
     let list = [...submissions];
     // Jika bukan Admin Mako / Dansat, hanya tampilkan surat/berkas yang diajukan oleh akun yang sedang login
     if (!hasFullAdminAccess) {
@@ -146,7 +148,93 @@ export function AdminSubmissionsDashboard() { const { user, isAdmin: authIsAdmin
                             Tolak
                           </button>
                         )}
-                      </div> </td> </tr> ); })} </tbody> </table> </div> )} </div>       {/* MODAL RINCIAN DETAIL PENGAJUAN FORMULIR */}
+                      </div> </td> </tr> ); })} </tbody> </table> </div> )} </div>
+      {/* Arsip Dokumen Firebase Storage untuk Admin Mako */}
+      {hasFullAdminAccess && (
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-teal-50 text-[#006569] flex items-center justify-center">
+                <FolderOpen size={18} />
+              </div>
+              <div>
+                <h4 className="text-sm font-black text-slate-900">
+                  Arsip Dokumen Firebase Storage ({storageDocs.length})
+                </h4>
+                <p className="text-[11px] text-slate-500">
+                  Menampilkan berkas & aset gambar terunggah langsung di direktori Firebase Storage (assets, adminu_submissions, dokumen, surat_masuk, official_portals).
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={loadSubmissions}
+              disabled={storageLoading}
+              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 flex items-center gap-1.5 cursor-pointer"
+            >
+              <RefreshCw size={13} className={storageLoading ? 'animate-spin' : ''} />
+              <span>Muat Ulang Storage</span>
+            </button>
+          </div>
+
+          {storageLoading ? (
+            <p className="text-xs text-slate-500 py-4 text-center">Memindai direktori Firebase Storage…</p>
+          ) : storageDocs.length === 0 ? (
+            <p className="text-xs text-slate-500 py-4 text-center">
+              Belum ada berkas terdeteksi pada folder Storage yang dipantau atau menunggu unggahan pertama.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {storageDocs.slice(0, 48).map((docFile) => {
+                const isImg =
+                  Boolean(docFile.isImage) ||
+                  /\.(webp|jpe?g|png|gif|svg)$/i.test(docFile.name || '');
+                return (
+                  <div
+                    key={docFile.fullPath}
+                    className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between gap-2"
+                  >
+                    <div>
+                      {isImg && (
+                        <div className="aspect-video w-full rounded-lg overflow-hidden bg-slate-200 border border-slate-200 mb-2">
+                          <img
+                            src={docFile.url}
+                            alt={docFile.name}
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="text-[10px] font-mono text-[#006569] font-bold truncate">
+                        {docFile.folder || 'root'}
+                      </div>
+                      <div className="text-xs font-black text-slate-900 truncate mt-0.5" title={docFile.name}>
+                        {docFile.name}
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">
+                        {docFile.sizeBytes > 0
+                          ? `${Math.max(1, Math.round(docFile.sizeBytes / 1024))} KB`
+                          : 'Ukuran tidak tercatat'}
+                        {docFile.contentType ? ` • ${docFile.contentType}` : ''}
+                      </div>
+                    </div>
+                    <a
+                      href={docFile.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] text-[11px] font-black transition"
+                    >
+                      <Download size={12} />
+                      <span>{isImg ? 'Lihat Gambar Penuh' : 'Buka / Unduh Berkas'}</span>
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+      {/* MODAL RINCIAN DETAIL PENGAJUAN FORMULIR */}
       {selectedDetailItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in font-sans">
           <div className="relative w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900 my-8 border border-slate-200">

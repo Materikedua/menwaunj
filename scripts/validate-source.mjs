@@ -44,9 +44,20 @@ function maskNonCode(source) {
   return out;
 }
 
-const files = [...walk(SRC), ...walk(API)].filter((f) => /\.(js|jsx|mjs)$/.test(f));
+const allSourceFiles = [...walk(SRC), ...walk(API)].filter((f) => /\.(js|jsx|mjs|ts|tsx)$/.test(f));
+const files = allSourceFiles.filter((f) => /\.(js|jsx|mjs)$/.test(f));
 const jsFiles = files.filter((f) => f.endsWith('.js'));
 const failures = [];
+
+for (const file of allSourceFiles) {
+  if (file.startsWith(SRC)) {
+    const raw = fs.readFileSync(file, 'utf8');
+    const maskedRaw = maskNonCode(raw);
+    if (maskedRaw.includes('dangerouslySetInnerHTML')) {
+      failures.push(`${path.relative(ROOT, file)} uses forbidden dangerouslySetInnerHTML.`);
+    }
+  }
+}
 
 for (const file of jsFiles) {
   const source = fs.readFileSync(file, 'utf8');
@@ -61,15 +72,26 @@ for (const file of jsFiles) {
   }
 }
 
-// Every local router import must resolve to the JSX file after the extension fix.
-for (const file of files) {
+// Every local import must resolve cleanly across JS/JSX/TS/TSX modules.
+for (const file of allSourceFiles) {
   const source = fs.readFileSync(file, 'utf8');
   const re = /from\s+['"](\.{1,2}\/[^'"\n]+)['"]/g;
   for (const match of source.matchAll(re)) {
     const spec = match[1];
     if (!spec.startsWith('.')) continue;
     const base = path.resolve(path.dirname(file), spec);
-    const candidates = [base, `${base}.js`, `${base}.jsx`, `${base}.mjs`, path.join(base, 'index.js'), path.join(base, 'index.jsx')];
+    const candidates = [
+      base,
+      `${base}.js`,
+      `${base}.jsx`,
+      `${base}.mjs`,
+      `${base}.ts`,
+      `${base}.tsx`,
+      path.join(base, 'index.js'),
+      path.join(base, 'index.jsx'),
+      path.join(base, 'index.ts'),
+      path.join(base, 'index.tsx'),
+    ];
     if (!candidates.some((p) => fs.existsSync(p))) {
       failures.push(`${path.relative(ROOT, file)} has an unresolved local import: ${spec}`);
     }
@@ -82,4 +104,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Source validation passed: ${files.length} source files checked; ${jsFiles.length} .js files syntax-checked without JSX.`);
+console.log(`Source validation passed: ${allSourceFiles.length} source files checked; ${jsFiles.length} .js files syntax-checked without JSX.`);

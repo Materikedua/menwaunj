@@ -5,21 +5,15 @@ import {
   Clock,
   Sparkles,
   LogIn,
-  Award,
-  Briefcase,
-  Users,
   ShieldCheck,
   Building,
   FileSpreadsheet,
-  ChevronRight,
-  ExternalLink,
   MapPin,
   Phone,
   Mail,
   QrCode,
 } from 'lucide-react';
 import { useAuth } from '../../lib/authContext.jsx';
-import { Link } from '../../lib/router.jsx';
 import { Reveal, HeroStage } from '../MenwaUI.jsx';
 import { LetterProgressSection } from '../LetterProgressSection.jsx';
 import { TacticalMakoNavigator } from '../TacticalMakoNavigator.jsx';
@@ -27,9 +21,6 @@ import { DynamicCanvasZone } from '../DynamicCanvasZone.jsx';
 import { playTactileClick } from '../../lib/tactileAudio.js';
 import { HERO_PHOTO } from '../../data/siteData.js';
 
-const RegistrationForm = lazy(() =>
-  import('../RegistrationForm.jsx').then((m) => ({ default: m.RegistrationForm }))
-);
 const ParticipantPortal = lazy(() =>
   import('../ParticipantPortal.jsx').then((m) => ({ default: m.ParticipantPortal }))
 );
@@ -42,6 +33,9 @@ const AdminSubmissionsDashboard = lazy(() =>
 const EDispensasiModal = lazy(() =>
   import('../EDispensasiModal.jsx').then((m) => ({ default: m.EDispensasiModal }))
 );
+const SmartAdminuSection = lazy(() =>
+  import('../adminu/SmartAdminuSection').then((m) => ({ default: m.SmartAdminuSection }))
+);
 
 const SubTabLoading = () => (
   <div className="flex flex-col items-center justify-center min-h-[30vh] gap-3 text-slate-400">
@@ -50,133 +44,25 @@ const SubTabLoading = () => (
   </div>
 );
 
-const PENDAFTARAN_ITEMS = [
-  {
-    id: 1,
-    title: 'Pendaftaran Camen Angkatan LIII',
-    category: 'Rekrutmen Camen',
-    desc: 'Formulir penerimaan Calon Menwa UNJ Angkatan LIII 2026 bagi mahasiswa aktif UNJ.',
-    url: 'https://bit.ly/PCABMENWA2026',
-    status: 'Dibuka',
-    statusClass: 'bg-emerald-600 text-white',
-    ctaText: 'Daftar Camen',
-  },
-  {
-    id: 2,
-    title: 'Lomba Nasional Ksatria Cendekia VIII',
-    category: 'Giat Lomba',
-    desc: 'Pendaftaran Kompetisi Pemuda Nusantara Ksatria Cendekia VIII 2026.',
-    url: '/kc',
-    status: 'Resmi',
-    statusClass: 'bg-[#FFDD00] text-slate-950',
-    ctaText: 'Daftar KC VIII',
-  },
-  {
-    id: 3,
-    title: 'Lomba Paskibra GERANAT VII',
-    category: 'Giat Paskibra',
-    desc: 'Pendaftaran Lomba Formasi Pengibaran Bendera GERANAT VII.',
-    url: '/geranat',
-    status: 'Resmi',
-    statusClass: 'bg-[#FFDD00] text-slate-950',
-    ctaText: 'Info GERANAT',
-  },
-];
-
-const PERMOHONAN_ITEMS = [
-  {
-    id: 1,
-    title: 'Permohonan Personil',
-    category: 'Operasional',
-    desc: 'Pengajuan satgas pengamanan, protokoler upacara, dan bantuan operasional satuan.',
-    url: 'https://wa.me/6281525823503?text=Halo%20Piket%20Mako%20Menwa%20UNJ,%20saya%20ingin%20mengajukan%20Permohonan%20Pengajuan%20Personil.',
-    status: 'Siaga',
-    statusClass: 'bg-[#006569] text-white',
-    ctaText: 'Ajukan Personil',
-  },
-  {
-    id: 2,
-    title: 'Peminjaman Barang & Sarpras',
-    category: 'Inventaris',
-    desc: 'Peminjaman perlengkapan lapangan, tenda komando, dan fasilitas Mako.',
-    url: 'https://wa.me/6281525823503?text=Halo%20Piket%20Mako%20Menwa%20UNJ,%20saya%20ingin%20mengajukan%20Permohonan%20Peminjaman%20Barang.',
-    status: 'Siaga',
-    statusClass: 'bg-[#006569] text-white',
-    ctaText: 'Pinjam Sarpras',
-  },
-  {
-    id: 3,
-    title: 'Permohonan Instruktur / Pemateri',
-    category: 'Pelatihan',
-    desc: 'Permohonan pelatih PBB, tata upacara, kedisiplinan, bela negara, & survival.',
-    url: 'https://wa.me/6281525823503?text=Halo%20Piket%20Mako%20Menwa%20UNJ,%20saya%20ingin%20mengajukan%20Permohonan%20Pemateri/Instruktur.',
-    status: 'Siaga',
-    statusClass: 'bg-[#006569] text-white',
-    ctaText: 'Ajukan Instruktur',
-  },
-];
-
-const KERJASAMA_ITEMS = [
-  {
-    id: 1,
-    title: 'Sponsorship',
-    category: 'Kemitraan',
-    desc: 'Dukungan dana maupun in-kind untuk ajang nasional dan operasional satuan.',
-    url: 'https://wa.me/6281525823503?text=Halo%20Piket%20Mako%20Menwa%20UNJ,%20saya%20ingin%20mengajukan%20Kerjasama%20Sponsorship.',
-    status: 'Terbuka',
-    statusClass: 'bg-teal-700 text-white',
-    ctaText: 'Ajukan Sponsor',
-  },
-  {
-    id: 2,
-    title: 'Media Partner',
-    category: 'Publikasi',
-    desc: 'Publikasi bersama dan eksposur media untuk agenda kepemudaan & kompetisi.',
-    url: 'https://wa.me/6281525823503?text=Halo%20Piket%20Mako%20Menwa%20UNJ,%20saya%20ingin%20mengajukan%20Kerjasama%20Media%20Partner.',
-    status: 'Terbuka',
-    statusClass: 'bg-teal-700 text-white',
-    ctaText: 'Ajukan Medpart',
-  },
-  {
-    id: 3,
-    title: 'Partnership Instansi',
-    category: 'Strategis',
-    desc: 'Kolaborasi strategis antar kampus, ormawa, kedinasan, dan instansi.',
-    url: 'https://wa.me/6281525823503?text=Halo%20Piket%20Mako%20Menwa%20UNJ,%20saya%20ingin%20mengajukan%20Kerjasama%20Partnership.',
-    status: 'Terbuka',
-    statusClass: 'bg-teal-700 text-white',
-    ctaText: 'Ajukan Partner',
-  },
-  {
-    id: 4,
-    title: 'Kolaborasi Kegiatan',
-    category: 'Giat Gabungan',
-    desc: 'Penyelenggaraan bakti sosial, pengabdian masyarakat, & latihan gabungan.',
-    url: 'https://wa.me/6281525823503?text=Halo%20Piket%20Mako%20Menwa%20UNJ,%20saya%20ingin%20mengajukan%20Kerjasama%20Kegiatan.',
-    status: 'Terbuka',
-    statusClass: 'bg-teal-700 text-white',
-    ctaText: 'Ajukan Kolaborasi',
-  },
-];
-
 const ADMINU_SUBTABS = [
-  { id: 'pendaftaran', num: '1', label: 'Pendaftaran', icon: Award },
-  { id: 'permohonan', num: '2', label: 'Permohonan', icon: Briefcase },
-  { id: 'kerjasama', num: '3', label: 'Kerjasama', icon: Users },
-  { id: 'registrasi-mandiri', num: '4', label: 'Registrasi', icon: FileText },
-  { id: 'portal-peserta', num: '5', label: 'Official', icon: ShieldCheck },
-  { id: 'bank-qris-settings', num: '6', label: 'Pembayaran', icon: Building },
-  { id: 'rekapitulasi-admin', num: '7', label: 'Rekap Data', icon: FileSpreadsheet, adminBadge: true },
-  { id: 'cari-progres-surat', num: '8', label: 'Lacak Surat', icon: Clock },
+  { id: 'pengajuan-surat-tiket', num: '1', label: 'Pengajuan Surat & Tiket', icon: FileText },
+  { id: 'portal-peserta', num: '2', label: 'Official', icon: ShieldCheck },
+  { id: 'bank-qris-settings', num: '3', label: 'Pembayaran', icon: Building },
+  { id: 'rekapitulasi-admin', num: '4', label: 'Rekap Data', icon: FileSpreadsheet, adminBadge: true },
+  { id: 'cari-progres-surat', num: '5', label: 'Lacak Surat', icon: Clock },
 ];
 
-export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
+export function AdministrasiUmumTab({ onOpenAccountModal }) {
   const { user, profile, submissions, isAdmin } = useAuth();
-  const [activeSubTab, setActiveSubTab] = useState('pendaftaran');
+  const [activeSubTab, setActiveSubTab] = useState('pengajuan-surat-tiket');
+  const [trackerInitialId, setTrackerInitialId] = useState('');
   const [dispensasiOpen, setDispensasiOpen] = useState(false);
 
-  const handleOpenLetterTracker = () => {
+  const handleOpenLetterTracker = (prefillId = '') => {
     playTactileClick('press');
+    if (typeof prefillId === 'string' && prefillId.trim()) {
+      setTrackerInitialId(prefillId.trim());
+    }
     setActiveSubTab('cari-progres-surat');
     setTimeout(() => {
       document.getElementById('cari-surat-form-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -191,10 +77,10 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
             <FileText size={15} /> Administrasi &amp; Markas Komando
           </div>
           <h2 className="text-4xl font-black tracking-tight text-white drop-shadow-2xl md:text-6xl">
-            Administrasi Umum &amp; Mako
+            Pengajuan Surat &amp; Tiket
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base sm:text-lg font-bold leading-relaxed text-[#FFDD00] drop-shadow-lg md:text-xl">
-            Portal Pendaftaran, Layanan Satuan, Kemitraan, &amp; Mako UNJ
+            Portal Terpadu Layanan Satuan, Permohonan Surat Resmi, &amp; Mako UNJ
           </p>
         </Reveal>
       </HeroStage>
@@ -221,7 +107,7 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
                   </span>
                 </h4>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Identitas profil otomatis terisi pada setiap formulir pengajuan.
+                  Identitas profil otomatis terisi pada setiap pengajuan tiket maupun kelengkapan surat resmi.
                 </p>
               </div>
             </div>
@@ -249,7 +135,7 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
               </button>
               <button
                 type="button"
-                onClick={handleOpenLetterTracker}
+                onClick={() => handleOpenLetterTracker()}
                 className="neu-btn-strong-blue px-3.5 py-2 text-xs font-black rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer text-white"
                 title="Lacak Progres Surat"
               >
@@ -266,13 +152,13 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
               </div>
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-[#006569]">
-                  Administrasi Digital Terpadu
+                  Administrasi Digital Satu Pintu
                 </span>
                 <h4 className="text-base font-black text-slate-900 mt-0.5">
-                  Isi Formulir Instan dengan Auto-Fill Profil
+                  Isi Pengajuan Surat &amp; Tiket dengan Auto-Fill Profil
                 </h4>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Masuk akun agar identitas otomatis terisi pada setiap layanan administrasi.
+                  Masuk akun agar identitas otomatis terisi, atau ajukan langsung untuk menerbitkan tiket PAM-2026-XXX.
                 </p>
               </div>
             </div>
@@ -286,7 +172,7 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
               </button>
               <button
                 type="button"
-                onClick={handleOpenLetterTracker}
+                onClick={() => handleOpenLetterTracker()}
                 className="neu-btn-primary px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition flex items-center justify-center gap-2 cursor-pointer text-white"
                 title="Lacak Progres Surat"
               >
@@ -297,7 +183,7 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
           </div>
         )}
 
-        {/* Responsive Sub-Tab Navigation Bar: Match Image 3 Clean White */}
+        {/* Bilah Navigasi Sub-Tab Terpadu */}
         <div
           className="bg-white/95 backdrop-blur-xl p-2 sm:p-2.5 rounded-3xl border border-slate-200 shadow-md overflow-x-auto no-scrollbar"
           role="tablist"
@@ -338,190 +224,15 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
           </div>
         </div>
 
-        {/* Active Sub-Tab Panel in Clean White */}
+        {/* Panel Sub-Tab Aktif */}
         <div className="bg-white rounded-[2.5rem] shadow-xl p-6 sm:p-8 md:p-14 border border-slate-200 text-slate-800">
-          {activeSubTab === 'pendaftaran' && (
-            <div className="space-y-6">
-              <div className="text-center max-w-2xl mx-auto mb-8">
-                <h3 className="text-2xl md:text-3xl font-black text-slate-900">Portal Pendaftaran</h3>
-                <p className="text-slate-600 font-medium text-sm mt-2">
-                  Pilih program pendaftaran untuk pengisian langsung di aplikasi.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {PENDAFTARAN_ITEMS.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:bg-teal-50/20 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
-                  >
-                    <div>
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
-                          {item.category}
-                        </span>
-                        <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${item.statusClass}`}>
-                          {item.status}
-                        </span>
-                      </div>
-                      <h4 className="text-lg font-black text-slate-900 leading-tight mb-2.5 group-hover:text-[#006569] transition-colors">
-                        {item.title}
-                      </h4>
-                      <p className="text-slate-600 text-xs font-medium leading-relaxed mb-5">{item.desc}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <button
-                        type="button"
-                        onClick={() => onOpenAdminForm?.(item)}
-                        className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 cursor-pointer"
-                      >
-                        <FileText size={15} />
-                        <span>Isi Formulir</span>
-                      </button>
-                      {item.url.startsWith('/') ? (
-                        <Link
-                          to={item.url}
-                          className="w-full py-1.5 text-center text-[11px] font-bold text-[#006569] hover:underline flex items-center justify-center gap-1 transition"
-                        >
-                          <span>{item.ctaText}</span>
-                          <ChevronRight size={13} />
-                        </Link>
-                      ) : (
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-full py-1.5 text-center text-[11px] font-bold text-[#006569] hover:underline flex items-center justify-center gap-1 transition"
-                        >
-                          <span>Tautan Eksternal</span>
-                          <ExternalLink size={12} />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeSubTab === 'permohonan' && (
-            <div className="space-y-6">
-              <div className="text-center max-w-2xl mx-auto mb-8">
-                <h3 className="text-2xl md:text-3xl font-black text-slate-900">Permohonan Layanan Satuan</h3>
-                <p className="text-slate-600 font-medium text-sm mt-2">
-                  Ajukan personel, sarpras, atau instruktur langsung secara digital.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {PERMOHONAN_ITEMS.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:bg-teal-50/20 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
-                  >
-                    <div>
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
-                          {item.category}
-                        </span>
-                        <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${item.statusClass}`}>
-                          {item.status}
-                        </span>
-                      </div>
-                      <h4 className="text-lg font-black text-slate-900 leading-tight mb-2.5 group-hover:text-[#006569] transition-colors">
-                        {item.title}
-                      </h4>
-                      <p className="text-slate-600 text-xs font-medium leading-relaxed mb-5">{item.desc}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <button
-                        type="button"
-                        onClick={() => onOpenAdminForm?.(item)}
-                        className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3 px-4 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 cursor-pointer"
-                      >
-                        <FileText size={15} />
-                        <span>{item.ctaText}</span>
-                      </button>
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-1.5 text-center text-[11px] font-bold text-slate-500 hover:text-[#006569] flex items-center justify-center gap-1 transition"
-                      >
-                        <span>WhatsApp Piket</span>
-                        <ExternalLink size={12} />
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeSubTab === 'kerjasama' && (
-            <div className="space-y-6">
-              <div className="text-center max-w-2xl mx-auto mb-8">
-                <h3 className="text-2xl md:text-3xl font-black text-slate-900">Portal Kemitraan</h3>
-                <p className="text-slate-600 font-medium text-sm mt-2">
-                  Ajukan sponsorship, media partner, dan kolaborasi kegiatan.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {KERJASAMA_ITEMS.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-slate-50 rounded-3xl p-6 border border-slate-200 hover:border-[#006569] hover:bg-teal-50/20 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
-                  >
-                    <div>
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-[#006569] bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
-                          {item.category}
-                        </span>
-                        <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${item.statusClass}`}>
-                          {item.status}
-                        </span>
-                      </div>
-                      <h4 className="text-lg font-black text-slate-900 leading-tight mb-2.5 group-hover:text-[#006569] transition-colors">
-                        {item.title}
-                      </h4>
-                      <p className="text-slate-600 text-xs font-medium leading-relaxed mb-5">{item.desc}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <button
-                        type="button"
-                        onClick={() => onOpenAdminForm?.(item)}
-                        className="w-full bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-bold py-3 px-3 rounded-xl shadow-md text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all hover:-translate-y-0.5 cursor-pointer"
-                      >
-                        <FileText size={14} />
-                        <span>{item.ctaText}</span>
-                      </button>
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-1 text-center text-[10px] font-bold text-slate-500 hover:text-[#006569] flex items-center justify-center gap-1 transition"
-                      >
-                        <span>WhatsApp</span>
-                        <ExternalLink size={11} />
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeSubTab === 'registrasi-mandiri' && (
-            <div className="max-w-3xl mx-auto space-y-6">
-              <div className="text-center max-w-2xl mx-auto mb-6">
-                <h3 className="text-2xl md:text-3xl font-black text-slate-900">Formulir Registrasi Mandiri</h3>
-                <p className="text-slate-600 font-medium text-sm mt-2">
-                  Data profil Anda (Nama Lengkap, Asal Instansi, Pekerjaan, Tanggal Lahir) terisi secara otomatis dan
-                  tersimpan langsung ke database Firestore.
-                </p>
-              </div>
-              <Suspense fallback={<SubTabLoading />}>
-                <RegistrationForm />
-              </Suspense>
-            </div>
+          {activeSubTab === 'pengajuan-surat-tiket' && (
+            <Suspense fallback={<SubTabLoading />}>
+              <SmartAdminuSection
+                embedded
+                onOpenLetterTracker={(ticketId) => handleOpenLetterTracker(ticketId)}
+              />
+            </Suspense>
           )}
 
           {activeSubTab === 'portal-peserta' && (
@@ -543,7 +254,10 @@ export function AdministrasiUmumTab({ onOpenAdminForm, onOpenAccountModal }) {
           )}
 
           {activeSubTab === 'cari-progres-surat' && (
-            <LetterProgressSection onClose={() => setActiveSubTab('pendaftaran')} />
+            <LetterProgressSection
+              initialId={trackerInitialId}
+              onClose={() => setActiveSubTab('pengajuan-surat-tiket')}
+            />
           )}
         </div>
 

@@ -143,6 +143,8 @@ export const TAB_PATHS = {
   portal_peserta: '/portal-peserta',
   toko: '/toko',
   shop: '/toko',
+  verify: '/verify',
+  adminu: '/adminu',
   privacy: '/privacy',
   terms: '/terms',
 };

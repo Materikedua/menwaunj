@@ -32,7 +32,7 @@ export function CommandPalette({ open, onClose }) {
   const go = (item) => {
     onClose();
     if (item.to) navigate(item.to);
-    else if (item.href) window.open(item.href, '_blank', 'noopener,noreferrer');
+    else if (item.href) window.location.assign(item.href);
   };
   const goAI = async () => {
     if (thinking || !query.trim()) return;

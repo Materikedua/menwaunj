@@ -54,6 +54,12 @@ import { DynamicQRISModal } from './DynamicQRISModal.jsx';
 import { TacticalConfetti } from './TacticalConfetti.jsx';
 import { formatRupiah } from '../lib/qris.js';
 import { navigate } from '../lib/router.jsx';
+import {
+  sanitizeInput,
+  evaluateActionCooldown,
+  recordActionTimestamp,
+  verifyCommandAccessCode,
+} from '../utils/security';
 
 /** Inisiatif Donasi Bawaan Satuan jika Firestore belum memiliki data */
 export const DEFAULT_CHARITY_TEAMS = [
@@ -350,7 +356,25 @@ export function GeranatVoting() {
       setBannerMessage('Seluruh skor gamifikasi pengguna telah BERHASIL DIRESET ke 0.');
       setTimeout(() => setBannerMessage(null), 5000);
     } catch (err) {
-      alert('Gagal mereset skor gamifikasi: ' + (err?.message || err));
+      setBannerMessage('Gagal mereset skor gamifikasi: ' + (err?.message || 'Kendala jaringan'));
+    }
+  };
+
+  const toggleFlipCard = (cardId) => {
+    setFlippedCards((prev) => ({
+      ...prev,
+      [cardId]: !prev[cardId],
+    }));
+  };
+
+  const handleAdminPinSubmit = (e) => {
+    e?.preventDefault?.();
+    if (verifyCommandAccessCode(adminPinInput)) {
+      setIsAdminPinUnlocked(true);
+      setAdminPinInput('');
+      setBannerMessage('Otorisasi kode komando berhasil diverifikasi.');
+    } else {
+      setBannerMessage('Kode otorisasi komando tidak sesuai.');
     }
   };
 
@@ -393,11 +417,17 @@ export function GeranatVoting() {
   /* Buka Modal Pembayaran QRIS Statis */
   const handleInitiateVote = (team, count = 1) => {
     if (!votingConfig.isVotingOpen && !isSuperAdmin) {
-      alert('Charity Vote saat ini berada dalam Mode Siaga (tertutup sementara). Tunggu pengumuman resmi pembukaan!');
+      setBannerMessage('Charity Vote saat ini berada dalam Mode Siaga (tertutup sementara). Tunggu pengumuman resmi pembukaan!');
       return;
     }
+    const cd = evaluateActionCooldown('geranat_vote_init', 5000);
+    if (!cd.allowed) {
+      setBannerMessage(`Mohon tunggu ${cd.remainingSeconds} detik sebelum membuka transaksi berikutnya.`);
+      return;
+    }
+    recordActionTimestamp('geranat_vote_init');
     setSelectedTeam(team);
-    setVoteCount(count);
+    setVoteCount(Math.max(1, Math.min(1000, Number(count) || 1)));
     setIsQRISModalOpen(true);
   };
 
@@ -452,13 +482,20 @@ export function GeranatVoting() {
   /* Tambah Tim / Penerima Baru oleh Admin */
   const handleCreateTeam = async (e) => {
     e.preventDefault();
-    if (!newTeam.teamName.trim() || !newTeam.institution.trim()) {
-      alert('Nama Inisiatif/Penerima dan Asal Lembaga wajib diisi.');
+    const cleanTeamName = sanitizeInput(newTeam.teamName, 140);
+    const cleanInstitution = sanitizeInput(newTeam.institution, 140);
+    if (!cleanTeamName || !cleanInstitution) {
+      setBannerMessage('Nama Inisiatif/Penerima dan Asal Lembaga wajib diisi.');
       return;
     }
 
     const payload = {
       ...newTeam,
+      teamName: cleanTeamName,
+      institution: cleanInstitution,
+      category: sanitizeInput(newTeam.category, 60) || 'Beasiswa Menwa',
+      dantonName: sanitizeInput(newTeam.dantonName, 100),
+      motto: sanitizeInput(newTeam.motto, 200),
       teamId: `TEAM-${Date.now().toString(36).toUpperCase()}`,
       targetDonation: Number(newTeam.targetDonation) || 5000000,
       votesCount: 0,
@@ -599,9 +636,9 @@ export function GeranatVoting() {
         isRefreshing={isRefreshing}
         fetchTeams={fetchTeams}
         votingConfig={votingConfig}
-        totalVotesAll={totalVotesAll}
-        totalDonationRupiah={totalDonationRupiah}
-        targetGoalAmount={targetGoalAmount}
+        totalVotesAll={totalAllVotes}
+        totalDonationRupiah={totalDanaTerkumpul}
+        targetGoalAmount={votingConfig.targetGoalAmount}
       />
       {!votingConfig.isVotingOpen ? (
         <GeranatVotingStandbySection

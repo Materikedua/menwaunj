@@ -29,6 +29,9 @@ import { resolvePortalPath } from '../lib/portalSearch.js';
 import { DynamicCanvasZone } from './DynamicCanvasZone.jsx';
 import { MakoCommandCenter } from './MakoCommandCenter.jsx';
 import { SITE } from '../data/siteData.js';
+import { useSiteContent } from '../data/siteConfig';
+import { mergeHeroScenesWithRegistry } from '../lib/contentRegistryBridge';
+import { HomeRoleMatrix } from './HomeRoleMatrix';
 import { playTactileClick } from '../lib/tactileAudio.js';
 import './BrandExperience.css';
 import './BrandExperienceCards.css';
@@ -101,6 +104,20 @@ export const informationIndex = [
     description: 'Login official tim: buku pasukan & rekap nilai.',
     to: '/portal-peserta',
     icon: Users,
+  },
+  {
+    title: 'Verifikasi Sertifikat Resmi',
+    category: 'Layanan',
+    description: 'Validasi keaslian nomor sertifikat seminar Youth Spark, KC VIII, GERANAT VII & Diksar.',
+    to: '/verify',
+    icon: ShieldCheck,
+  },
+  {
+    title: 'Smart Adminu & Permohonan PAM',
+    category: 'Layanan',
+    description: 'Pengajuan pengamanan kegiatan (PAM), surat resmi digital & pelacakan tiket PAM-2026-XXX.',
+    to: '/adminu',
+    icon: FileText,
   },
   {
     title: 'Verifikasi E-Dispensasi',
@@ -197,142 +214,90 @@ const EventStoryCard = ({ to, image, eyebrow, title, meta, description, variant 
 
 export function BrandHome({ onOpenSearch }) {
   const { contentRegistry = [] } = useCanvasStore() || {};
+  const { content } = useSiteContent();
 
   const heroScenes = useMemo(() => {
-    const defaultScenes = [
-      { id: 'CNT-BERANDA-HERO-1', title: 'Hero Scene 01: Apel Kehormatan Korps Satuan UNJ', photo: '/foto-kampus-unj.jpg', caption: 'Plaza Kampus A UNJ' },
-      { id: 'CNT-BERANDA-HERO-2', title: 'Hero Scene 02: Ksatria Cendekia VIII', photo: '/kegiatan/kc-menwa-unj.jpg', caption: 'Latihan Integrasi Pemuda Nusantara' },
-      { id: 'CNT-BERANDA-HERO-3', title: 'Hero Scene 03: Youth Spark Seminar Nasional', photo: '/kegiatan/youth-spark-2026.webp', caption: 'Seminar Nasional Kepemimpinan' },
-      { id: 'CNT-BERANDA-HERO-4', title: 'Hero Scene 04: Gerakan Paskibra Semangat VII', photo: '/geranat-menwa-unj.png', caption: 'LFPB & Variasi Formasi Paskibra' },
-      { id: 'CNT-BERANDA-HERO-5', title: 'Hero Scene 05: Bina Teritorial & Pengabdian', photo: '/dokumentasi/pengabdian25.svg', caption: 'Bakti Pertiwi & Bela Negara' },
-    ];
-
-    return defaultScenes.map((def, idx) => {
-      const reg = contentRegistry.find((item) => (
-        (item.contentId === def.id || (idx === 0 && item.contentId === 'CNT-BERANDA-HERO')) && item.isActive !== false
-      ));
-      return {
-        id: def.id,
-        title: reg?.title || def.title,
-        caption: reg?.caption || def.caption,
-        photo: reg?.imageUrl || def.photo,
-      };
-    });
-  }, [contentRegistry]);
+    const merged = mergeHeroScenesWithRegistry(content.heroScenes || [], contentRegistry);
+    return merged.map((scene) => ({
+      id: scene.id,
+      title: scene.title,
+      caption: `${scene.date} • ${scene.location}`,
+      photo: scene.image,
+    }));
+  }, [content.heroScenes, contentRegistry]);
 
   return (
     <div className="brand-home">
       {/* Live Web Short-Video Cinematic Hero Stage with 5 Scenes from Mako Ops */}
       <HeroStage
-        className="brand-legacy-hero py-20 md:py-28"
+        className="brand-legacy-hero py-6 md:py-28"
         photo={heroScenes[0]?.photo || '/foto-kampus-unj.jpg'}
         blur={2.2}
         dim={0.56}
         liveCinema={true}
         scenes={heroScenes}
       >
-        <Reveal className="brand-legacy-inner relative z-20 mx-auto flex max-w-5xl flex-col items-center px-4 text-center">
-          <div className="mb-5">
-            <HeroLogo alt="Lambang Resimen Mahasiswa Jayakarta Satuan UNJ" />
+        <Reveal className="brand-legacy-inner relative z-20 mx-auto flex max-w-5xl flex-col items-center px-3 md:px-4 text-center">
+          <div className="mb-2 md:mb-5">
+            <HeroLogo size="w-20 h-20 md:w-48 md:h-48" alt="Lambang Resimen Mahasiswa Jayakarta Satuan UNJ" />
           </div>
 
           <h1
             id="brand-home-title"
-            className="brand-legacy-title mb-1.5 font-black leading-tight tracking-tight text-white drop-shadow-md"
+            className="brand-legacy-title mb-1 md:mb-1.5 font-black leading-tight tracking-tight text-white drop-shadow-md"
           >
             <span>KOMANDO RESIMEN MAHASISWA</span>
             <span>JAYAKARTA</span>
           </h1>
-          <div className="my-1.5 text-lg font-extrabold uppercase tracking-widest text-[#FFDD00] drop-shadow-lg sm:text-2xl md:text-3xl">
+          <div className="my-1 md:my-1.5 text-xs sm:text-2xl md:text-3xl font-extrabold uppercase tracking-widest text-[#FFDD00] drop-shadow-lg">
             SATUAN UNIVERSITAS NEGERI JAKARTA
           </div>
 
-          <div className="my-3 h-1 w-32 rounded-full bg-gradient-to-r from-[#006569] via-[#FFDD00] to-[#006569]" />
+          <div className="my-1.5 md:my-3 h-0.5 md:h-1 w-20 md:w-32 rounded-full bg-gradient-to-r from-[#006569] via-[#FFDD00] to-[#006569]" />
 
-          <p className="brand-legacy-motto rounded-2xl border border-white/10 bg-black/40 px-4 py-2 font-semibold italic leading-relaxed text-slate-100 shadow-lg backdrop-blur-sm">
+          <p className="brand-legacy-motto rounded-xl md:rounded-2xl border border-white/10 bg-black/40 px-3 py-1.5 md:px-4 md:py-2 font-semibold italic leading-relaxed text-slate-100 shadow-lg backdrop-blur-sm">
             “Penyempurnaan Pengabdian dengan Ilmu Pengetahuan dan Ilmu Olah Keprajuritan.”
           </p>
 
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#FFDD00]/55 bg-gradient-to-r from-[#006569]/55 to-[#00383b]/65 px-5 py-2 text-[11px] font-black uppercase tracking-widest text-[#FFDD00] shadow-md">
-            <ShieldCheck size={15} /> WIDYA CASTRENA DHARMA SIDDHA
+          <div className="mt-2 md:mt-4 inline-flex items-center gap-1.5 md:gap-2 rounded-full border border-[#FFDD00]/55 bg-gradient-to-r from-[#006569]/55 to-[#00383b]/65 px-3 py-1 md:px-5 md:py-2 text-[9px] md:text-[11px] font-black uppercase tracking-widest text-[#FFDD00] shadow-md">
+            <ShieldCheck size={13} className="md:w-[15px] md:h-[15px]" /> WIDYA CASTRENA DHARMA SIDDHA
           </div>
 
           {/* Action Buttons with 3D Glassmorphism */}
-          <div className="brand-hero-actions mt-7 flex flex-wrap justify-center gap-3">
+          <div className="brand-hero-actions mt-3.5 md:mt-7 flex flex-wrap justify-center gap-2 md:gap-3">
             <Link
               to="/informasi"
               onClick={() => playTactileClick('gold')}
-              className="neu-btn-gold px-6 py-3.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-xl"
+              className="neu-btn-gold px-3.5 py-2 md:px-6 md:py-3.5 rounded-full text-[11px] md:text-xs font-black uppercase tracking-wider flex items-center gap-1.5 md:gap-2 shadow-xl"
             >
               <span>Pusat Informasi</span>
-              <ArrowRight size={16} />
+              <ArrowRight size={14} className="md:w-4 md:h-4" />
             </Link>
             <Link
               to="/gallery"
               onClick={() => playTactileClick('press')}
-              className="neu-btn-primary px-5 py-3.5 rounded-full text-xs font-black flex items-center gap-2 shadow-lg text-white"
+              className="neu-btn-primary px-3.5 py-2 md:px-5 md:py-3.5 rounded-full text-[11px] md:text-xs font-black flex items-center gap-1.5 md:gap-2 shadow-lg text-white"
             >
               <span>Galeri Kegiatan</span>
-              <Sparkles size={16} />
+              <Sparkles size={14} className="md:w-4 md:h-4" />
             </Link>
             <Link
               to="/garis-komando"
               onClick={() => playTactileClick('press')}
-              className="neu-btn px-5 py-3.5 rounded-full text-xs font-bold flex items-center gap-2 text-slate-800 bg-white/90"
+              className="neu-btn px-3.5 py-2 md:px-5 md:py-3.5 rounded-full text-[11px] md:text-xs font-bold flex items-center gap-1.5 md:gap-2 text-slate-800 bg-white/90"
             >
               <span>Struktur Satuan</span>
-              <ChevronRight size={16} />
+              <ChevronRight size={14} className="md:w-4 md:h-4" />
             </Link>
           </div>
           <a className="brand-legacy-scroll" href="#akses-cepat">
-            Akses cepat <ArrowDownRight size={16} />
+            Akses cepat <ArrowDownRight size={14} className="md:w-4 md:h-4" />
           </a>
         </Reveal>
       </HeroStage>
 
-      {/* Akses Cepat Orientasi Pengunjung */}
-      <section className="brand-access" id="akses-cepat" aria-labelledby="akses-cepat-title">
-        <div className="brand-container">
-          <div className="brand-section-heading">
-            <div>
-              <span className="brand-section-overline">ORIENTASI PENGUNJUNG</span>
-              <h2 id="akses-cepat-title">
-                Apa yang ingin kamu <em>temukan?</em>
-              </h2>
-              <p>Pilih tujuanmu dan langsung menuju informasi yang dibutuhkan.</p>
-            </div>
-            <Link
-              to="/informasi"
-              className="neu-pill-tab text-xs font-black text-[#006569] flex items-center gap-2 cursor-pointer shadow-sm hover:scale-105 transition"
-            >
-              <Search size={14} />
-              <span>Cari semua informasi</span>
-              <ArrowRight size={13} />
-            </Link>
-          </div>
-          <div className="brand-access-grid">
-            {primaryGuides.slice(0, 4).map((guide, i) => {
-              return (
-                <Link
-                  key={guide.to}
-                  to={guide.to}
-                  className="brand-access-item neu-card hover:-translate-y-2 transition-all duration-300"
-                >
-                  <span className="brand-access-index">0{i + 1}</span>
-                  <span className="brand-access-icon">
-                    <PortalIcon kind={guide.to} size={24} />
-                  </span>
-                  <strong>{guide.title}</strong>
-                  <span className="brand-access-description">{guide.description}</span>
-                  <span className="brand-access-arrow">
-                    <ArrowRight size={16} />
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      {/* Matriks Orientasi Peran & Program Terpadu (Menggantikan duplikasi kartu beranda) */}
+      <HomeRoleMatrix />
     </div>
   );
 }
@@ -552,13 +517,13 @@ export function InformationHub({ onOpenSearch }) {
               </>
             );
             return item.to ? (
-              <Link key={item.title} to={item.to} className="brand-hub-card neu-card p-4 sm:p-5 hover:-translate-y-1.5 transition group">
+              <Link key={item.title} to={item.to} className="brand-hub-card neu-card p-3 md:p-5 hover:-translate-y-1.5 transition group">
                 {content}
               </Link>
             ) : (
               <a
                 key={item.title}
-                className="brand-hub-card neu-card p-4 sm:p-5 hover:-translate-y-1.5 transition group"
+                className="brand-hub-card neu-card p-3 md:p-5 hover:-translate-y-1.5 transition group"
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"

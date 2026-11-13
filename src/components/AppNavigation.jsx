@@ -133,29 +133,24 @@ export const AppNavigation = (props) => (
         <div className="flex items-center gap-1 sm:gap-2 pl-1 border-l border-slate-200/60 dark:border-white/10">
           <button
             type="button"
-            onClick={props.onOpenGamification}
-            className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-black transition border border-amber-500/40 bg-slate-900/90 hover:bg-slate-800 text-amber-300 shadow-sm hover:scale-105 cursor-pointer"
-            title="Buka Subtab Games, Kuis Taktis & Papan Peringkat"
-          >
-            <Flame size={14} className="text-amber-400 fill-amber-400" />
-            <span className="font-mono text-amber-400">{props.profile?.tacticalPoints || 0}</span>
-            <span className="hidden md:inline text-[10px] text-slate-400 uppercase">EXP</span>
-          </button>
-          <button
-            type="button"
             onClick={props.onOpenAccount}
-            className="portal-account-trigger inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-black transition border border-[#006569]/25 bg-white/90 hover:bg-white text-slate-800 shadow-sm hover:scale-105 cursor-pointer"
+            className="portal-account-trigger inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-black transition border border-[#006569]/30 bg-white/95 hover:bg-white text-slate-900 shadow-sm cursor-pointer"
+            aria-label={
+              props.user
+                ? `Portal Anggota: ${props.profile?.displayName || props.user.email}`
+                : 'Buka Portal Anggota'
+            }
             title={
               props.user
-                ? `Akun: ${props.profile?.displayName || props.user.email}`
-                : 'Masuk atau Kelola Akun Portal'
+                ? `Portal Anggota: ${props.profile?.displayName || props.user.email}`
+                : 'Masuk ke Portal Anggota Menwa UNJ'
             }
           >
-            <User size={15} className={props.user ? 'text-[#006569]' : 'text-slate-500'} />
-            <span className="hidden sm:inline max-w-[100px] truncate">
+            <User size={15} className="text-[#006569] shrink-0" />
+            <span className="hidden sm:inline max-w-[130px] truncate">
               {props.user
                 ? props.profile?.displayName?.split(' ')[0] || props.user.email?.split('@')[0]
-                : 'Akun'}
+                : 'Portal Anggota'}
             </span>
             {props.profile?.isVerifiedMenwa ? (
               <span title="Anggota Menwa Terverifikasi Resmi">

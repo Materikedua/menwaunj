@@ -457,7 +457,7 @@
 
 @media(max-width:767px) {
   .brand-container {
-    width: min(100% - 32px, 1200px);
+    width: min(100% - 24px, 1200px);
   }
 
   .brand-hero-layout {
@@ -465,21 +465,21 @@
     flex-direction: column;
     align-items: start;
     min-height: 0;
-    padding-block: 75px 85px;
-    gap: 45px;
+    padding-block: 32px 40px;
+    gap: 24px;
   }
 
   .brand-hero-visual {
     width: 100%;
-    height: 285px;
+    height: 210px;
   }
 
   .brand-visual-frame {
-    width: 55%;
+    width: 52%;
   }
 
   .brand-visual-halo {
-    width: 260px;
+    width: 210px;
   }
 
   .brand-visual-tag--top {
@@ -493,51 +493,135 @@
   }
 
   .brand-hero h1 {
-    font-size: clamp(2.6rem, 10vw, 4.7rem);
+    font-size: clamp(1.9rem, 7.5vw, 3rem);
   }
 
   .brand-hero-rank {
-    margin-top: 29px;
+    margin-top: 16px;
     font-size: 10px;
   }
 
   .brand-hero-trust {
-    margin-top: 26px;
+    margin-top: 16px;
   }
 
   .brand-featured-grid,
   .brand-values-layout {
     grid-template-columns: 1fr;
+    gap: 18px;
   }
 
   .brand-event-card {
-    min-height: 355px;
+    min-height: 240px;
+    border-radius: 20px;
+  }
+
+  .brand-event-content {
+    padding: 18px;
   }
 
   .brand-access,
   .brand-featured,
   .brand-values {
-    padding: 75px 0;
+    padding: 32px 0;
+  }
+
+  .brand-values-intro>p {
+    max-width: none;
+    line-height: 1.55;
+    font-size: 12.5px;
+    margin: 10px 0 14px;
+  }
+
+  .brand-values-list>div {
+    gap: 12px;
+    padding: 11px 0;
+  }
+
+  .brand-values-list>div>span {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+  }
+
+  .brand-values-list strong {
+    font-size: 14px;
+  }
+
+  .brand-values-list p {
+    margin-top: 3px;
+    font-size: 11.5px;
+    line-height: 1.45;
   }
 
   .brand-section-heading {
     align-items: start;
     flex-direction: column;
+    gap: 10px;
+    margin-bottom: 18px;
   }
 
   .brand-hub-head {
-    padding: 75px 0;
+    padding: 28px 0 32px;
+  }
+
+  .brand-hub-head h1 {
+    font-size: clamp(1.65rem, 7vw, 2.5rem);
+    margin-top: 12px;
+  }
+
+  .brand-hub-head p {
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin-top: 8px;
   }
 
   .brand-hub-results {
-    padding: 64px 0 80px;
+    padding: 28px 0 42px;
+  }
+
+  .brand-hub-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .brand-hub-card {
+    min-height: 0;
+    border-radius: 16px;
+    padding: 12px;
+  }
+
+  .brand-hub-card-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+
+  .brand-hub-card strong {
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  .brand-hub-card p {
+    font-size: 11px;
+    line-height: 1.4;
+    margin: 4px 0 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .brand-hub-help {
     flex-wrap: wrap;
+    padding: 14px;
+    border-radius: 16px;
+    gap: 10px;
   }
 
   .brand-hub-help>a {
     width: 100%;
+    justify-content: center;
   }
 }

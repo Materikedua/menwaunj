@@ -16,10 +16,18 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../lib/authContext';
 import { submitAdministrationForm } from '../lib/firebase';
+import {
+  sanitizeInput,
+  isHoneypotTriggered,
+  evaluateActionCooldown,
+  recordActionTimestamp,
+} from '../utils/security';
 
-export function AdministrationFormModal({ isOpen, onClose, initialItem, onOpenAccountModal }) {
+export function AdministrationFormModal({ isOpen, onClose, initialItem, item, onOpenAccountModal }) {
+  const activeItem = initialItem || item;
   const { user, profile, refreshSubmissions } = useAuth();
   const [serviceType, setServiceType] = useState('pendaftaran_camen');
+  const [honeypot, setHoneypot] = useState('');
   const [fullName, setFullName] = useState('');
   const [institution, setInstitution] = useState('');
   const [occupation, setOccupation] = useState('Mahasiswa');
@@ -51,10 +59,10 @@ export function AdministrationFormModal({ isOpen, onClose, initialItem, onOpenAc
 
   /* Inisialisasi data form ketika modal dibuka */
   useEffect(() => {
-    if (initialItem) {
-      setTitle(initialItem.title || '');
-      const t = (initialItem.title || '').toLowerCase();
-      const c = (initialItem.category || '').toLowerCase();
+    if (activeItem) {
+      setTitle(activeItem.title || '');
+      const t = (activeItem.title || '').toLowerCase();
+      const c = (activeItem.category || '').toLowerCase();
       if (t.includes('calon anggota') || c.includes('camen') || t.includes('rekrutmen')) {
         setServiceType('pendaftaran_camen');
       } else if (t.includes('peserta') || t.includes('youth spark') || t.includes('ksatria cendekia')) {
@@ -75,7 +83,7 @@ export function AdministrationFormModal({ isOpen, onClose, initialItem, onOpenAc
         setServiceType('pengajuan_kerjasama');
       }
     }
-  }, [initialItem]);
+  }, [activeItem]);
 
   /* Bersihkan error PDF apabila beralih ke Pendaftaran */
   useEffect(() => {
@@ -134,11 +142,31 @@ export function AdministrationFormModal({ isOpen, onClose, initialItem, onOpenAc
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (isHoneypotTriggered(honeypot)) {
+      return;
+    }
+    const cd = evaluateActionCooldown('admin_form_modal', 8000);
+    if (!cd.allowed) {
+      setError(`Mohon tunggu ${cd.remainingSeconds} detik sebelum mengirim pengajuan berikutnya.`);
+      return;
+    }
     if (!user) {
       setError('Silakan masuk atau buat akun terlebih dahulu agar berkas terhubung resmi dengan akun Anda.');
       return;
     }
-    if (!fullName.trim() || !institution.trim() || !birthDate || !phone.trim() || !purpose.trim()) {
+
+    const cleanFullName = sanitizeInput(fullName, 120);
+    const cleanInstitution = sanitizeInput(institution, 140);
+    const cleanPhone = sanitizeInput(phone, 30);
+    const cleanEmail = sanitizeInput(email || user?.email || '', 120);
+    const cleanTitle = sanitizeInput(
+      title || (isPendaftaran ? 'Pendaftaran Anggota / Kegiatan' : 'Pengajuan Administrasi Satuan'),
+      160
+    );
+    const cleanPurpose = sanitizeInput(purpose, 800);
+    const cleanItemDetails = sanitizeInput(itemDetails, 300);
+
+    if (!cleanFullName || !cleanInstitution || !birthDate || !cleanPhone || !cleanPurpose) {
       setError('Mohon lengkapi semua kolom wajib.');
       return;
     }
@@ -154,28 +182,29 @@ export function AdministrationFormModal({ isOpen, onClose, initialItem, onOpenAc
 
     setSubmitting(true);
     try {
+      recordActionTimestamp('admin_form_modal');
       const fullPurpose =
-        `Detail: ${purpose}` +
-        (personCount ? ` | Estimasi Personel/Peserta: ${personCount}` : '') +
-        (itemDetails ? ` | Rincian Barang: ${itemDetails}` : '');
+        `Detail: ${cleanPurpose}` +
+        (personCount ? ` | Estimasi Personel/Peserta: ${sanitizeInput(String(personCount), 20)}` : '') +
+        (cleanItemDetails ? ` | Rincian Barang: ${cleanItemDetails}` : '');
 
       const submissionId = await submitAdministrationForm({
         applicantUid: user?.uid || null,
-        applicantEmail: user?.email || email.trim() || '',
+        applicantEmail: user?.email || cleanEmail,
         uid: user?.uid || null,
         serviceType,
         category: serviceCategory,
-        fullName: fullName.trim(),
-        institution: institution.trim(),
-        occupation,
+        fullName: cleanFullName,
+        institution: cleanInstitution,
+        occupation: sanitizeInput(occupation, 60),
         birthDate,
-        phone: phone.trim(),
-        email: email || user?.email || '',
-        title: title || (isPendaftaran ? 'Pendaftaran Anggota / Kegiatan' : 'Pengajuan Administrasi Satuan'),
+        phone: cleanPhone,
+        email: cleanEmail,
+        title: cleanTitle,
         purpose: fullPurpose,
         eventDate: eventDate || new Date().toISOString().slice(0, 10),
         documentPdfBase64: requiresPdf ? pdfBase64 : null,
-        documentPdfName: requiresPdf ? pdfName : null,
+        documentPdfName: requiresPdf ? sanitizeInput(pdfName, 160) : null,
         documentPdfSizeKb: requiresPdf ? pdfSizeKb : 0
       });
 
@@ -184,12 +213,12 @@ export function AdministrationFormModal({ isOpen, onClose, initialItem, onOpenAc
         submissionId,
         serviceType,
         category: serviceCategory,
-        title: title || 'Pengajuan Layanan Satuan',
-        fullName,
-        institution,
-        occupation,
+        title: cleanTitle || 'Pengajuan Layanan Satuan',
+        fullName: cleanFullName,
+        institution: cleanInstitution,
+        occupation: sanitizeInput(occupation, 60),
         birthDate,
-        documentPdfName: requiresPdf ? pdfName : null,
+        documentPdfName: requiresPdf ? sanitizeInput(pdfName, 160) : null,
         createdAt: new Date().toISOString()
       });
     } catch (err) {
@@ -319,6 +348,18 @@ export function AdministrationFormModal({ isOpen, onClose, initialItem, onOpenAc
           ) : (
             /* Formulir Input Interaktif In-App */
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Kolom jebakan bot (honeypot) tersembunyi */}
+              <div className="hidden" aria-hidden="true">
+                <label htmlFor="admin-modal-website-trap">Jangan diisi</label>
+                <input
+                  id="admin-modal-website-trap"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                />
+              </div>
               {/* Notifikasi Indikator Auto-Fill */}
               {user ? (
                 <div className="p-4 neu-card-sm rounded-2xl flex items-center justify-between gap-3 border border-emerald-300/40 bg-gradient-to-r from-emerald-50/80 to-[#F5F8F6]">

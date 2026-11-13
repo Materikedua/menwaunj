@@ -3,10 +3,18 @@ import { X, Send, Plus, Sparkles } from 'lucide-react';
 import { useAuth } from '../lib/authContext.jsx';
 import { navigate } from '../lib/router.jsx';
 import MenwaPet from './MenwaPet.jsx';
+import {
+  sanitizePromptInput,
+  MAX_CHAT_PROMPT_LENGTH,
+  evaluateActionCooldown,
+  recordActionTimestamp,
+} from '../utils/security';
 
 export const CHAT_DESTINATIONS = [
   { label: 'Beranda', path: '/', keywords: ['beranda', 'home', 'program', 'kegiatan', 'sorotan'] },
   { label: 'Galeri & Dokumentasi Kegiatan', path: '/gallery', keywords: ['galeri', 'gallery', 'album', 'dokumentasi', 'foto', 'kegiatan', 'arsip'] },
+  { label: 'Verifikasi Sertifikat Resmi', path: '/verify', keywords: ['sertifikat', 'piagam', 'verifikasi sertifikat', 'cert-'] },
+  { label: 'Smart Adminu & Permohonan PAM', path: '/adminu', keywords: ['pam', 'pengamanan', 'smart adminu', 'tiket pam', 'pam-2026'] },
   { label: 'Garis Komando', path: '/garis-komando', keywords: ['struktur', 'komando', 'pimpinan', 'organisasi', 'staf', 'dansat'] },
   { label: 'Pendidikan & Pelatihan', path: '/pendidikan', keywords: ['pendidikan', 'latihan', 'diklat', 'provos', 'dasar satuan', 'diksar'] },
   { label: 'Markas Komando', path: '/mako', keywords: ['mako', 'alamat', 'lokasi', 'kontak', 'piket'] },
@@ -86,11 +94,21 @@ export function LiveChatWidget() {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [cooldownSec, setCooldownSec] = useState(0);
   const messagesEndRef = useRef(null);
   const [petOffset, setPetOffset] = useState({ x: 0, y: 0 });
   const [petDragging, setPetDragging] = useState(false);
   const petStart = useRef(null);
   const petWasDragged = useRef(false);
+
+  useEffect(() => {
+    if (cooldownSec <= 0) return undefined;
+    const t = setInterval(() => {
+      const check = evaluateActionCooldown('live_chat_send', 4000);
+      setCooldownSec(check.allowed ? 0 : check.remainingSeconds);
+    }, 500);
+    return () => clearInterval(t);
+  }, [cooldownSec]);
 
   const handleStartNewSession = () => {
     setMessages([
@@ -146,9 +164,43 @@ export function LiveChatWidget() {
   }, [messages, isOpen]);
 
   const ask = async (text) => {
-    const q = String(text || '').trim();
-    if (!q || loading) return;
+    const raw = String(text || '').trim();
+    if (!raw || loading) return;
+
+    const cd = evaluateActionCooldown('live_chat_send', 4000);
+    if (!cd.allowed) {
+      setCooldownSec(cd.remainingSeconds);
+      return;
+    }
+
     const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const sanitizedResult = sanitizePromptInput(raw);
+    if (sanitizedResult.blocked) {
+      setMessages((prev) => [
+        ...prev,
+        { id: Date.now(), text: sanitizedResult.clean || 'Pesan dibatasi.', sender: 'user', time: nowTime },
+        {
+          id: Date.now() + 1,
+          text:
+            sanitizedResult.reason ||
+            'Permintaan ditolak oleh sistem pengamanan komando. Silakan ajukan pertanyaan seputar kegiatan atau layanan Menwa UNJ.',
+          sender: 'admin',
+          suggestions: [
+            { label: 'Pusat Informasi', path: '/informasi' },
+            { label: 'Smart Adminu', path: '/adminu' },
+          ],
+          time: nowTime,
+        },
+      ]);
+      setInputMessage('');
+      return;
+    }
+
+    const q = sanitizedResult.clean;
+    if (!q) return;
+
+    recordActionTimestamp('live_chat_send');
+    setCooldownSec(4);
     setMessages((prev) => [...prev, { id: Date.now(), text: q, sender: 'user', time: nowTime }]);
     setInputMessage('');
     setLoading(true);
@@ -158,8 +210,8 @@ export function LiveChatWidget() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: q }),
       });
-      if (!res.ok) throw new Error('Chat endpoint unavailable');
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok && !data.text) throw new Error('Chat endpoint unavailable');
       const answerText = data.text || localChatAnswer(q).text;
       const suggestions = data.suggestions || localChatAnswer(q).suggestions;
       setMessages((prev) => [
@@ -289,22 +341,29 @@ export function LiveChatWidget() {
             e.preventDefault();
             ask(inputMessage);
           }}
-          className="p-3 bg-white border-t border-slate-100 flex gap-2 items-center shrink-0"
+          className="p-3 bg-white border-t border-slate-100 flex flex-col gap-1.5 shrink-0"
         >
-          <input
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            placeholder="Ketik pertanyaan seputar Menwa UNJ…"
-            className="flex-grow bg-slate-100 text-slate-900 rounded-full px-4 py-2.5 text-xs sm:text-sm focus:ring-2 focus:ring-[#006569] focus:outline-none"
-          />
-          <button
-            type="submit"
-            disabled={!inputMessage.trim() || loading}
-            aria-label="Kirim pesan"
-            className="w-10 h-10 bg-[#006569] disabled:bg-slate-300 rounded-full flex items-center justify-center text-white shrink-0 shadow-sm cursor-pointer"
-          >
-            <Send size={18} className="ml-0.5" />
-          </button>
+          <div className="flex gap-2 items-center">
+            <input
+              value={inputMessage}
+              maxLength={MAX_CHAT_PROMPT_LENGTH}
+              onChange={(e) => setInputMessage(e.target.value.slice(0, MAX_CHAT_PROMPT_LENGTH))}
+              placeholder={cooldownSec > 0 ? `Tunggu ${cooldownSec} detik sebelum mengirim…` : 'Ketik pertanyaan seputar Menwa UNJ…'}
+              className="flex-grow bg-slate-100 text-slate-900 rounded-full px-4 py-2.5 text-xs sm:text-sm focus:ring-2 focus:ring-[#006569] focus:outline-none"
+            />
+            <button
+              type="submit"
+              disabled={!inputMessage.trim() || loading || cooldownSec > 0}
+              aria-label="Kirim pesan"
+              className="w-10 h-10 bg-[#006569] disabled:bg-slate-300 rounded-full flex items-center justify-center text-white shrink-0 shadow-sm cursor-pointer"
+            >
+              <Send size={18} className="ml-0.5" />
+            </button>
+          </div>
+          <div className="flex items-center justify-between px-2 text-[10px] font-semibold text-slate-400">
+            <span>{cooldownSec > 0 ? `Jeda keamanan aktif (${cooldownSec} dtk)` : 'Maksimal 500 karakter'}</span>
+            <span className="font-mono">{inputMessage.length}/{MAX_CHAT_PROMPT_LENGTH}</span>
+          </div>
         </form>
       </div>
 

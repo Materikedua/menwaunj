@@ -1,6 +1,6 @@
 {
-  "name": "Menwa UNJ — Audit & Analisis Arsitektur Portal V7",
-  "description": "Analisis komprehensif arsitektur, hierarki, desain, database, keamanan, dan UI/UX untuk Portal Resmi Menwa UNJ V7.",
+  "name": "Menwa UNJ — Portal Resmi Komando Resimen Mahasiswa Satuan Universitas Negeri Jakarta",
+  "description": "Portal resmi Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta: informasi organisasi, Ksatria Cendekia VIII, Youth Spark, GERANAT VII, verifikasi sertifikat, Smart Adminu, dan operasi satuan.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

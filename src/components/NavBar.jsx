@@ -82,7 +82,7 @@ export const NavBar = ({
 
           <div className="max-w-[1760px] mx-auto px-3 sm:px-4 2xl:px-8">
             <div
-              className={`flex justify-between items-center transition-all duration-500 ${scrolled ? 'h-16' : 'h-[72px]'
+              className={`flex justify-between items-center transition-all duration-500 ${scrolled ? 'h-12 md:h-16' : 'h-14 md:h-[72px]'
                 }`}
             >
               <MagneticButton
@@ -94,13 +94,13 @@ export const NavBar = ({
                   src={logoSrc}
                   onError={onLogoError}
                   alt="Logo Menwa UNJ"
-                  className="w-9 h-9 xl:w-10 xl:h-10 object-contain mr-2 xl:mr-2.5 drop-shadow-md transition-transform duration-500 group-hover:scale-110"
+                  className="w-7 h-7 md:w-9 md:h-9 xl:w-10 xl:h-10 object-contain mr-2 xl:mr-2.5 drop-shadow-md transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="text-left">
-                  <h1 className="text-xs 2xl:text-sm font-black text-white whitespace-nowrap leading-tight tracking-tight">
+                  <h1 className="text-[11px] md:text-xs 2xl:text-sm font-black text-white whitespace-nowrap leading-tight tracking-tight">
                     RESIMEN MAHASISWA
                   </h1>
-                  <p className="text-[9px] font-black text-[#FFDD00] tracking-[0.2em] uppercase">
+                  <p className="text-[8px] md:text-[9px] font-black text-[#FFDD00] tracking-[0.2em] uppercase">
                     Satuan UNJ
                   </p>
                 </div>
@@ -369,7 +369,7 @@ export const NavBar = ({
       </header>
 
       {/* Spacer penahan tata letak agar konten halaman tidak tertutup header fixed */}
-      <div className="h-[72px] w-full shrink-0 pointer-events-none" aria-hidden="true" />
+      <div className="h-14 md:h-[72px] w-full shrink-0 pointer-events-none" aria-hidden="true" />
     </>
   );
 };

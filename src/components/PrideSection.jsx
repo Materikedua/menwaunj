@@ -1,76 +1,42 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Users, Award, Compass, Trophy } from 'lucide-react';
+import { Users, CalendarDays, Trophy, HeartHandshake } from 'lucide-react';
+import { UNIT_METRICS } from '../data/siteConfig';
 
-const rotatingPhrases = ['Prestasi', 'Pengabdian', 'Anggota', 'Penyelenggaraan'];
-
-export const PrideText = () => {
-  const [index, setIndex] = useState(0);
-  const [typed, setTyped] = useState('');
-  const [deleting, setDeleting] = useState(false);
-  const phrase = rotatingPhrases[index];
-
-  useEffect(() => {
-    const pause = !deleting && typed === phrase;
-    const timer = setTimeout(
-      () => {
-        if (pause) {
-          setDeleting(true);
-          return;
-        }
-        if (deleting) {
-          const next = typed.slice(0, -1);
-          setTyped(next);
-          if (!next) {
-            setDeleting(false);
-            setIndex((i) => (i + 1) % rotatingPhrases.length);
-          }
-        } else {
-          setTyped(phrase.slice(0, typed.length + 1));
-        }
-      },
-      pause ? 1500 : deleting ? 55 : 85
-    );
-    return () => clearTimeout(timer);
-  }, [typed, deleting, phrase]);
-
-  return (
-    <span className="pride-line">
-      <span className="pride-prefix">Menwa UNJ dalam </span>
-      <span className="pride-typing">
-        <span className="pride-typing__text">{typed}</span>
-        <span className="pride-typing__caret" aria-hidden />
-      </span>
-    </span>
-  );
+const ICON_MAP = {
+  users: Users,
+  calendar: CalendarDays,
+  trophy: Trophy,
+  heart: HeartHandshake,
 };
 
-export const V3_STATS = [
-  { label: 'Anggota Aktif', number: 38, icon: Users, color: 'teal' },
-  { label: 'Prestasi Terdata', number: 113, icon: Award, color: 'gold' },
-  { label: 'Giat Pengabdian Masyarakat', number: 75, icon: Compass, color: 'violet' },
-  { label: 'Penyelenggaraan Lomba', number: 23, icon: Trophy, color: 'coral' },
-];
+export const PrideText = () => (
+  <span className="pride-line">
+    <span className="pride-prefix">Menwa UNJ dalam Pencapaian &amp; Pengabdian</span>
+  </span>
+);
+
+export const V3_STATS = UNIT_METRICS;
 
 export const PrideStat = ({ item }) => {
   const ref = useRef(null);
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(item.number);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setCount(item.number);
+      return;
+    }
     let frame = 0;
     let running = false;
     const run = () => {
       if (running) return;
       running = true;
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        setCount(item.number);
-        return;
-      }
       const start = performance.now();
       const tick = (now) => {
-        const progress = Math.min(1, (now - start) / 3200);
-        const eased = 1 - Math.pow(1 - progress, 2);
+        const progress = Math.min(1, (now - start) / 1600);
+        const eased = 1 - Math.pow(1 - progress, 3);
         setCount(Math.round(eased * item.number));
         if (progress < 1) frame = requestAnimationFrame(tick);
       };
@@ -79,11 +45,12 @@ export const PrideStat = ({ item }) => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
+          setCount(0);
           run();
           observer.disconnect();
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.25 }
     );
     observer.observe(el);
     return () => {
@@ -92,17 +59,17 @@ export const PrideStat = ({ item }) => {
     };
   }, [item.number]);
 
-  const Icon = item.icon;
+  const Icon = ICON_MAP[item.iconKey] || Trophy;
   return (
     <article className={`brand-pride-stat brand-pride-stat--${item.color}`} ref={ref}>
       <span className="brand-pride-icon">
         <Icon size={24} />
       </span>
       <strong>
-        {count}
-        <i>+</i>
+        {count.toLocaleString('id-ID')}
+        {item.suffix ? <i>{item.suffix}</i> : null}
       </strong>
-      <span>{item.label}</span>
+      <span className="font-bold">{item.label}</span>
     </article>
   );
 };
@@ -110,14 +77,16 @@ export const PrideStat = ({ item }) => {
 export const PrideSection = () => (
   <section className="brand-pride" aria-labelledby="brand-pride-title">
     <div className="brand-container">
-      <span className="brand-pride-eyebrow">JEJAK &amp; KEBANGGAAN SATUAN</span>
+      <span className="brand-pride-eyebrow">REKAM JEJAK &amp; KAPASITAS SATUAN</span>
       <h2 id="brand-pride-title">
-        <PrideText />
+        Menwa UNJ dalam <span className="text-[#FFDD00]">Pencapaian &amp; Pengabdian</span>
       </h2>
-      <p className="brand-pride-lead">Langkah, karya, dan pengabdian yang menjadi kebanggaan Menwa UNJ.</p>
+      <p className="brand-pride-lead">
+        Data kumulatif pembinaan kader, siklus program kerja tahunan, penyelenggaraan kompetisi nasional, serta jangkauan bakti sosial kemanusiaan Satuan Universitas Negeri Jakarta.
+      </p>
       <div className="brand-pride-grid">
-        {V3_STATS.map((item) => (
-          <PrideStat key={item.label} item={item} />
+        {UNIT_METRICS.map((item) => (
+          <PrideStat key={item.id} item={item} />
         ))}
       </div>
     </div>
@@ -125,3 +94,4 @@ export const PrideSection = () => (
 );
 
 export default PrideSection;
+

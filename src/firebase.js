@@ -1,12 +1,117 @@
-import { initializeApp, getApps, getApp } from 'firebase/app'; import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updateProfile } from 'firebase/auth'; import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, orderBy, limit, getDocs, onSnapshot, deleteDoc, serverTimestamp, getDocFromServer, increment } from 'firebase/firestore'; import { getStorage, ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage'; import firebaseConfig from '../firebase-applet-config.json'; /* Initialize Firebase app singleton */ export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp(); /* Initialize and export Auth instance */ export const auth = getAuth(app); /* Initialize and export Firestore instance using firestoreDatabaseId */ export const firestore = getFirestore(app, firebaseConfig.firestoreDatabaseId); /* Initialize and export Firebase Storage instance */ export const storage = getStorage(app); export { storageRef, uploadString, getDownloadURL }; /* Alias db for common convention and backward compatibility */ export const db = firestore; /* Configure Google Auth Provider */ export const googleProvider = new GoogleAuthProvider(); googleProvider.setCustomParameters({ prompt: 'select_account' }); /* Validate connection to Firestore on boot */ async function testConnection() { try { await getDocFromServer(doc(firestore, 'test', 'connection')); } catch (error) { if (error instanceof Error && error.message.includes('the client is offline')) { console.error('Please check your Firebase configuration.'); } } } if (typeof window !== 'undefined') { testConnection(); } /* Export common auth & firestore methods */ export { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updateProfile, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, onSnapshot, deleteDoc, serverTimestamp, getDocFromServer }; /* Kirim email reset kata sandi resmi via Firebase Auth / Gmail */ export async function resetUserPassword(email) { if (!email || !email.trim()) { throw new Error('Alamat email wajib diisi.'); } return await sendPasswordResetEmail(auth, email.trim()); } /* Error handling helper */ export function handleFirestoreError(error, operationType, path) { const errInfo = { error: error instanceof Error ? error.message : String(error), authInfo: { userId: auth.currentUser?.uid || null, email: auth.currentUser?.email || null, emailVerified: auth.currentUser?.emailVerified || null, isAnonymous: auth.currentUser?.isAnonymous || null, }, operationType, path }; console.error('Firestore Error: ', JSON.stringify(errInfo)); throw new Error(JSON.stringify(errInfo)); } /* Google Sign-In helper */ export async function loginWithGoogle() { const result = await signInWithPopup(auth, googleProvider); const user = result.user; const userDocRef = doc(firestore, 'users', user.uid); try { const snap = await getDoc(userDocRef); if (!snap.exists()) { await setDoc(userDocRef, { uid: user.uid, email: user.email || '', displayName: user.displayName || 'Anggota Pengunjung', institution: 'Universitas Negeri Jakarta', occupation: 'Mahasiswa', birthDate: '', phone: '', updatedAt: new Date().toISOString() }); } } catch (err) { console.warn('Auto profile setup warning:', err); } return user; } /* Email Sign-In helper */ export async function loginWithEmail(email, password) { const cred = await signInWithEmailAndPassword(auth, email, password); return cred.user; } /* Email Registration helper */ export async function registerWithEmail(email, password, displayName, institution, occupation, birthDate, phone) { const cred = await createUserWithEmailAndPassword(auth, email, password); const user = cred.user; if (displayName) { await updateProfile(user, { displayName }); } const userDocRef = doc(firestore, 'users', user.uid); try { await setDoc(userDocRef, { uid: user.uid, email: user.email || email, displayName: displayName || user.displayName || 'Anggota Pengguna', institution: institution || 'Universitas Negeri Jakarta', occupation: occupation || 'Mahasiswa', birthDate: birthDate || '', phone: phone || '', updatedAt: new Date().toISOString() }); } catch (err) { console.warn('Profile creation warning:', err); } return user; } /* Sign-Out helper */ export async function logoutUser() { await signOut(auth); } /* User Profile helpers */ export async function getUserProfile(uid) { if (!uid) return null; const path = `users/${uid}`; try { const snap = await getDoc(doc(firestore, 'users', uid)); if (snap.exists()) { return snap.data(); } return null; } catch (error) { handleFirestoreError(error, 'get', path); } } export async function updateUserProfile(uid, profileData) { if (!uid) return; const path = `users/${uid}`; try { const ref = doc(firestore, 'users', uid); await updateDoc(ref, { ...profileData, updatedAt: new Date().toISOString() }); } catch (error) { handleFirestoreError(error, 'update', path); } } /* Submit Formulir Administrasi */
+import { initializeApp, getApps, getApp } from 'firebase/app'; import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updateProfile } from 'firebase/auth'; import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, orderBy, limit, getDocs, onSnapshot, deleteDoc, serverTimestamp, getDocFromServer, increment } from 'firebase/firestore'; import { getStorage, ref as storageRef, uploadString, getDownloadURL, listAll, getMetadata } from 'firebase/storage'; import firebaseConfig from '../firebase-applet-config.json'; /* Initialize Firebase app singleton */ export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp(); /* Initialize and export Auth instance */ export const auth = getAuth(app); /* Initialize and export Firestore instance using firestoreDatabaseId */ export const firestore = getFirestore(app, firebaseConfig.firestoreDatabaseId); /* Initialize and export Firebase Storage instance */ export const storage = getStorage(app); export { storageRef, uploadString, getDownloadURL, listAll, getMetadata }; /* Alias db for common convention and backward compatibility */ export const db = firestore; /* Configure Google Auth Provider */ export const googleProvider = new GoogleAuthProvider(); googleProvider.setCustomParameters({ prompt: 'select_account' }); /* Validate connection to Firestore on demand (disabled automatic boot read to preserve Spark quota) */ export async function testConnection() { try { await getDocFromServer(doc(firestore, 'test', 'connection')); } catch (error) { if (error instanceof Error && error.message.includes('the client is offline')) { console.error('Please check your Firebase configuration.'); } } } /* Export common auth & firestore methods */ export { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, updateProfile, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, onSnapshot, deleteDoc, serverTimestamp, getDocFromServer }; /* Kirim email reset kata sandi resmi via Firebase Auth / Gmail */ export async function resetUserPassword(email) { if (!email || !email.trim()) { throw new Error('Alamat email wajib diisi.'); } return await sendPasswordResetEmail(auth, email.trim()); } /* Error handling helper */ export function handleFirestoreError(error, operationType, path) { const errInfo = { error: error instanceof Error ? error.message : String(error), authInfo: { userId: auth.currentUser?.uid || null, email: auth.currentUser?.email || null, emailVerified: auth.currentUser?.emailVerified || null, isAnonymous: auth.currentUser?.isAnonymous || null, }, operationType, path }; console.error('Firestore Error: ', JSON.stringify(errInfo)); throw new Error(JSON.stringify(errInfo)); } /* Google Sign-In helper */ export async function loginWithGoogle() { const result = await signInWithPopup(auth, googleProvider); const user = result.user; const userDocRef = doc(firestore, 'users', user.uid); try { const snap = await getDoc(userDocRef); if (!snap.exists()) { await setDoc(userDocRef, { uid: user.uid, email: user.email || '', displayName: user.displayName || 'Anggota Pengunjung', institution: 'Universitas Negeri Jakarta', occupation: 'Mahasiswa', birthDate: '', phone: '', updatedAt: new Date().toISOString() }); } } catch (err) { console.warn('Auto profile setup warning:', err); } return user; } /* Email Sign-In helper */ export async function loginWithEmail(email, password) { const cred = await signInWithEmailAndPassword(auth, email, password); return cred.user; } /* Email Registration helper */ export async function registerWithEmail(email, password, displayName, institution, occupation, birthDate, phone) { const cred = await createUserWithEmailAndPassword(auth, email, password); const user = cred.user; if (displayName) { await updateProfile(user, { displayName }); } const userDocRef = doc(firestore, 'users', user.uid); try { await setDoc(userDocRef, { uid: user.uid, email: user.email || email, displayName: displayName || user.displayName || 'Anggota Pengguna', institution: institution || 'Universitas Negeri Jakarta', occupation: occupation || 'Mahasiswa', birthDate: birthDate || '', phone: phone || '', updatedAt: new Date().toISOString() }); } catch (err) { console.warn('Profile creation warning:', err); } return user; } /* Sign-Out helper */ export async function logoutUser() { await signOut(auth); } /* User Profile helpers */ export async function getUserProfile(uid) { if (!uid) return null; const path = `users/${uid}`; try { const snap = await getDoc(doc(firestore, 'users', uid)); if (snap.exists()) { return snap.data(); } return null; } catch (error) { handleFirestoreError(error, 'get', path); } } export async function updateUserProfile(uid, profileData) { if (!uid) return; const path = `users/${uid}`; try { const ref = doc(firestore, 'users', uid); await updateDoc(ref, { ...profileData, updatedAt: new Date().toISOString() }); } catch (error) { handleFirestoreError(error, 'update', path); } } /* Submit Formulir Administrasi */
+import {
+  formatWebLetterNumber,
+  letterNumberToDocId,
+} from './utils/adminuUtils';
+
 /* Helper nomor surat resmi Menwa UNJ: B-(001-999)/Web/(Romawi Bulan)/(Tahun) */
-export function generateLetterId() {
-  const romawi = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+export function generateLetterId(seq = null) {
+  const num = seq && Number(seq) > 0 ? Number(seq) : Math.floor(Math.random() * 900) + 1;
+  return formatWebLetterNumber(num, new Date());
+}
+
+/* Cek nomor surat sekuensial yang tersedia (anti-tabrakan) di Firestore /forms_submissions */
+export async function findAvailableLetterNumber(startSeq = 1) {
   const now = new Date();
-  const romanMonth = romawi[now.getMonth()] || 'X';
-  const year = now.getFullYear();
-  const randomNum = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
-  return `B-${randomNum}/Web/${romanMonth}/${year}`;
+  const base = Math.max(1, Math.floor(Number(startSeq) || 1));
+  try {
+    for (let offset = 0; offset < 30; offset += 1) {
+      const candidate = formatWebLetterNumber(base + offset, now);
+      const docId = letterNumberToDocId(candidate);
+      const snap = await getDoc(doc(firestore, 'forms_submissions', docId));
+      if (!snap.exists()) {
+        return candidate;
+      }
+    }
+  } catch {
+    /* fallback below */
+  }
+  const randSeq = 100 + Math.floor(Math.random() * 899);
+  return formatWebLetterNumber(randSeq, now);
+}
+
+/* Unggah berkas PDF permohonan/surat (maks 1 MB) ke Firebase Storage */
+export async function uploadAdminuPdfToStorage(pdfBase64, docId, fileName = 'berkas_permohonan.pdf') {
+  if (!pdfBase64 || !storage) return '';
+  try {
+    const safeDocId = String(docId || `DOC-${Date.now()}`)
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .slice(0, 90);
+    const safeFileName = String(fileName || 'berkas_permohonan.pdf')
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .slice(0, 120);
+    const sRef = storageRef(storage, `adminu_submissions/${safeDocId}/${safeFileName}`);
+    await uploadString(sRef, pdfBase64, 'data_url');
+    return await getDownloadURL(sRef);
+  } catch (storageErr) {
+    console.warn('Firebase Storage PDF upload note:', storageErr);
+    return '';
+  }
+}
+
+/* Daftar berkas yang tersimpan di Firebase Storage (assets/images, assets/svg, adminu_submissions, surat_masuk, dokumen, official_portals) */
+export async function listFirebaseStorageDocuments(
+  prefixes = [
+    'assets/images',
+    'assets/svg',
+    'adminu_submissions',
+    'dokumen',
+    'surat_masuk',
+    'official_portals',
+    'official',
+  ]
+) {
+  if (!storage) return [];
+  const results = [];
+  const seenPaths = new Set();
+
+  const collectFolder = async (folderRef, depth = 0) => {
+    try {
+      const res = await listAll(folderRef);
+      const fileTasks = res.items.map(async (itemRef) => {
+        if (seenPaths.has(itemRef.fullPath)) return null;
+        seenPaths.add(itemRef.fullPath);
+        try {
+          const [url, meta] = await Promise.all([
+            getDownloadURL(itemRef),
+            getMetadata(itemRef).catch(() => null),
+          ]);
+          const contentType = meta?.contentType || 'application/octet-stream';
+          const isImage =
+            /\.(webp|jpe?g|png|gif|svg)$/i.test(itemRef.name) ||
+            String(contentType).startsWith('image/');
+          return {
+            name: itemRef.name,
+            fullPath: itemRef.fullPath,
+            folder: itemRef.parent?.fullPath || '',
+            url,
+            isImage,
+            sizeBytes: Number(meta?.size || 0),
+            contentType,
+            updatedAt: meta?.updated || meta?.timeCreated || '',
+          };
+        } catch {
+          return null;
+        }
+      });
+      const files = await Promise.all(fileTasks);
+      for (const f of files) {
+        if (f) results.push(f);
+      }
+      if (depth < 3) {
+        await Promise.all(
+          res.prefixes.slice(0, 25).map((subRef) => collectFolder(subRef, depth + 1))
+        );
+      }
+    } catch {
+      /* Abaikan folder yang tidak dapat diakses atau masih kosong */
+    }
+  };
+
+  await Promise.all(prefixes.map((p) => collectFolder(storageRef(storage, p), 0)));
+  return results.sort(
+    (a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
+  );
 }
 
 import {
@@ -33,12 +138,12 @@ export {
   sanitizeOfficialPortalForFirestore,
 };
 
-/* Submit Formulir Administrasi (Stage 2.1: Proteksi Batas 1 MiB Dokumen Firestore) */
+/* Submit Formulir Administrasi (Stage 2.1: Proteksi Batas 1 MiB Dokumen Firestore + Nomor Sekuensial B-001/Web/...) */
 export async function submitAdministrationForm(formData) {
   const path = 'forms_submissions';
   try {
-    const subId = formData.submissionId || generateLetterId();
-    const safeDocId = subId.replace(/\//g, '_');
+    const subId = formData.submissionId || (await findAvailableLetterNumber(1));
+    const safeDocId = letterNumberToDocId(subId);
     const rawPayload = {
       ...formData,
       submissionId: subId,
@@ -48,17 +153,14 @@ export async function submitAdministrationForm(formData) {
       createdAt: new Date().toISOString()
     };
 
-    let uploadedStorageUrl = '';
+    let uploadedStorageUrl = formData?.documentPdfUrl || '';
     // Sinkronisasi otomatis ke Firebase Storage jika file PDF ada
-    if (formData?.documentPdfBase64 && storage) {
-      try {
-        const safeFileName = (formData.documentPdfName || 'berkas_permohonan.pdf').replace(/[^a-zA-Z0-9._-]/g, '_');
-        const sRef = storageRef(storage, `adminu_submissions/${safeDocId}/${safeFileName}`);
-        await uploadString(sRef, formData.documentPdfBase64, 'data_url');
-        uploadedStorageUrl = await getDownloadURL(sRef);
-      } catch (storageErr) {
-        console.warn('Firebase Storage upload note (fallback sanitasi ukuran dokumen aktif):', storageErr);
-      }
+    if (!uploadedStorageUrl && formData?.documentPdfBase64) {
+      uploadedStorageUrl = await uploadAdminuPdfToStorage(
+        formData.documentPdfBase64,
+        safeDocId,
+        formData.documentPdfName || 'berkas_permohonan.pdf'
+      );
     }
 
     // Hapus documentPdfBase64 dari payload Firestore agar tidak pernah melampaui batas 1 MiB
@@ -71,10 +173,60 @@ export async function submitAdministrationForm(formData) {
   }
 }
 
-/* Cari Progres Surat Berdasarkan ID (Privasi Terjamin: Hanya Menampilkan Surat yang Diinputkan Audiens) */
+/* Cari Progres Surat atau Tiket PAM Berdasarkan ID (Privasi Terjamin: Hanya Menampilkan Surat/Tiket yang Diinputkan Audiens) */
 export async function getSubmissionById(queryId) {
   if (!queryId || !String(queryId).trim()) return null;
   const cleanId = String(queryId).trim();
+  const upperCleanId = cleanId.toUpperCase().replace(/\s+/g, '');
+
+  // 0. Jika berupa kode tiket Smart Adminu (PAM-2026-XXX), cek langsung /adminu_tickets/{ticketId}
+  if (/^PAM-2026-[0-9]{3,6}$/.test(upperCleanId)) {
+    try {
+      const ticketSnap = await getDoc(doc(firestore, 'adminu_tickets', upperCleanId));
+      if (ticketSnap.exists()) {
+        const t = ticketSnap.data();
+        let linkedSubmission = null;
+        if (t.linkedLetterNumber) {
+          try {
+            const subSnap = await getDoc(
+              doc(firestore, 'forms_submissions', letterNumberToDocId(t.linkedLetterNumber))
+            );
+            if (subSnap.exists()) {
+              linkedSubmission = { id: subSnap.id, ...subSnap.data() };
+            }
+          } catch {
+            /* ignore */
+          }
+        }
+        return {
+          id: ticketSnap.id,
+          submissionId: t.linkedLetterNumber || t.ticketId,
+          ticketId: t.ticketId,
+          recordKind: 'adminu_ticket',
+          ticket: t,
+          linkedLetterNumber: t.linkedLetterNumber || '',
+          linkedSubmission,
+          fullName: t.applicantName || 'Pemohon',
+          institution: t.institution || 'Instansi Terdaftar',
+          phone: t.contactPhone || '',
+          email: t.contactEmail || '',
+          serviceType: t.serviceLabel || 'Layanan Smart Adminu',
+          formTitle: t.eventName || t.serviceLabel,
+          status: t.status || 'DITERIMA',
+          createdAt: t.createdAt,
+          additionalNotes: t.notes || '',
+          adminNotes: t.statusNote || '',
+          documentPdfUrl: linkedSubmission?.documentPdfUrl || t.attachmentPdfUrl || '',
+          documentPdfBase64: linkedSubmission?.documentPdfBase64 || '',
+          documentPdfName: linkedSubmission?.documentPdfName || t.attachmentPdfName || '',
+          documentPdfSizeKb: linkedSubmission?.documentPdfSizeKb || t.attachmentPdfSizeKb || 0,
+        };
+      }
+    } catch {
+      /* ignore and continue fallback */
+    }
+  }
+
   const safeDocId = cleanId.replace(/\//g, '_');
   const upperSafeDocId = cleanId.toUpperCase().replace(/\//g, '_');
   

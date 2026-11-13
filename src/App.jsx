@@ -51,6 +51,7 @@ import { DynamicCanvasZone } from './components/DynamicCanvasZone.jsx';
 import { PWAInstallBanner } from './components/PWAInstallBanner.jsx';
 import { PROGRAMS, HERO_PHOTO } from './data/siteData.js';
 import { subscribeToLockdownState, DEFAULT_LOCKDOWN_STATE } from './firebase.js';
+import { initFirebaseCmsBridge } from './lib/firebaseCmsBridge';
 import { EmergencyLockdownScreen } from './components/EmergencyLockdownScreen.jsx';
 import { LiveChatWidget } from './components/LiveChatWidget.jsx';
 import { StrukturOrganisasiTab } from './components/tabs/StrukturOrganisasiTab.jsx';
@@ -93,6 +94,12 @@ const TermsOfServicePage = lazy(() =>
 );
 const ShopPage = lazy(() =>
   import('./components/shop/ShopPage.jsx').then((m) => ({ default: m.ShopPage }))
+);
+const CertificateVerifyPage = lazy(() =>
+  import('./components/verify/CertificateVerifyPage').then((m) => ({ default: m.CertificateVerifyPage }))
+);
+const SmartAdminuSection = lazy(() =>
+  import('./components/adminu/SmartAdminuSection').then((m) => ({ default: m.SmartAdminuSection }))
 );
 
 const PageLoadingFallback = () => (
@@ -234,14 +241,6 @@ export default function App() {
     }
   });
   const [konamiUnlocked, setKonamiUnlocked] = useState(false);
-  const [kioskMode, setKioskMode] = useState(() => {
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('kiosk') === 'true';
-    } catch {
-      return false;
-    }
-  });
 
   const { user, profile } = useAuth();
   const [lockdownState, setLockdownState] = useState(() => {
@@ -253,10 +252,14 @@ export default function App() {
   });
 
   useEffect(() => {
-    const unsub = subscribeToLockdownState((state) => {
+    const unsubLockdown = subscribeToLockdownState((state) => {
       if (state) setLockdownState(state);
     });
-    return () => unsub();
+    const unsubCmsBridge = initFirebaseCmsBridge();
+    return () => {
+      unsubLockdown();
+      unsubCmsBridge();
+    };
   }, []);
 
   const isPrivilegedOfficer = Boolean(
@@ -268,23 +271,6 @@ export default function App() {
         user.email === 'unjmenwa@gmail.com' ||
         user.email === 'rafflysyahpoetra@gmail.com')
   );
-
-  /* Listener Mode Kiosk */
-  useEffect(() => {
-    const handleToggle = () => setKioskMode((prev) => !prev);
-    const handleKey = (e) => {
-      if ((e.ctrlKey && e.shiftKey && (e.key === 'K' || e.key === 'k')) || (e.altKey && (e.key === 'k' || e.key === 'K'))) {
-        e.preventDefault();
-        setKioskMode((prev) => !prev);
-      }
-    };
-    window.addEventListener('toggle-kiosk-mode', handleToggle);
-    window.addEventListener('keydown', handleKey);
-    return () => {
-      window.removeEventListener('toggle-kiosk-mode', handleToggle);
-      window.removeEventListener('keydown', handleKey);
-    };
-  }, []);
 
   useEffect(() => {
     try {
@@ -350,8 +336,10 @@ export default function App() {
       ? 'geranat'
       : path === '/games'
       ? 'games'
-      : path === '/administrasi' || path === '/mako'
+      : path === '/administrasi' || path === '/mako' || path === '/adminu'
       ? 'administrasi'
+      : path === '/verify' || path.startsWith('/verify/')
+      ? 'informasi'
       : youthRoute
       ? 'youth-spark'
       : program
@@ -366,6 +354,8 @@ export default function App() {
         shop: '/toko',
         gallery: '/gallery',
         informasi: '/informasi',
+        verify: '/verify',
+        adminu: '/adminu',
         kegiatan: '/kc',
         kc: '/kc',
         geranat: '/geranat',
@@ -383,6 +373,10 @@ export default function App() {
     let customTitle = null;
     if (path === '/toko' || path === '/toko/' || path === '/shop' || path === '/shop/') {
       customTitle = 'Official Store & Pre-Order Polo Shirt 2026 | Menwa UNJ';
+    } else if (path === '/verify' || path.startsWith('/verify/')) {
+      customTitle = 'Verifikasi Sertifikat Resmi | Menwa UNJ';
+    } else if (path === '/adminu') {
+      customTitle = 'Smart Adminu & Permohonan PAM | Menwa UNJ';
     } else if (path.startsWith('/verifikasi-surat')) {
       customTitle = 'Verifikasi E-Dispensasi Resmi | Menwa UNJ';
     } else if (path.startsWith('/official/')) {
@@ -480,39 +474,22 @@ export default function App() {
             </div>
           )}
 
-          {kioskMode && (
-            <div className="fixed top-4 right-4 z-50 bg-[#006569] text-[#FFDD00] text-xs font-black px-4 py-2 rounded-full shadow-2xl border border-[#FFDD00]/40 flex items-center gap-2 backdrop-blur-md animate-fade-in">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Mode Kiosk / Monitor Mako Aktif</span>
-              <button
-                type="button"
-                onClick={() => setKioskMode(false)}
-                className="ml-2 bg-black/20 hover:bg-black/40 text-white rounded-full p-1 transition cursor-pointer"
-                title="Keluar dari Mode Kiosk"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          )}
-
-          {!kioskMode && (
-            <AppNavigation
-              onOpenSearch={() => setSearchOpen(true)}
-              onOpenAccount={() => setAccountModalOpen(true)}
-              onOpenGamification={() => navigate('/games')}
-              darkMode={darkMode}
-              onToggleDarkMode={() => setDarkMode((d) => !d)}
-              user={user}
-              profile={profile}
-              activeTab={activeTab}
-              handleQuickSearch={handleQuickSearch}
-              isMobileMenuOpen={isMobileMenuOpen}
-              setIsMobileMenuOpen={setIsMobileMenuOpen}
-              tactileAudioMuted={tactileAudioMuted}
-              onToggleAudio={(val) => setTactileAudioMutedState(val)}
-              onLogoError={(e) => handleImgError(e, 'MENWA UNJ', '006569', 'FFDD00')}
-            />
-          )}
+          <AppNavigation
+            onOpenSearch={() => setSearchOpen(true)}
+            onOpenAccount={() => setAccountModalOpen(true)}
+            onOpenGamification={() => navigate('/games')}
+            darkMode={darkMode}
+            onToggleDarkMode={() => setDarkMode((d) => !d)}
+            user={user}
+            profile={profile}
+            activeTab={activeTab}
+            handleQuickSearch={handleQuickSearch}
+            isMobileMenuOpen={isMobileMenuOpen}
+            setIsMobileMenuOpen={setIsMobileMenuOpen}
+            tactileAudioMuted={tactileAudioMuted}
+            onToggleAudio={(val) => setTactileAudioMutedState(val)}
+            onLogoError={(e) => handleImgError(e, 'MENWA UNJ', '006569', 'FFDD00')}
+          />
 
           {/* Sticky In-App 2-Verification Alert Banner for Mako Admins */}
           <Suspense fallback={null}>
@@ -521,7 +498,15 @@ export default function App() {
 
           <main className="flex-grow flex flex-col" id="main-content">
             <TabSwitch tabKey={path}>
-              {path.startsWith('/verifikasi-surat') ? (
+              {path === '/verify' || path.startsWith('/verify/') ? (
+                <Suspense fallback={<PageLoadingFallback />}>
+                  <CertificateVerifyPage path={path} />
+                </Suspense>
+              ) : path === '/adminu' ? (
+                <Suspense fallback={<PageLoadingFallback />}>
+                  <SmartAdminuSection />
+                </Suspense>
+              ) : path.startsWith('/verifikasi-surat') ? (
                 <Suspense fallback={<PageLoadingFallback />}>
                   <EDispensasiVerifyPage path={path} />
                 </Suspense>
@@ -596,8 +581,8 @@ export default function App() {
             </TabSwitch>
           </main>
 
-          {!kioskMode && <Footer />}
-          {!kioskMode && <LiveChatWidget onOpenAccount={() => setAccountModalOpen(true)} />}
+          <Footer />
+          <LiveChatWidget onOpenAccount={() => setAccountModalOpen(true)} />
           <PWAInstallBanner />
           <BackToTop />
           <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} />

@@ -7,9 +7,9 @@
 export const ROUTE_METADATA = {
   '/': {
     title: 'Menwa UNJ — Portal Resmi Komando Resimen Mahasiswa Satuan Universitas Negeri Jakarta',
-    description: 'Portal resmi Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta: informasi organisasi, Ksatria Cendekia VIII, Youth Spark, GERANAT VII, verifikasi E-Dispensasi, kegiatan, pendaftaran, dan layanan kemahasiswaan.',
-    ogTitle: 'Menwa UNJ — Portal Resmi & Pusat Informasi Satuan',
-    ogDescription: 'Portal resmi Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta. Widya Castrena Dharma Siddha.',
+    description: 'Portal resmi Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta: informasi organisasi, Ksatria Cendekia VIII, Youth Spark, GERANAT VII, verifikasi sertifikat, Smart Adminu, dan operasi satuan.',
+    ogTitle: 'Menwa UNJ — Portal Resmi Komando Resimen Mahasiswa Satuan Universitas Negeri Jakarta',
+    ogDescription: 'Portal resmi Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta: informasi organisasi, Ksatria Cendekia VIII, Youth Spark, GERANAT VII, verifikasi sertifikat, Smart Adminu, dan operasi satuan.',
     ogImage: 'https://menwaunj.or.id/logo-menwa-unj.png',
     keywords: 'Menwa UNJ, Resimen Mahasiswa, Universitas Negeri Jakarta, Bela Negara, KC VIII, Youth Spark, GERANAT VII',
   },
@@ -133,6 +133,22 @@ export const ROUTE_METADATA = {
     ogImage: 'https://menwaunj.or.id/logo-menwa-unj.png',
     keywords: 'Persyaratan Layanan, Terms of Service, Ketentuan Hukum, Menwa UNJ',
   },
+  '/verify': {
+    title: 'Verifikasi Sertifikat Resmi | Menwa UNJ',
+    description: 'Portal validasi keaslian piagam penghargaan, sertifikat peserta seminar nasional, kejuaraan Ksatria Cendekia, GERANAT, dan pendidikan satuan Menwa UNJ.',
+    ogTitle: 'Verifikasi Sertifikat Resmi | Menwa UNJ',
+    ogDescription: 'Cek keabsahan sertifikat kegiatan resmi Komando Resimen Mahasiswa Satuan UNJ.',
+    ogImage: 'https://menwaunj.or.id/logo-menwa-unj.png',
+    keywords: 'Verifikasi Sertifikat Menwa UNJ, Validasi Piagam KC VIII, Sertifikat Youth Spark, GERANAT VII',
+  },
+  '/adminu': {
+    title: 'Smart Adminu & Permohonan PAM | Menwa UNJ',
+    description: 'Layanan digital pengajuan permohonan pengamanan kegiatan (PAM), peminjaman sarpras, kemitraan, pratinjau surat resmi, dan pelacakan resi PAM-2026-XXX.',
+    ogTitle: 'Smart Adminu & Permohonan PAM | Menwa UNJ',
+    ogDescription: 'Ajukan pengamanan kegiatan kampus & lacak status disposisi berkas secara real-time.',
+    ogImage: 'https://menwaunj.or.id/logo-menwa-unj.png',
+    keywords: 'Smart Adminu Menwa UNJ, Permohonan Pengamanan Kegiatan, Lacak Resi PAM, Administrasi Mako UNJ',
+  },
 };
 
 /**
@@ -147,6 +163,8 @@ export function syncDocumentMetadata(currentPath, overrideMeta = {}) {
   let cleanPath = currentPath || '/';
   if (cleanPath.startsWith('/official/')) {
     cleanPath = '/official';
+  } else if (cleanPath.startsWith('/verify')) {
+    cleanPath = '/verify';
   } else if (cleanPath.startsWith('/verifikasi-surat')) {
     cleanPath = '/verifikasi-surat';
   } else if (cleanPath === '/kebijakan-privasi') {
