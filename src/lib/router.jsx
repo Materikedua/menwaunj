@@ -31,7 +31,7 @@ export const extractSchoolSubdomain = (hostnameInput = '') => {
     const suffix = `.${baseDomain}`;
     if (hostname.endsWith(suffix)) {
       const sub = hostname.slice(0, -suffix.length);
-      if (sub && !sub.includes('.') && sub !== 'www' && sub !== 'menwaunj') {
+      if (sub && !sub.includes('.') && sub !== 'www' && sub !== 'menwaunj' && sub !== 'espri') {
         return sub;
       }
     }
