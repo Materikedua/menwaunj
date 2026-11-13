@@ -34,6 +34,15 @@ export function GalleryPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  useEffect(() => {
+    if (activeAlbum) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [activeAlbum]);
+
   const mergedAlbums = useMemo(
     () => mergeGalleryAlbumsWithRegistry(content.galleryAlbums || [], registry),
     [content.galleryAlbums, registry]
@@ -272,10 +281,16 @@ export function GalleryPage() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="gallery-modal-title"
-          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+          className="fixed inset-0 z-[100] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-hidden animate-fade-in font-sans"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setActiveAlbum(null);
+          }}
         >
-          <div className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/15 rounded-2xl overflow-hidden shadow-2xl my-8">
-            <div className="relative aspect-video bg-slate-950">
+          <div
+            className="relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/15 rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col my-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative aspect-video max-h-[44vh] bg-slate-950 shrink-0">
               <img
                 src={currentSlide.url || activeAlbum.image || '/foto-kampus-unj.jpg'}
                 alt={currentSlide.caption || activeAlbum.title}
@@ -288,7 +303,7 @@ export function GalleryPage() {
                 type="button"
                 aria-label="Tutup pratinjau dokumentasi"
                 onClick={() => setActiveAlbum(null)}
-                className="absolute top-3 right-3 p-2 rounded-full bg-slate-950/80 text-white hover:bg-slate-900 cursor-pointer"
+                className="absolute top-3 right-3 p-2 rounded-full bg-slate-950/80 text-white hover:bg-slate-900 cursor-pointer z-10"
               >
                 <X size={18} />
               </button>
@@ -300,7 +315,7 @@ export function GalleryPage() {
                     onClick={() =>
                       setActiveSlideIdx((idx) => (idx - 1 + modalPhotos.length) % modalPhotos.length)
                     }
-                    className="absolute left-3 top-1/2 -translate-y-1/2 px-3 py-2 rounded-full bg-slate-950/80 text-white hover:bg-[#FFDD00] hover:text-slate-950 text-xs font-black cursor-pointer"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 px-3 py-2 rounded-full bg-slate-950/80 text-white hover:bg-[#FFDD00] hover:text-slate-950 text-xs font-black cursor-pointer z-10"
                   >
                     ‹
                   </button>
@@ -310,18 +325,18 @@ export function GalleryPage() {
                     onClick={() =>
                       setActiveSlideIdx((idx) => (idx + 1) % modalPhotos.length)
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-2 rounded-full bg-slate-950/80 text-white hover:bg-[#FFDD00] hover:text-slate-950 text-xs font-black cursor-pointer"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-2 rounded-full bg-slate-950/80 text-white hover:bg-[#FFDD00] hover:text-slate-950 text-xs font-black cursor-pointer z-10"
                   >
                     ›
                   </button>
-                  <span className="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-slate-950/85 text-[#FFDD00] font-mono text-[11px] font-bold">
+                  <span className="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-slate-950/85 text-[#FFDD00] font-mono text-[11px] font-bold z-10">
                     Slide {activeSlideIdx + 1} / {modalPhotos.length}
                   </span>
                 </>
               )}
             </div>
             {modalPhotos.length > 1 && (
-              <div className="px-6 pt-3 flex items-center gap-2 overflow-x-auto bg-slate-50 dark:bg-slate-950/60 pb-3 border-b border-slate-200 dark:border-white/10">
+              <div className="px-6 pt-2 pb-2 flex items-center gap-2 overflow-x-auto bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-white/10 shrink-0">
                 {modalPhotos.map((ph, idx) => (
                   <button
                     key={`${ph.contentId || idx}-${ph.url}`}
@@ -346,7 +361,7 @@ export function GalleryPage() {
                 ))}
               </div>
             )}
-            <div className="p-6 space-y-3">
+            <div className="p-5 sm:p-6 space-y-3 overflow-y-auto flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded bg-[#006569] text-[#FFDD00] text-[10px] font-black uppercase">
                   {activeAlbum.tag}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Printer, Copy, Check, FileText } from 'lucide-react';
 import { BLANK_LETTERHEAD_HTML, OFFICIAL_MAKO_CONTACT } from '../data/officialLetterheadTemplate.js';
+import { KopSuratMenwaUnj } from './KopSuratMenwaUnj';
 
 export function OfficialLetterhead({
   nomorSurat = 'B-____/Sat-UNJ/____/2026',
@@ -20,11 +21,56 @@ export function OfficialLetterhead({
   };
 
   const handlePrint = () => {
-    window.print();
+    const el = document.getElementById('official-letterhead-print-sheet');
+    if (!el) {
+      window.print();
+      return;
+    }
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      window.print();
+      return;
+    }
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8"/>
+        <title>Surat Dinas Resmi Menwa UNJ</title>
+        <style>
+          @page { size: A4 portrait; margin: 15mm 15mm 15mm 20mm; }
+          * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #000; padding: 0; line-height: 1.35; }
+          table { width: 100%; border-collapse: collapse; }
+          td { padding: 2px 0; }
+        </style>
+      </head>
+      <body>
+        ${el.outerHTML}
+      </body>
+      </html>
+    `);
+    doc.close();
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        try { document.body.removeChild(iframe); } catch {}
+      }, 1500);
+    }, 300);
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-sans">
       {/* Action Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-slate-900 text-white rounded-2xl border border-white/10 no-print">
         <div className="flex items-center gap-3">
@@ -61,37 +107,12 @@ export function OfficialLetterhead({
       </div>
 
       {/* Printable Sheet Frame */}
-      <div className="bg-white p-8 sm:p-12 max-w-[210mm] mx-auto border border-slate-200 rounded-3xl shadow-xl text-black font-serif print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-full">
-        {/* Header Kop Surat */}
-        <div className="flex items-center justify-between gap-4 text-center pb-2">
-          <img
-            src={OFFICIAL_MAKO_CONTACT.logoLeft}
-            alt="Logo UNJ"
-            className="w-20 h-20 object-contain shrink-0"
-          />
-          <div className="flex-1">
-            <h1 className="text-[14pt] font-bold tracking-tight uppercase leading-snug">
-              KOMANDO RESIMEN MAHASISWA JAKARTA RAYA
-            </h1>
-            <h2 className="text-[15pt] font-bold tracking-wider uppercase leading-snug">
-              JAYAKARTA
-            </h2>
-            <h3 className="text-[16pt] font-black tracking-normal uppercase leading-snug">
-              SATUAN UNIVERSITAS NEGERI JAKARTA
-            </h3>
-            <p className="text-[9.5pt] font-sans font-normal leading-tight mt-1 text-slate-800">
-              {OFFICIAL_MAKO_CONTACT.address}, Telp ({OFFICIAL_MAKO_CONTACT.phone})
-            </p>
-          </div>
-          <img
-            src={OFFICIAL_MAKO_CONTACT.logoRight}
-            alt="Logo Menwa Jayakarta"
-            className="w-20 h-20 object-contain shrink-0"
-          />
-        </div>
-
-        {/* Double Line Divider (Khas Kedinasan) */}
-        <div className="border-t-[3px] border-black border-b border-black h-1 my-3" />
+      <div
+        id="official-letterhead-print-sheet"
+        className="bg-white p-8 sm:p-12 max-w-[210mm] mx-auto border border-slate-200 rounded-3xl shadow-xl text-black font-sans print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-full"
+      >
+        {/* Header Kop Surat Standar SOP E-Spri */}
+        <KopSuratMenwaUnj />
 
         {/* Metadata Surat */}
         <table className="w-full text-[11pt] mb-6">

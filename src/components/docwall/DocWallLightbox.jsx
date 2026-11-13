@@ -18,11 +18,20 @@ export function DocWallLightbox({
   commentInputRef,
   onOpenAuth,
 }) {
+  React.useEffect(() => {
+    if (activeModalPost) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [activeModalPost]);
+
   if (!activeModalPost) return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-2 sm:p-4 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-2 sm:p-4 backdrop-blur-md animate-fade-in font-sans"
       onClick={onClose}
     >
       <div

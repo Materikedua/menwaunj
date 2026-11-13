@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { 
   X, 
   Printer, 
@@ -13,6 +13,15 @@ import {
 
 export function CertificateViewerModal({ certificate, isOpen, onClose }) {
   const printAreaRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen]);
 
   if (!isOpen || !certificate) return null;
 
@@ -32,8 +41,16 @@ export function CertificateViewerModal({ certificate, isOpen, onClose }) {
     : '2026';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white">
-      <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden print:border-none print:shadow-none print:w-full print:max-w-none print:bg-white text-white print:text-black">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-hidden print:p-0 print:bg-white"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="relative w-full max-w-4xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl max-h-[92vh] overflow-y-auto print:border-none print:shadow-none print:w-full print:max-w-none print:bg-white text-white print:text-black"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Modal Action Bar (Hidden in Print) */}
         <div className="flex items-center justify-between px-6 py-4 bg-slate-950 border-b border-slate-800 print:hidden">
           <div className="flex items-center gap-3">

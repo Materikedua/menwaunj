@@ -181,6 +181,15 @@ export const MakoFullEditCms: React.FC<MakoFullEditCmsProps> = ({ officerName })
   const [showImportModal, setShowImportModal] = useState<boolean>(false);
   const [jsonInputText, setJsonInputText] = useState<string>('');
 
+  useEffect(() => {
+    if (editingItem || showImportModal) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [editingItem, showImportModal]);
+
   // Draft Disposisi Tiket Adminu
   const [ticketNoteDrafts, setTicketNoteDrafts] = useState<Record<string, string>>({});
 
@@ -959,9 +968,15 @@ export const MakoFullEditCms: React.FC<MakoFullEditCmsProps> = ({ officerName })
           role="dialog"
           aria-modal="true"
           aria-labelledby="cms-modal-heading"
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setEditingItem(null);
+          }}
         >
-          <div className="w-full max-w-2xl bg-[#161f24] border border-[#006569] rounded-2xl shadow-2xl overflow-hidden my-8">
+          <div
+            className="w-full max-w-2xl bg-[#161f24] border border-[#006569] rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="px-6 py-4 bg-slate-950 border-b border-white/10 flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-[#FFDD00] block">
@@ -1331,9 +1346,15 @@ export const MakoFullEditCms: React.FC<MakoFullEditCmsProps> = ({ officerName })
           role="dialog"
           aria-modal="true"
           aria-labelledby="cms-import-heading"
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowImportModal(false);
+          }}
         >
-          <div className="w-full max-w-xl bg-[#161f24] border border-[#006569] rounded-2xl shadow-2xl overflow-hidden">
+          <div
+            className="w-full max-w-xl bg-[#161f24] border border-[#006569] rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="px-6 py-4 bg-slate-950 border-b border-white/10 flex items-center justify-between">
               <h3 id="cms-import-heading" className="text-sm font-black text-white uppercase">
                 Impor Cadangan Konfigurasi JSON CMS

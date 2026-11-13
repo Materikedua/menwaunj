@@ -152,6 +152,15 @@ export function SamaptaCalculatorModal({ isOpen, onClose }) {
     };
   }, [gender, runDistance, pullUp, pushUp, sitUp, shuttleRun]);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen]);
+
   const handlePrint = () => {
     playTactileClick('press');
     window.print();
@@ -161,11 +170,11 @@ export function SamaptaCalculatorModal({ isOpen, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md overflow-y-auto animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md overflow-hidden animate-fade-in font-sans"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-4xl rounded-3xl neu-card bg-[#F5F8F6] p-5 sm:p-8 text-[#092D32] shadow-2xl my-auto space-y-6"
+        className="relative w-full max-w-4xl rounded-3xl neu-card bg-[#F5F8F6] p-5 sm:p-8 text-[#092D32] shadow-2xl max-h-[92vh] overflow-y-auto my-auto space-y-6"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Tombol Tutup Pinned */}

@@ -155,6 +155,15 @@ export function UserAccountModal({ isOpen, onClose, onOpenKTA = null }) {
     }
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleGoogleLogin = async () => {
@@ -271,7 +280,12 @@ export function UserAccountModal({ isOpen, onClose, onOpenKTA = null }) {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/65 backdrop-blur-md animate-fade-in font-sans">
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-md animate-fade-in font-sans"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
         {/* ====================================================================
             FLOATING 3D CUSHION MODAL CONTAINER (NEUMORPHIC 3D AUTH)
             ==================================================================== */}

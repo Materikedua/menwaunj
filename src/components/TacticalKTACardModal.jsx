@@ -135,20 +135,141 @@ export function TacticalKTACardModal({ isOpen, onClose }) {
     };
   }, [cardNbp]);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen]);
+
   const handlePrint = () => {
     playTactileClick('press');
-    window.print();
+    const printEl = document.getElementById('kta-print-area');
+    if (!printEl) {
+      window.print();
+      return;
+    }
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      window.print();
+      return;
+    }
+
+    const headHtml = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .map((node) => node.outerHTML)
+      .join('\n');
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8"/>
+        <title>KTA Menwa UNJ - ${cardName}</title>
+        ${headHtml}
+        <style>
+          @page {
+            size: A4 portrait;
+            margin: 12mm 10mm;
+          }
+          * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          body {
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0;
+          }
+          .kta-sheet-container {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 10mm;
+            page-break-inside: avoid;
+          }
+          .kta-sheet-container > div {
+            width: 82mm !important;
+            max-width: 82mm !important;
+            height: 133mm !important;
+            border-radius: 6mm !important;
+            page-break-inside: avoid !important;
+            box-shadow: none !important;
+          }
+          .official-sheet-title {
+            text-align: center;
+            margin-bottom: 6mm;
+            width: 100%;
+            max-width: 180mm;
+            border-bottom: 1.5pt solid #000;
+            padding-bottom: 2mm;
+          }
+          .official-sheet-title h2 {
+            font-size: 11pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #000;
+          }
+          .official-sheet-title p {
+            font-size: 8pt;
+            color: #444;
+            margin-top: 1mm;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="official-sheet-title">
+          <h2>KARTU TANDA ANGGOTA (KTA) RESMI SATUAN</h2>
+          <p>Komando Resimen Mahasiswa Jayakarta Satuan Universitas Negeri Jakarta</p>
+        </div>
+        <div class="kta-sheet-container">
+          ${printEl.innerHTML}
+        </div>
+      </body>
+      </html>
+    `);
+    doc.close();
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        try {
+          document.body.removeChild(iframe);
+        } catch {}
+      }, 1500);
+    }, 350);
   };
 
   if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md overflow-y-auto animate-fade-in font-sans"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md overflow-hidden animate-fade-in font-sans"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-5xl rounded-[2.5rem] neu-card bg-[#F5F8F6] p-5 sm:p-8 text-[#092D32] shadow-2xl my-auto space-y-6"
+        className="relative w-full max-w-5xl rounded-[2.5rem] neu-card bg-[#F5F8F6] p-5 sm:p-8 text-[#092D32] shadow-2xl max-h-[92vh] overflow-y-auto space-y-6 my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Tombol Tutup */}

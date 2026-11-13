@@ -20,6 +20,7 @@ import {
   Download,
 } from 'lucide-react';
 import { Link } from '../../lib/router.jsx';
+import { KopSuratMenwaUnj } from '../KopSuratMenwaUnj';
 import {
   createAdminuTicket,
   findAdminuTicketByCode,
@@ -319,6 +320,79 @@ export const SmartAdminuSection: React.FC<SmartAdminuSectionProps> = ({
     activeTicketForLetter.attachmentPdfSizeKb
   );
 
+  const handlePrintLetter = () => {
+    const el = document.getElementById('naskah-dinas-letter');
+    if (!el) {
+      window.print();
+      return;
+    }
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      window.print();
+      return;
+    }
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8"/>
+        <title>Surat Permohonan Resmi - ${activeTicketForLetter.ticketId}</title>
+        <style>
+          @page {
+            size: A4 portrait;
+            margin: 15mm 15mm 15mm 20mm;
+          }
+          * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            padding: 0;
+            line-height: 1.35;
+          }
+          #naskah-dinas-letter {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+          }
+          table { width: 100%; border-collapse: collapse; }
+          td { padding: 1.5px 0; }
+        </style>
+      </head>
+      <body>
+        ${el.outerHTML}
+      </body>
+      </html>
+    `);
+    doc.close();
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        try {
+          document.body.removeChild(iframe);
+        } catch {}
+      }, 1500);
+    }, 300);
+  };
+
   const currentStepIdx = trackedTicket
     ? Math.max(0, STATUS_STEPS.findIndex((s) => s.key === trackedTicket.status))
     : 0;
@@ -329,20 +403,18 @@ export const SmartAdminuSection: React.FC<SmartAdminuSectionProps> = ({
         @media print {
           @page {
             size: A4 portrait;
-            margin: 20mm 20mm 20mm 25mm;
+            margin: 15mm 15mm 15mm 20mm;
           }
-          body * {
-            visibility: hidden !important;
+          body {
+            background: #ffffff !important;
+            color: #000000 !important;
           }
-          #naskah-dinas-letter,
-          #naskah-dinas-letter * {
-            visibility: visible !important;
+          header, nav, footer, .print\\:hidden, #pam-ticket-form, .no-print {
+            display: none !important;
           }
           #naskah-dinas-letter {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
             width: 100% !important;
+            max-width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
             border: none !important;
@@ -473,7 +545,7 @@ export const SmartAdminuSection: React.FC<SmartAdminuSectionProps> = ({
                   <div className="flex flex-wrap gap-3 pt-2">
                     <button
                       type="button"
-                      onClick={() => window.print()}
+                      onClick={handlePrintLetter}
                       className="flex-1 py-3 px-4 rounded-xl bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Printer size={15} />
@@ -808,7 +880,7 @@ export const SmartAdminuSection: React.FC<SmartAdminuSectionProps> = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={handlePrintLetter}
                   className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                 >
                   <Printer size={14} />
@@ -822,24 +894,24 @@ export const SmartAdminuSection: React.FC<SmartAdminuSectionProps> = ({
                 className="bg-white text-black border border-slate-300 p-6 sm:p-9 print:border-0"
                 style={{
                   fontFamily: 'Arial, Helvetica, sans-serif',
-                  fontSize: '12pt',
-                  lineHeight: 1.5,
+                  fontSize: '11pt',
+                  lineHeight: 1.45,
                   color: '#000000',
                 }}
               >
-                {/* Kop Surat Resmi dengan Judul FORMULIR PERMOHONAN */}
-                <div
-                  className="text-center pb-3 mb-4"
-                  style={{ borderBottom: '3px double #000000' }}
-                >
-                  <div className="font-bold uppercase tracking-wide">
+                {/* Kop Surat Resmi Menwa UNJ Sesuai Standar SOP */}
+                <KopSuratMenwaUnj />
+
+                {/* Judul Dokumen Naskah Dinas */}
+                <div className="text-center my-3">
+                  <div
+                    style={{ fontSize: '13pt' }}
+                    className="font-bold uppercase tracking-wide underline text-black font-sans"
+                  >
                     FORMULIR PERMOHONAN
                   </div>
-                  <div className="font-bold uppercase">
-                    KOMANDO RESIMEN MAHASISWA JAYAKARTA
-                  </div>
-                  <div className="font-bold uppercase">
-                    SATUAN UNIVERSITAS NEGERI JAKARTA
+                  <div style={{ fontSize: '9.5pt' }} className="font-mono text-slate-700 mt-0.5">
+                    Nomor: {activeTicketForLetter.letterNumber}
                   </div>
                 </div>
 

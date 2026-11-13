@@ -59,26 +59,27 @@ export function generateBukuPasukanHtml(portalData) {
   <style>
     @page { size: A4 portrait; margin: 12mm 15mm 15mm 15mm; }
     * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    body { font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; color: #111827; background: #ffffff; margin: 0; padding: 0; font-size: 11pt; line-height: 1.35; }
-    .kop-wrapper { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px double #006569; padding-bottom: 8px; margin-bottom: 14px; }
-    .kop-logo-menwa { width: 72px; height: 72px; object-fit: contain; }
-    .kop-center { text-align: center; flex: 1; padding: 0 10px; }
-    .kop-center h4 { margin: 0; font-size: 10.5pt; font-weight: 800; letter-spacing: 0.5px; color: #092D32; }
-    .kop-center h3 { margin: 2px 0; font-size: 12pt; font-weight: 900; letter-spacing: 0.5px; color: #006569; }
-    .kop-center h2 { margin: 2px 0; font-size: 13.5pt; font-weight: 900; letter-spacing: 1px; color: #092D32; }
-    .kop-center p { margin: 2px 0 0 0; font-size: 7.5pt; color: #4B5563; line-height: 1.25; }
-    .kop-logo-school { width: 70px; height: 70px; object-fit: contain; border-radius: 8px; }
-    .logo-placeholder { width: 70px; height: 70px; border: 1px dashed #9CA3AF; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 7pt; color: #9CA3AF; text-align: center; padding: 4px; }
-    .doc-title { text-align: center; margin: 10px 0 14px 0; }
-    .doc-title h1 { margin: 0; font-size: 13pt; font-weight: 900; text-transform: uppercase; letter-spacing: 0.8px; color: #006569; }
-    .doc-title p { margin: 3px 0 0 0; font-size: 9pt; font-weight: bold; color: #374151; }
-    .kontingen-box { border: 1.5px solid #006569; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; background-color: #F8FAF9; display: grid; grid-template-columns: 2fr 1fr; gap: 10px; font-size: 9pt; }
+    body { font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; color: #111827; background: #ffffff; margin: 0; padding: 0; font-size: 10.5pt; line-height: 1.35; }
+    .kop-wrapper { display: flex; align-items: center; justify-content: space-between; padding-bottom: 4px; margin-bottom: 2px; }
+    .kop-logo-left { width: 84px; height: 90px; object-fit: contain; flex-shrink: 0; }
+    .kop-logo-right { width: 90px; height: 90px; object-fit: contain; flex-shrink: 0; }
+    .kop-center { text-align: center; flex: 1; padding: 0 12px; font-family: Arial, Helvetica, sans-serif; }
+    .kop-center .line-instansi { margin: 0; font-size: 13pt; font-weight: bold; letter-spacing: 0.5px; color: #000000; text-transform: uppercase; line-height: 1.2; }
+    .kop-center .line-panitia { margin: 2px 0 0 0; font-size: 11pt; font-weight: bold; letter-spacing: 0.5px; color: #000000; text-transform: uppercase; line-height: 1.2; }
+    .kop-center .line-alamat { margin: 3px 0 0 0; font-size: 9pt; color: #000000; line-height: 1.25; }
+    .kop-center .line-kontak { margin: 1px 0 0 0; font-size: 9pt; color: #000000; line-height: 1.25; }
+    .kop-line-thin { border-top: 0.75pt solid #000000; margin-bottom: 2pt; margin-top: 4px; }
+    .kop-line-thick { border-top: 2.75pt solid #000000; margin-bottom: 12px; }
+    .doc-title { text-align: center; margin: 8px 0 12px 0; }
+    .doc-title h1 { margin: 0; font-size: 12.5pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #000000; }
+    .doc-title p { margin: 2px 0 0 0; font-size: 9pt; font-weight: bold; color: #374151; }
+    .kontingen-box { border: 1px solid #111827; border-radius: 4px; padding: 6px 10px; margin-bottom: 10px; background-color: #FAFAFA; display: grid; grid-template-columns: 2fr 1fr; gap: 10px; font-size: 9pt; }
     .kontingen-box table { width: 100%; border-collapse: collapse; }
     .kontingen-box td { padding: 2px 4px; vertical-align: top; }
     .kontingen-box td.label { width: 110px; font-weight: bold; color: #4B5563; }
     .kontingen-box td.val { font-weight: 800; color: #111827; }
-    .badge-nomor { display: inline-block; background: #006569; color: #FFDD00; font-weight: 900; font-size: 9.5pt; padding: 4px 10px; border-radius: 4px; text-align: center; }
-    .section-head { background: #092D32; color: #ffffff; padding: 4px 8px; font-size: 9pt; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 6px 0; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+    .badge-nomor { display: inline-block; background: #111827; color: #ffffff; font-weight: bold; font-size: 9pt; padding: 3px 8px; border-radius: 3px; text-align: center; }
+    .section-head { background: #1f2937; color: #ffffff; padding: 3px 8px; font-size: 8.5pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; margin: 10px 0 5px 0; border-radius: 2px; display: flex; justify-content: space-between; align-items: center; }
     table.data-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-bottom: 10px; }
     table.data-table th, table.data-table td { border: 1px solid #D1D5DB; padding: 4px 6px; text-align: left; vertical-align: middle; }
     table.data-table th { background: #E5E7EB; font-weight: 900; color: #111827; text-transform: uppercase; font-size: 8pt; text-align: center; }
@@ -106,16 +107,18 @@ export function generateBukuPasukanHtml(portalData) {
 </head>
 <body>
   <div class="kop-wrapper">
-    <img src="/logo-menwa-unj.png" alt="Logo Menwa UNJ" class="kop-logo-menwa" onerror="this.style.display='none'" />
+    <img src="/assets/logo_unj_kop_2026.png" alt="Logo Universitas Negeri Jakarta" class="kop-logo-left" onerror="this.src='/logo-unj.png'" />
     <div class="kop-center">
-      <h4>KOMANDO RESIMEN MAHASISWA JAYAKARTA</h4>
-      <h3>SATUAN UNIVERSITAS NEGERI JAKARTA</h3>
-      <h2>PANITIA PELAKSANA GERANAT VII 2026</h2>
-      <p>Gedung Menwa UNJ, Kampus A Universitas Negeri Jakarta, Jl. Rawamangun Muka, Jakarta Timur 13220<br/>
-      Telepon / WhatsApp: 0852-1325-1025 • Email: unjmenwa@gmail.com • Laman: menwaunj.or.id</p>
+      <div class="line-instansi">KOMANDO RESIMEN MAHASISWA JAYAKARTA</div>
+      <div class="line-instansi">SATUAN UNIVERSITAS NEGERI JAKARTA</div>
+      <div class="line-panitia">PANITIA PELAKSANA GERANAT VII 2026</div>
+      <div class="line-alamat">Gedung Menwa UNJ, Kampus A Universitas Negeri Jakarta, Jl. Rawamangun Muka, Jakarta Timur 13220</div>
+      <div class="line-kontak">Telepon / WhatsApp: 0815-2582-3503 • Surel: unjmenwa@gmail.com • Laman: www.menwaunj.or.id</div>
     </div>
-    ${schoolLogo ? `<img src="${schoolLogo}" alt="Logo Sekolah" class="kop-logo-school" />` : `<div class="logo-placeholder">LOGO SEKOLAH</div>`}
+    ${schoolLogo ? `<img src="${schoolLogo}" alt="Logo Sekolah" class="kop-logo-right" onerror="this.src='/assets/logo_menwa_kop_2026.png'" />` : `<img src="/assets/logo_menwa_kop_2026.png" alt="Logo Menwa Jayakarta Satuan UNJ" class="kop-logo-right" onerror="this.src='/logo-menwa-unj.png'" />`}
   </div>
+  <div class="kop-line-thin"></div>
+  <div class="kop-line-thick"></div>
 
   <div class="doc-title">
     <h1>BUKU REKAPITULASI DAFTAR PASUKAN &amp; OFFICIAL RESMI</h1>

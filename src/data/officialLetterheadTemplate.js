@@ -68,39 +68,35 @@ export const BLANK_LETTERHEAD_HTML = `<!DOCTYPE html>
       flex: 1;
     }
     .kop-title-1 {
-      font-size: 14pt;
+      font-size: 13.5pt;
       font-weight: bold;
       letter-spacing: 0.5px;
       margin: 0;
       text-transform: uppercase;
+      font-family: Arial, Helvetica, sans-serif;
     }
     .kop-title-2 {
-      font-size: 15pt;
+      font-size: 13.5pt;
       font-weight: bold;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       margin: 2px 0 0 0;
       text-transform: uppercase;
-    }
-    .kop-title-3 {
-      font-size: 16pt;
-      font-weight: 900;
-      letter-spacing: 0.5px;
-      margin: 3px 0 4px 0;
-      text-transform: uppercase;
+      font-family: Arial, Helvetica, sans-serif;
     }
     .kop-address {
       font-size: 9.5pt;
       font-weight: normal;
-      margin: 0;
+      margin: 3px 0 0 0;
       line-height: 1.25;
+      font-family: Arial, Helvetica, sans-serif;
     }
-    /* Garis Pembatas Ganda Khas Kedinasan */
+    /* Garis Pembatas Ganda Khas Kedinasan: Tipis 0.75pt di atas, Tebal 2.75pt di bawah */
     .kop-divider {
       border: 0;
-      border-top: 3px solid #000;
-      border-bottom: 1px solid #000;
-      height: 2px;
-      margin: 4px 0 24px 0;
+      border-top: 0.75pt solid #000;
+      border-bottom: 2.75pt solid #000;
+      height: 2pt;
+      margin: 4px 0 20px 0;
     }
     /* Area Metadata Surat */
     .meta-table {
@@ -189,18 +185,18 @@ export const BLANK_LETTERHEAD_HTML = `<!DOCTYPE html>
 </head>
 <body>
   <div class="letterhead-container">
-    <!-- KOP SURAT RESMI -->
+    <!-- KOP SURAT RESMI STANDAR SOP MENWA UNJ -->
     <div class="kop-header">
-      <img src="/logo-unj.png" alt="Logo UNJ" class="kop-logo" />
+      <img src="/assets/logo_unj_kop_2026.png" onerror="this.src='/logo-unj.png'" alt="Logo Universitas Negeri Jakarta" class="kop-logo" />
       <div class="kop-text">
-        <h1 class="kop-title-1">KOMANDO RESIMEN MAHASISWA JAKARTA RAYA</h1>
-        <h2 class="kop-title-2">JAYAKARTA</h2>
-        <h3 class="kop-title-3">SATUAN UNIVERSITAS NEGERI JAKARTA</h3>
+        <h1 class="kop-title-1">KOMANDO RESIMEN MAHASISWA JAYAKARTA</h1>
+        <h2 class="kop-title-2">SATUAN UNIVERSITAS NEGERI JAKARTA</h2>
         <p class="kop-address">
-          Markas Komando Jl. Rawamangun Muka Komplek UNJ Gedung G Lt. I R. 107, Jakarta Timur, Telp (081525823503)
+          Gedung G, Lantai 1, Ruang 107, Kampus A UNJ, Jakarta Timur 13220<br/>
+          Telepon: 0815-2582-3503 | Surel: unjmenwa@gmail.com | Laman: www.menwaunj.or.id
         </p>
       </div>
-      <img src="/Logo Menwa Jayakarta.png" alt="Logo Menwa Jayakarta" class="kop-logo" />
+      <img src="/assets/logo_menwa_kop_2026.png" onerror="this.src='/Logo Menwa Jayakarta.png'" alt="Logo Menwa Jayakarta Satuan UNJ" class="kop-logo" />
     </div>
 
     <!-- GARIS PEMBATAS GANDA (TEBAL - TIPIS) -->
