@@ -1,0 +1,112 @@
+// Potongan Firestore Security Rules untuk digabungkan ke `firestore.rules`
+// pada Firebase Project website utama `menwaunj.or.id` (project: admin-raffli,
+// database: ai-studio-menwaunj-f9c5c6d2-e98a-43ef-96bd-8c9b8400f335).
+// Pastikan helper isSignedIn() / isStaffAdmin() disesuaikan dengan aturan proyek Anda.
+
+function isValidVerificationHash(hash) {
+  return hash is string && hash.size() >= 3 && hash.size() <= 128 && hash.matches('^[a-zA-Z0-9_\\-]+$');
+}
+
+function isValidPublicVerification(data) {
+  return data.keys().hasAll([
+      'hash',
+      'letterNumber',
+      'letterType',
+      'subject',
+      'recipient',
+      'issuedDate',
+      'signerName',
+      'signerTitle',
+      'status',
+      'source',
+      'createdAt',
+      'updatedAt'
+    ]) &&
+    data.keys().hasOnly([
+      'hash',
+      'letterNumber',
+      'letterType',
+      'subject',
+      'recipient',
+      'issuedDate',
+      'signerName',
+      'signerTitle',
+      'status',
+      'source',
+      'createdAt',
+      'updatedAt',
+      'agendaNumber',
+      'issuingUnit',
+      'validUntil',
+      'signerNia',
+      'statusReason',
+      'documentSha256',
+      'verificationUrl'
+    ]) &&
+    isValidVerificationHash(data.hash) &&
+    data.letterNumber is string && data.letterNumber.size() >= 1 && data.letterNumber.size() <= 100 &&
+    data.letterType is string && data.letterType.size() >= 2 && data.letterType.size() <= 80 &&
+    data.subject is string && data.subject.size() >= 2 && data.subject.size() <= 240 &&
+    data.recipient is string && data.recipient.size() >= 1 && data.recipient.size() <= 200 &&
+    data.issuedDate is string && data.issuedDate.size() >= 4 && data.issuedDate.size() <= 40 &&
+    data.signerName is string && data.signerName.size() >= 2 && data.signerName.size() <= 120 &&
+    data.signerTitle is string && data.signerTitle.size() >= 2 && data.signerTitle.size() <= 140 &&
+    data.status is string && (
+      data.status == 'SAH' ||
+      data.status == 'TERVERIFIKASI' ||
+      data.status == 'MENUNGGU_TTD' ||
+      data.status == 'DICABUT' ||
+      data.status == 'KEDALUWARSA'
+    ) &&
+    data.source is string && (
+      data.source == 'E-SPRI' ||
+      data.source == 'ADMINU' ||
+      data.source == 'EDISPENSASI'
+    ) &&
+    data.createdAt is string && data.createdAt.size() >= 4 && data.createdAt.size() <= 50 &&
+    data.updatedAt is string && data.updatedAt.size() >= 4 && data.updatedAt.size() <= 50 &&
+    (!('agendaNumber' in data) || (data.agendaNumber is string && data.agendaNumber.size() <= 40)) &&
+    (!('issuingUnit' in data) || (data.issuingUnit is string && data.issuingUnit.size() <= 180)) &&
+    (!('validUntil' in data) || (data.validUntil is string && data.validUntil.size() <= 40)) &&
+    (!('signerNia' in data) || (data.signerNia is string && data.signerNia.size() <= 50)) &&
+    (!('statusReason' in data) || (data.statusReason is string && data.statusReason.size() <= 300)) &&
+    (!('documentSha256' in data) || (data.documentSha256 is string && data.documentSha256.size() <= 128)) &&
+    (!('verificationUrl' in data) || (data.verificationUrl is string && data.verificationUrl.size() <= 300));
+}
+
+match /publicVerifications/{hash} {
+  allow get: if isValidVerificationHash(hash);
+  allow list: if false;
+
+  allow create: if (isStaffAdmin() || isSignedIn()) &&
+    isValidVerificationHash(hash) &&
+    isValidPublicVerification(request.resource.data) &&
+    request.resource.data.hash == hash;
+
+  allow update: if (isStaffAdmin() || isSignedIn()) &&
+    isValidVerificationHash(hash) &&
+    isValidPublicVerification(request.resource.data) &&
+    request.resource.data.hash == resource.data.hash &&
+    request.resource.data.createdAt == resource.data.createdAt &&
+    request.resource.data.source == resource.data.source &&
+    request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+      'letterNumber',
+      'letterType',
+      'subject',
+      'recipient',
+      'issuedDate',
+      'signerName',
+      'signerTitle',
+      'status',
+      'updatedAt',
+      'agendaNumber',
+      'issuingUnit',
+      'validUntil',
+      'signerNia',
+      'statusReason',
+      'documentSha256',
+      'verificationUrl'
+    ]);
+
+  allow delete: if false;
+}
