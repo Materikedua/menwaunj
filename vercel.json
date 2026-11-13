@@ -9,6 +9,14 @@
       "destination": "/api/$1"
     },
     {
+      "source": "/espri",
+      "destination": "https://espri.menwaunj.or.id/"
+    },
+    {
+      "source": "/espri/:path*",
+      "destination": "https://espri.menwaunj.or.id/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
