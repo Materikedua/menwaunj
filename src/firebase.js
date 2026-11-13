@@ -3,6 +3,10 @@ import {
   formatWebLetterNumber,
   letterNumberToDocId,
 } from './utils/adminuUtils';
+import {
+  buildPublicVerificationCandidateIds,
+  normalizePublicVerificationDoc,
+} from './utils/espriVerification';
 
 /* Helper nomor surat resmi Menwa UNJ: B-(001-999)/Web/(Romawi Bulan)/(Tahun) */
 export function generateLetterId(seq = null) {
@@ -812,6 +816,107 @@ export async function getIncidentLogs() {
       return [];
     }
   }
+}
+
+/* Verifikasi Publik QR E-Spri (/publicVerifications/{hash}) */
+export async function getPublicVerificationByLookup(rawInput) {
+  const candidates = buildPublicVerificationCandidateIds(rawInput);
+  for (const docId of candidates) {
+    try {
+      const snap = await getDoc(doc(firestore, 'publicVerifications', docId));
+      if (snap.exists()) {
+        return normalizePublicVerificationDoc(snap.id, snap.data() || {});
+      }
+    } catch {
+      /* Abaikan apabila ID tidak cocok atau luring */
+    }
+  }
+  return null;
+}
+
+/* Verifikasi Terpadu Surat Resmi E-Spri + E-Dispensasi */
+export async function verifyLetterOrEspriDocument(rawInput) {
+  const cleanId = String(rawInput || '').trim();
+  if (!cleanId) return null;
+
+  // 1. Prioritaskan registri verifikasi publik E-Spri (/publicVerifications/{hash})
+  const espriHit = await getPublicVerificationByLookup(cleanId);
+  if (espriHit) {
+    return { kind: 'espri', data: espriHit };
+  }
+
+  // 2. Periksa koleksi E-Dispensasi (/dispensasi_requests/{dispId})
+  try {
+    const q = query(
+      collection(firestore, 'dispensasi_requests'),
+      where('dispensasiId', '==', cleanId)
+    );
+    const querySnap = await getDocs(q);
+    if (!querySnap.empty) {
+      return {
+        kind: 'dispensasi',
+        data: { id: querySnap.docs[0].id, ...querySnap.docs[0].data() },
+      };
+    }
+  } catch {
+    /* Lanjut ke getDoc langsung apabila list tidak diizinkan untuk tamu publik */
+  }
+
+  const dispensasiCandidates = buildPublicVerificationCandidateIds(cleanId);
+  for (const docId of dispensasiCandidates) {
+    try {
+      const docSnap = await getDoc(doc(firestore, 'dispensasi_requests', docId));
+      if (docSnap.exists()) {
+        return {
+          kind: 'dispensasi',
+          data: { id: docSnap.id, ...docSnap.data() },
+        };
+      }
+    } catch {
+      /* Abaikan */
+    }
+  }
+
+  // 3. Fallback ke dokumen surat web resmi (/forms_submissions/B-xxx_Web_...)
+  const subCandidates = buildPublicVerificationCandidateIds(cleanId);
+  for (const docId of subCandidates) {
+    try {
+      const subSnap = await getDoc(doc(firestore, 'forms_submissions', docId));
+      if (subSnap.exists()) {
+        const sub = subSnap.data() || {};
+        return {
+          kind: 'espri',
+          data: normalizePublicVerificationDoc(subSnap.id, {
+            hash: subSnap.id,
+            letterNumber: sub.submissionId || docId,
+            letterType: sub.serviceType || 'Permohonan Administrasi Web',
+            subject: sub.title || sub.purpose || 'Pengajuan Surat Resmi Portal Menwa UNJ',
+            recipient: sub.institution || 'Menwa Satuan UNJ',
+            issuingUnit: sub.fullName
+              ? `Pemohon: ${sub.fullName} (${sub.institution || 'Umum'})`
+              : 'Portal Administrasi Menwa UNJ',
+            issuedDate: sub.createdAt ? String(sub.createdAt).slice(0, 10) : '-',
+            signerName: sub.approvedBy || 'Staf Administrasi Umum Menwa UNJ',
+            signerTitle: 'Komando Resimen Mahasiswa Satuan UNJ',
+            status:
+              sub.status === 'disetujui' || sub.status === 'selesai'
+                ? 'SAH'
+                : sub.status === 'ditolak'
+                ? 'DICABUT'
+                : 'MENUNGGU_TTD',
+            statusReason: sub.adminNotes || '',
+            source: 'ADMINU',
+            createdAt: sub.createdAt || '',
+            updatedAt: sub.updatedAt || sub.createdAt || '',
+          }),
+        };
+      }
+    } catch {
+      /* Abaikan */
+    }
+  }
+
+  return null;
 }
 
 export default app;

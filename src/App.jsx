@@ -338,7 +338,11 @@ export default function App() {
       ? 'games'
       : path === '/administrasi' || path === '/mako' || path === '/adminu'
       ? 'administrasi'
-      : path === '/verify' || path.startsWith('/verify/')
+      : path === '/verify' ||
+        path.startsWith('/verify/') ||
+        path === '/verifikasi' ||
+        path.startsWith('/verifikasi/') ||
+        path.startsWith('/verifikasi-surat')
       ? 'informasi'
       : youthRoute
       ? 'youth-spark'
@@ -377,8 +381,12 @@ export default function App() {
       customTitle = 'Verifikasi Sertifikat Resmi | Menwa UNJ';
     } else if (path === '/adminu') {
       customTitle = 'Smart Adminu & Permohonan PAM | Menwa UNJ';
-    } else if (path.startsWith('/verifikasi-surat')) {
-      customTitle = 'Verifikasi E-Dispensasi Resmi | Menwa UNJ';
+    } else if (
+      path === '/verifikasi' ||
+      path.startsWith('/verifikasi/') ||
+      path.startsWith('/verifikasi-surat')
+    ) {
+      customTitle = 'Verifikasi Surat Resmi & E-Spri | Menwa UNJ';
     } else if (path.startsWith('/official/')) {
       const slugPart = path.split('/')[2] || '';
       customTitle = `Portal Official (${slugPart.toUpperCase()}) | Menwa UNJ`;
@@ -506,7 +514,9 @@ export default function App() {
                 <Suspense fallback={<PageLoadingFallback />}>
                   <SmartAdminuSection />
                 </Suspense>
-              ) : path.startsWith('/verifikasi-surat') ? (
+              ) : path === '/verifikasi' ||
+                path.startsWith('/verifikasi/') ||
+                path.startsWith('/verifikasi-surat') ? (
                 <Suspense fallback={<PageLoadingFallback />}>
                   <EDispensasiVerifyPage path={path} />
                 </Suspense>

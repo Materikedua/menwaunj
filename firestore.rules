@@ -528,5 +528,63 @@ service cloud.firestore {
       allow list: if isStaffAdmin();
       allow write: if isStaffAdmin() && isValidId(certId);
     }
+
+    // ---------------------------------------------------------------
+    // 14. Registri Verifikasi Publik QR E-Spri (/publicVerifications/{hash})
+    // ---------------------------------------------------------------
+    function isValidPublicVerificationId(hash) {
+      return hash is string &&
+        hash.size() >= 3 &&
+        hash.size() <= 128 &&
+        hash.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidPublicVerification(data, hash) {
+      return data.keys().hasAll([
+          'hash', 'letterNumber', 'letterType', 'subject', 'recipient',
+          'issuedDate', 'signerName', 'signerTitle', 'status', 'source',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'hash', 'letterNumber', 'agendaNumber', 'letterType', 'subject',
+          'recipient', 'issuingUnit', 'issuedDate', 'validUntil', 'signerName',
+          'signerTitle', 'signerNia', 'status', 'statusReason', 'documentSha256',
+          'verificationUrl', 'source', 'createdAt', 'updatedAt'
+        ]) &&
+        data.hash is string && data.hash == hash &&
+        data.letterNumber is string && data.letterNumber.size() >= 1 && data.letterNumber.size() <= 100 &&
+        (!('agendaNumber' in data) || (data.agendaNumber is string && data.agendaNumber.size() <= 40)) &&
+        data.letterType is string && data.letterType.size() >= 2 && data.letterType.size() <= 80 &&
+        data.subject is string && data.subject.size() >= 2 && data.subject.size() <= 240 &&
+        data.recipient is string && data.recipient.size() >= 1 && data.recipient.size() <= 200 &&
+        (!('issuingUnit' in data) || (data.issuingUnit is string && data.issuingUnit.size() <= 180)) &&
+        data.issuedDate is string && data.issuedDate.size() >= 4 && data.issuedDate.size() <= 40 &&
+        (!('validUntil' in data) || (data.validUntil is string && data.validUntil.size() <= 40)) &&
+        data.signerName is string && data.signerName.size() >= 2 && data.signerName.size() <= 120 &&
+        data.signerTitle is string && data.signerTitle.size() >= 2 && data.signerTitle.size() <= 140 &&
+        (!('signerNia' in data) || (data.signerNia is string && data.signerNia.size() <= 50)) &&
+        data.status in ['SAH', 'TERVERIFIKASI', 'MENUNGGU_TTD', 'DICABUT', 'KEDALUWARSA'] &&
+        (!('statusReason' in data) || (data.statusReason is string && data.statusReason.size() <= 300)) &&
+        (!('documentSha256' in data) || (data.documentSha256 is string && data.documentSha256.size() <= 128)) &&
+        (!('verificationUrl' in data) || (data.verificationUrl is string && data.verificationUrl.size() <= 300)) &&
+        data.source in ['E-SPRI', 'ADMINU', 'EDISPENSASI'] &&
+        data.createdAt is string && data.createdAt.size() >= 4 && data.createdAt.size() <= 50 &&
+        data.updatedAt is string && data.updatedAt.size() >= 4 && data.updatedAt.size() <= 50;
+    }
+
+    match /publicVerifications/{hash} {
+      // Publik dapat memeriksa keabsahan 1 dokumen melalui QR/hash persis tanpa bisa me-list semua arsip surat
+      allow get: if isValidPublicVerificationId(hash);
+      allow list: if isStaffAdmin();
+      allow create: if isStaffAdmin() &&
+        isValidPublicVerificationId(hash) &&
+        isValidPublicVerification(request.resource.data, hash);
+      allow update: if isStaffAdmin() &&
+        isValidPublicVerificationId(hash) &&
+        isValidPublicVerification(request.resource.data, hash) &&
+        request.resource.data.hash == resource.data.hash &&
+        request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isSuperAdmin();
+    }
   }
 }

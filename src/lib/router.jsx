@@ -62,8 +62,9 @@ const read = () => {
 };
 
 export const hrefFor = (path) => {
-  const p = normalize(path);
-  const shown = p === '/' ? '/' : p + '/';
+  const [rawPath, rawSearch] = String(path || '/').split('?');
+  const p = normalize(rawPath);
+  const shown = (p === '/' ? '/' : p + '/') + (rawSearch ? `?${rawSearch}` : '');
   return MODE === 'hash' ? '#' + shown : shown;
 };
 
@@ -78,7 +79,7 @@ export function navigate(path, { scroll = true } = {}) {
   const target = hrefFor(path);
   if (MODE === 'hash') {
     window.location.hash = target.slice(1);
-  } else if (window.location.pathname !== target) {
+  } else if (window.location.pathname + window.location.search !== target) {
     window.history.pushState({}, '', target);
   }
   window.dispatchEvent(new Event('mu:navigate'));
@@ -144,6 +145,8 @@ export const TAB_PATHS = {
   toko: '/toko',
   shop: '/toko',
   verify: '/verify',
+  verifikasi: '/verifikasi',
+  'verifikasi-surat': '/verifikasi-surat',
   adminu: '/adminu',
   privacy: '/privacy',
   terms: '/terms',
@@ -152,4 +155,6 @@ export const PATH_TABS = {
   ...Object.fromEntries(Object.entries(TAB_PATHS).map(([k, v]) => [v, k])),
   '/shop': 'toko',
   '/toko': 'toko',
+  '/verifikasi': 'informasi',
+  '/verifikasi-surat': 'informasi',
 };

@@ -1,0 +1,15 @@
+Saya mengirimkan paket integrasi resmi dari sistem E-Spri Menwa UNJ (`integration-menwaunj/`). Tolong integrasikan paket ini secara langsung ke website utama `menwaunj.or.id` dengan ketentuan:
+
+1. **Halaman Verifikasi QR (`/verifikasi`, `/verifikasi/:hash`, `/verifikasi-surat/:id`, `/verify`)**:
+   - Gunakan `parseVerificationQueryFromUrl` dan `resolveVerificationFromLocation` dari paket `integration-menwaunj` agar mendukung `?hash=`, path `/verifikasi/{hash}`, `?no=`, `?nomor=`, `?doc=`, `?surat=`, `?id=`, `?kode=`, dan `?cert=`.
+   - Prioritaskan pembacaan dari koleksi `/publicVerifications/{hash}` (Firestore database `ai-studio-menwaunj-f9c5c6d2-e98a-43ef-96bd-8c9b8400f335` pada project `admin-raffli`), lalu fallback ke `/dispensasi_requests` dan `/forms_submissions` bila dokumen tidak ditemukan.
+   - Tampilkan status badge (`SAH`, `TERVERIFIKASI`, `MENUNGGU_TTD`, `DICABUT`, `KEDALUWARSA`) menggunakan `getVerificationStatusMeta()`, serta metadata surat (`letterNumber`, `letterType`, `subject`, `recipient`, `issuedDate`, `signerName`, `signerTitle`, `issuingUnit`, `documentSha256`, `source`) tanpa membocorkan data pribadi/PII pemohon.
+
+2. **Standarisasi Kop Surat & QR Semua Surat Website Utama**:
+   - Salin `logo_unj_kop_2026.png` dan `logo_menwa_kop_2026.png` ke `public/assets/`.
+   - Ganti semua kop surat pada generator surat/PDF/cetak di website utama (E-Dispensasi, AdminU, Surat Tugas, Surat Rekomendasi) menggunakan komponen `<KopSuratMenwaUnj />` dan `renderKopSuratHtmlString()` agar 100% mengikuti standar E-Spri (Font Arial 13.5pt/9.5pt, logo UNJ kiri, logo Menwa Jayakarta kanan, garis ganda 0.75pt + 2.75pt, margin A4).
+   - Setiap surat yang disahkan/diterbitkan di website utama wajib menghasilkan record ke `/publicVerifications/{hash}` melalui `createPublicVerificationRecord()` + `upsertPublicVerificationRecord()` dengan `source: "EDISPENSASI"` atau `"ADMINU"`, serta menampilkan `<LetterVerificationQrBadge verificationUrl={record.verificationUrl} />`.
+
+3. **Keamanan & Anti-Bentrok**:
+   - Gunakan `getSafeFirestoreInstance` (guard `getApps()`) agar tidak terjadi error duplikasi Firebase App.
+   - Pastikan `firestore.rules` sudah memuat aturan ketat `/publicVerifications/{hash}` dari `firestore.publicVerifications.rules`, lalu verifikasi unit test (`espriVerification.test.ts`), `npm run build`, `npm run lint`, dan pratinjau halaman `/verifikasi?hash=espri-7a91c4e2b8f09c12`.

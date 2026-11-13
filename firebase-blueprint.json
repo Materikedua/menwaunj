@@ -262,6 +262,33 @@
         "updatedAt": { "type": "string", "maxLength": 50 }
       },
       "required": ["schoolSlug", "schoolName", "whatsappNumber"]
+    },
+    "PublicVerification": {
+      "title": "PublicVerification",
+      "description": "Registri verifikasi publik non-sensitif surat resmi SOP Menwa UNJ & integrasi E-Spri untuk pemindaian QR (/verifikasi?hash=...)",
+      "type": "object",
+      "properties": {
+        "hash": { "type": "string", "description": "Token/hash unik verifikasi yang sama dengan Document ID", "pattern": "^[a-zA-Z0-9_\\-]+$", "minLength": 3, "maxLength": 128 },
+        "letterNumber": { "type": "string", "description": "Nomor surat resmi sesuai SOP (contoh: B-045/Sat-UNJ/XI/2026)", "maxLength": 100 },
+        "agendaNumber": { "type": "string", "description": "Nomor urut agenda surat E-Spri (opsional, contoh: 045)", "maxLength": 40 },
+        "letterType": { "type": "string", "description": "Jenis naskah dinas (Surat Tugas, Undangan, Permohonan, Keterangan, Nota Dinas)", "maxLength": 80 },
+        "subject": { "type": "string", "description": "Perihal surat resmi", "maxLength": 240 },
+        "recipient": { "type": "string", "description": "Tujuan / penerima surat", "maxLength": 200 },
+        "issuingUnit": { "type": "string", "description": "Satuan atau bagian penerbit surat", "maxLength": 180 },
+        "issuedDate": { "type": "string", "description": "Tanggal penerbitan surat", "maxLength": 40 },
+        "validUntil": { "type": "string", "description": "Batas masa berlaku surat (opsional)", "maxLength": 40 },
+        "signerName": { "type": "string", "description": "Nama pejabat penandatangan", "maxLength": 120 },
+        "signerTitle": { "type": "string", "description": "Jabatan pejabat penandatangan", "maxLength": 140 },
+        "signerNia": { "type": "string", "description": "Nomor Induk Anggota / NBP pejabat penandatangan (opsional)", "maxLength": 50 },
+        "status": { "type": "string", "enum": ["SAH", "TERVERIFIKASI", "MENUNGGU_TTD", "DICABUT", "KEDALUWARSA"], "maxLength": 30 },
+        "statusReason": { "type": "string", "description": "Alasan atau keterangan status surat", "maxLength": 300 },
+        "documentSha256": { "type": "string", "description": "Hash SHA-256 berkas PDF asli (opsional)", "maxLength": 128 },
+        "verificationUrl": { "type": "string", "description": "Tautan QR verifikasi resmi", "maxLength": 300 },
+        "source": { "type": "string", "enum": ["E-SPRI", "ADMINU", "EDISPENSASI"], "maxLength": 30 },
+        "createdAt": { "type": "string", "description": "Waktu pencatatan ISO 8601", "maxLength": 50 },
+        "updatedAt": { "type": "string", "description": "Waktu pembaruan terakhir ISO 8601", "maxLength": 50 }
+      },
+      "required": ["hash", "letterNumber", "letterType", "subject", "recipient", "issuedDate", "signerName", "signerTitle", "status", "source", "createdAt", "updatedAt"]
     }
   },
   "firestore": {
@@ -276,6 +303,10 @@
     "/certificates/{certId}": {
       "schema": "Certificate",
       "description": "Registri publik verifikasi sertifikat dan piagam resmi (/verify)"
+    },
+    "/publicVerifications/{hash}": {
+      "schema": "PublicVerification",
+      "description": "Registri verifikasi publik QR surat resmi E-Spri & Mako (/verifikasi)"
     },
     "/site_cms_config/{configId}": {
       "schema": "SiteCmsConfig",

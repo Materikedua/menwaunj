@@ -1,0 +1,1035 @@
+Tolong integrasikan website utama menwaunj.or.id dengan sistem E-Spri Menwa UNJ mengikuti file Repomix (repomix-integrasi-menwaunj.md) yang saya lampirkan dengan ketentuan berikut:
+
+1. Terapkan modul integrasi dari folder integration-menwaunj/ pada Repomix ke struktur src/ menwaunj.or.id:
+   - src/types/espriVerification.ts
+   - src/lib/espriVerification.ts
+   - src/services/publicVerificationsService.ts
+   - src/components/KopSuratMenwaUnj.tsx
+   - src/lib/espriVerification.test.ts
+
+2. Pusatkan verifikasi QR di website utama (/verifikasi, /verifikasi/:hash, /verifikasi-surat/:id, /verify):
+   - Gunakan resolveVerificationFromLocation(db, window.location.search, window.location.pathname) dan parseVerificationQueryFromUrl agar mendukung case-sensitive parameter:
+     ?hash=, path /verifikasi/{hash}, ?no=, ?nomor=, ?doc=, ?surat=, ?id=, ?kode=, ?cert=, ?verify=, dan /verifikasi-surat/{hashOrId}.
+   - Prioritaskan pembacaan koleksi /publicVerifications/{hash} pada Firebase project admin-raffli (database ai-studio-menwaunj-f9c5c6d2-e98a-43ef-96bd-8c9b8400f335) memakai getDoc (bukan collection query karena allow list: if false), lalu fallback ke /dispensasi_requests dan /forms_submissions.
+   - Tampilkan status badge (SAH, TERVERIFIKASI, MENUNGGU_TTD, DICABUT, KEDALUWARSA) dengan getVerificationStatusMeta() tanpa membocorkan data pribadi/PII.
+
+3. Standarisasi semua Kop Surat & QR Code website utama:
+   - Ganti seluruh kop surat generator PDF/Word/HTML (E-Dispensasi, AdminU, Surat Tugas, Surat Keterangan) memakai <KopSuratMenwaUnj /> dan renderKopSuratHtmlString() (Font Arial 13.5pt/9.5pt, logo UNJ kiri 88x94px, logo Menwa kanan 96x94px, garis ganda 0.75pt + 2.75pt, margin A4 8mm/7mm/20mm/15mm).
+   - Setiap surat resmi yang terbit (EDISPENSASI / ADMINU) wajib menulis record /publicVerifications/{hash} via createPublicVerificationRecord() + upsertPublicVerificationRecord() dan QR memakai <LetterVerificationQrBadge /> menuju https://menwaunj.or.id/verifikasi?hash={hash}.
+
+4. Anti-bentrok & Keamanan:
+   - Gunakan getSafeFirestoreInstance() (getApps() guard) agar tidak duplikat Firebase App.
+   - Pastikan firestore.rules sudah memuat aturan /publicVerifications/{hash} dari integration-menwaunj/firestore.publicVerifications.rules.
+   - Pastikan route website utama tidak bentrok dengan E-Spri (deploy terpisah di espri.menwaunj.or.id atau rewrite /espri pada vercel.json).
+   - Jalankan unit test (espriVerification.test.ts), npm run lint, dan npm run build sebelum selesai.
+
+CATATAN ASET LOGO KOP SURAT:
+- Pastikan path public/assets/logo_unj_kop_2026.png dan public/assets/logo_menwa_kop_2026.png tersedia (jika di project website utama sudah ada aset logo UNJ & Menwa resmi, salin/alias-kan ke dua path tersebut; jika belum ada, saya akan kirim 2 file .png secara terpisah di pesan berikutnya).
+
+====================================================================
+KODE LENGKAP PAKET INTEGRASI E-SPRI -> MENWAUNJ.OR.ID
+(Terapkan file-file di bawah ini ke repository menwaunj.or.id)
+====================================================================
+
+--- FILE 1: src/types/espriVerification.ts ---
+```ts
+export type PublicVerificationStatus =
+  | 'SAH'
+  | 'TERVERIFIKASI'
+  | 'MENUNGGU_TTD'
+  | 'DICABUT'
+  | 'KEDALUWARSA';
+
+export type PublicVerificationSource = 'E-SPRI' | 'ADMINU' | 'EDISPENSASI';
+
+export interface PublicVerificationRecord {
+  hash: string;
+  letterNumber: string;
+  letterType: string;
+  subject: string;
+  recipient: string;
+  issuedDate: string;
+  signerName: string;
+  signerTitle: string;
+  status: PublicVerificationStatus;
+  source: PublicVerificationSource;
+  createdAt: string;
+  updatedAt: string;
+  agendaNumber?: string;
+  issuingUnit?: string;
+  validUntil?: string;
+  signerNia?: string;
+  statusReason?: string;
+  documentSha256?: string;
+  verificationUrl?: string;
+}
+
+export interface ParsedVerificationQuery {
+  hash: string;
+  agendaOrNomor: string;
+  docId: string;
+  matchedParam:
+    | 'hash'
+    | 'path'
+    | 'no'
+    | 'nomor'
+    | 'doc'
+    | 'surat'
+    | 'id'
+    | 'kode'
+    | 'cert'
+    | 'verify'
+    | 'none';
+}
+
+export interface KopSuratStandardConfig {
+  baris1: string;
+  baris2: string;
+  alamat: string;
+  kontak: string;
+  lamanLabel: string;
+  lamanUrl: string;
+  mottoJudul: string;
+  mottoSubJudul: string;
+  logoUnjPath: string;
+  logoMenwaPath: string;
+}
+```
+
+--- FILE 2: src/lib/espriVerification.ts ---
+```ts
+import {
+  KopSuratStandardConfig,
+  ParsedVerificationQuery,
+  PublicVerificationRecord,
+  PublicVerificationSource,
+  PublicVerificationStatus,
+} from '../types/espriVerification';
+
+export const MAIN_WEBSITE_ORIGIN = 'https://menwaunj.or.id';
+export const MAIN_WEBSITE_VERIFIKASI_PATH = '/verifikasi';
+
+/**
+ * Standar baku Kop Surat Resmi Komando Resimen Mahasiswa Jayakarta Satuan UNJ (SOP E-Spri 2026).
+ * Gunakan konstanta ini sebagai Single Source of Truth pada seluruh generator surat website utama
+ * (E-Dispensasi, AdminU, Surat Tugas web, maupun sertifikat/rekomendasi dinas).
+ */
+export const KOP_SURAT_STANDARD_MENWA_UNJ: KopSuratStandardConfig = {
+  baris1: 'KOMANDO RESIMEN MAHASISWA JAYAKARTA',
+  baris2: 'SATUAN UNIVERSITAS NEGERI JAKARTA',
+  alamat: 'Gedung G, Lantai 1, Ruang 107, Kampus A UNJ, Jakarta Timur 13220',
+  kontak: 'Telepon: 0815-2582-3503 | Surel: unjmenwa@gmail.com',
+  lamanLabel: 'www.menwaunj.or.id',
+  lamanUrl: 'https://www.menwaunj.or.id',
+  mottoJudul: 'WIDYA CASTRENA DHARMA SIDDHA',
+  mottoSubJudul: '“Penyempurnaan Pengabdian dengan Ilmu Pengetahuan dan Ilmu olah Keprajuritan”',
+  logoUnjPath: '/assets/logo_unj_kop_2026.png',
+  logoMenwaPath: '/assets/logo_menwa_kop_2026.png',
+};
+
+const VALID_HASH_REGEX = /^[a-zA-Z0-9_-]{3,128}$/;
+
+/**
+ * Pure TypeScript synchronous SHA-256 (UTF-8) -> 64 lowercase hex characters.
+ */
+export function sha256Hex(message: string): string {
+  const bytes = new TextEncoder().encode(message);
+  const K = new Uint32Array([
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+  ]);
+  const H = new Uint32Array([
+    0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+    0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
+  ]);
+
+  const bitLen = bytes.length * 8;
+  const paddedLen = Math.ceil((bytes.length + 9) / 64) * 64;
+  const padded = new Uint8Array(paddedLen);
+  padded.set(bytes);
+  padded[bytes.length] = 0x80;
+  const view = new DataView(padded.buffer);
+  const highBits = Math.floor(bitLen / 0x100000000);
+  const lowBits = bitLen >>> 0;
+  view.setUint32(paddedLen - 8, highBits, false);
+  view.setUint32(paddedLen - 4, lowBits, false);
+
+  const W = new Uint32Array(64);
+  for (let offset = 0; offset < paddedLen; offset += 64) {
+    for (let i = 0; i < 16; i++) {
+      W[i] = view.getUint32(offset + i * 4, false);
+    }
+    for (let i = 16; i < 64; i++) {
+      const s0 =
+        ((W[i - 15] >>> 7) | (W[i - 15] << 25)) ^
+        ((W[i - 15] >>> 18) | (W[i - 15] << 14)) ^
+        (W[i - 15] >>> 3);
+      const s1 =
+        ((W[i - 2] >>> 17) | (W[i - 2] << 15)) ^
+        ((W[i - 2] >>> 19) | (W[i - 2] << 13)) ^
+        (W[i - 2] >>> 10);
+      W[i] = (W[i - 16] + s0 + W[i - 7] + s1) >>> 0;
+    }
+
+    let [a, b, c, d, e, f, g, h] = H;
+    for (let i = 0; i < 64; i++) {
+      const S1 =
+        ((e >>> 6) | (e << 26)) ^
+        ((e >>> 11) | (e << 21)) ^
+        ((e >>> 25) | (e << 7));
+      const ch = (e & f) ^ (~e & g);
+      const temp1 = (h + S1 + ch + K[i] + W[i]) >>> 0;
+      const S0 =
+        ((a >>> 2) | (a << 30)) ^
+        ((a >>> 13) | (a << 19)) ^
+        ((a >>> 22) | (a << 10));
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const temp2 = (S0 + maj) >>> 0;
+
+      h = g;
+      g = f;
+      f = e;
+      e = (d + temp1) >>> 0;
+      d = c;
+      c = b;
+      b = a;
+      a = (temp1 + temp2) >>> 0;
+    }
+
+    H[0] = (H[0] + a) >>> 0;
+    H[1] = (H[1] + b) >>> 0;
+    H[2] = (H[2] + c) >>> 0;
+    H[3] = (H[3] + d) >>> 0;
+    H[4] = (H[4] + e) >>> 0;
+    H[5] = (H[5] + f) >>> 0;
+    H[6] = (H[6] + g) >>> 0;
+    H[7] = (H[7] + h) >>> 0;
+  }
+
+  return Array.from(H)
+    .map((word) => word.toString(16).padStart(8, '0'))
+    .join('');
+}
+
+export function sanitizeVerificationHashId(raw: string): string {
+  const cleaned = (raw || '').trim().replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 128);
+  if (cleaned.length >= 3) return cleaned;
+  return `doc-${cleaned.padEnd(3, '0')}`;
+}
+
+export function isValidVerificationHashId(hash: string): boolean {
+  return VALID_HASH_REGEX.test((hash || '').trim());
+}
+
+/**
+ * Mengekstrak hash / nomor agenda / ID dokumen dari URL verifikasi QR sesuai urutan prioritas
+ * resmi menwaunj.or.id (case-sensitive):
+ * 1. ?hash=
+ * 2. Path segment /verifikasi/{hash} atau /verifikasi-surat/{hashOrId}
+ * 3. ?no= / ?nomor=
+ * 4. ?doc= / ?surat= / ?id= / ?kode= / ?cert= / ?verify=
+ */
+export function parseVerificationQueryFromUrl(
+  search: string,
+  pathname = ''
+): ParsedVerificationQuery {
+  const params = new URLSearchParams(search || '');
+
+  const hashParam = params.get('hash')?.trim() || '';
+  if (hashParam) {
+    return {
+      hash: sanitizeVerificationHashId(hashParam),
+      agendaOrNomor: '',
+      docId: hashParam,
+      matchedParam: 'hash',
+    };
+  }
+
+  const pathMatch = pathname.match(/^\/verifikasi(?:-surat)?\/([^/?#]+)\/?$/i);
+  if (pathMatch && pathMatch[1]) {
+    const seg = decodeURIComponent(pathMatch[1]).trim();
+    return {
+      hash: sanitizeVerificationHashId(seg),
+      agendaOrNomor: seg,
+      docId: seg,
+      matchedParam: 'path',
+    };
+  }
+
+  const noParam = params.get('no')?.trim() || '';
+  if (noParam) {
+    return {
+      hash: sanitizeVerificationHashId(noParam),
+      agendaOrNomor: noParam,
+      docId: noParam,
+      matchedParam: 'no',
+    };
+  }
+
+  const nomorParam = params.get('nomor')?.trim() || '';
+  if (nomorParam) {
+    return {
+      hash: sanitizeVerificationHashId(nomorParam),
+      agendaOrNomor: nomorParam,
+      docId: nomorParam,
+      matchedParam: 'nomor',
+    };
+  }
+
+  const altKeys: Array<'doc' | 'surat' | 'id' | 'kode' | 'cert' | 'verify'> = [
+    'doc',
+    'surat',
+    'id',
+    'kode',
+    'cert',
+    'verify',
+  ];
+  for (const key of altKeys) {
+    const val = params.get(key)?.trim();
+    if (val) {
+      return {
+        hash: sanitizeVerificationHashId(val),
+        agendaOrNomor: val,
+        docId: val,
+        matchedParam: key,
+      };
+    }
+  }
+
+  return {
+    hash: '',
+    agendaOrNomor: '',
+    docId: '',
+    matchedParam: 'none',
+  };
+}
+
+/**
+ * Membangun URL verifikasi resmi menwaunj.or.id untuk ditanam di QR surat.
+ */
+export function buildMainVerificationUrl(
+  hash: string,
+  origin = MAIN_WEBSITE_ORIGIN
+): string {
+  const cleanOrigin = (origin || MAIN_WEBSITE_ORIGIN).replace(/\/+$/, '');
+  return `${cleanOrigin}${MAIN_WEBSITE_VERIFIKASI_PATH}?hash=${encodeURIComponent(
+    sanitizeVerificationHashId(hash)
+  )}`;
+}
+
+/**
+ * Membangun payload siap simpan ke koleksi Firestore `/publicVerifications/{hash}`
+ * untuk surat yang dihasilkan langsung di website utama (ADMINU / EDISPENSASI / E-SPRI).
+ */
+export function createPublicVerificationRecord(input: {
+  hash?: string;
+  letterNumber: string;
+  letterType: string;
+  subject: string;
+  recipient: string;
+  issuedDate: string;
+  signerName: string;
+  signerTitle: string;
+  status: PublicVerificationStatus;
+  source: PublicVerificationSource;
+  agendaNumber?: string;
+  issuingUnit?: string;
+  validUntil?: string;
+  signerNia?: string;
+  statusReason?: string;
+  documentSha256?: string;
+  existingCreatedAt?: string;
+  nowIso?: string;
+}): PublicVerificationRecord {
+  const nowIso = (input.nowIso || new Date().toISOString()).slice(0, 50);
+  const createdAt = (input.existingCreatedAt || nowIso).slice(0, 50);
+  const prefix =
+    input.source === 'EDISPENSASI'
+      ? 'edisp'
+      : input.source === 'ADMINU'
+        ? 'adminu'
+        : 'espri';
+  const derivedHash =
+    input.hash && isValidVerificationHashId(input.hash)
+      ? input.hash.trim()
+      : `${prefix}-${sha256Hex(`${input.letterNumber}|${input.issuedDate}|${input.subject}`).slice(0, 16)}`;
+
+  const hash = sanitizeVerificationHashId(derivedHash);
+
+  return {
+    hash,
+    letterNumber: input.letterNumber.trim().slice(0, 100),
+    letterType: input.letterType.trim().slice(0, 80),
+    subject: input.subject.trim().slice(0, 240),
+    recipient: input.recipient.trim().slice(0, 200),
+    issuedDate: input.issuedDate.trim().slice(0, 40),
+    signerName: input.signerName.trim().slice(0, 120),
+    signerTitle: input.signerTitle.trim().slice(0, 140),
+    status: input.status,
+    source: input.source,
+    createdAt,
+    updatedAt: nowIso,
+    ...(input.agendaNumber?.trim()
+      ? { agendaNumber: input.agendaNumber.trim().slice(0, 40) }
+      : {}),
+    issuingUnit: (
+      input.issuingUnit?.trim() ||
+      'Komando Resimen Mahasiswa Jayakarta Satuan UNJ'
+    ).slice(0, 180),
+    ...(input.validUntil?.trim()
+      ? { validUntil: input.validUntil.trim().slice(0, 40) }
+      : {}),
+    ...(input.signerNia?.trim()
+      ? { signerNia: input.signerNia.trim().slice(0, 50) }
+      : {}),
+    ...(input.statusReason?.trim()
+      ? { statusReason: input.statusReason.trim().slice(0, 300) }
+      : {}),
+    ...(input.documentSha256?.trim()
+      ? { documentSha256: input.documentSha256.trim().slice(0, 128) }
+      : {}),
+    verificationUrl: buildMainVerificationUrl(hash).slice(0, 300),
+  };
+}
+
+export function getVerificationStatusMeta(status: PublicVerificationStatus): {
+  label: string;
+  description: string;
+  tone: 'emerald' | 'amber' | 'rose' | 'slate';
+} {
+  switch (status) {
+    case 'SAH':
+      return {
+        label: 'DOKUMEN SAH & TERCATAT',
+        description: 'Surat resmi telah disahkan dan tercatat di sistem komando Menwa UNJ.',
+        tone: 'emerald',
+      };
+    case 'TERVERIFIKASI':
+      return {
+        label: 'TERVERIFIKASI',
+        description: 'Keaslian dokumen terverifikasi di arsip Komando Menwa UNJ.',
+        tone: 'emerald',
+      };
+    case 'MENUNGGU_TTD':
+      return {
+        label: 'MENUNGGU PENGESAHAN TTD',
+        description: 'Dokumen telah terdaftar di agenda, namun masih menunggu tanda tangan final.',
+        tone: 'amber',
+      };
+    case 'DICABUT':
+      return {
+        label: 'DOKUMEN DICABUT',
+        description: 'Surat ini telah dibatalkan atau dicabut keberlakuannya oleh Komando Satuan.',
+        tone: 'rose',
+      };
+    case 'KEDALUWARSA':
+      return {
+        label: 'MASA BERLAKU HABIS',
+        description: 'Masa berlaku surat dinas atau penugasan ini telah berakhir.',
+        tone: 'slate',
+      };
+  }
+}
+
+/**
+ * Menghasilkan potongan HTML Kop Surat standar E-Spri (Arial + Garis Ganda Resmi)
+ * untuk digunakan pada fitur export Word (.doc) atau cetak HTML di website utama menwaunj.or.id.
+ */
+export function renderKopSuratHtmlString(
+  config: Partial<KopSuratStandardConfig> = {},
+  origin = MAIN_WEBSITE_ORIGIN
+): string {
+  const c = { ...KOP_SURAT_STANDARD_MENWA_UNJ, ...config };
+  const cleanOrigin = origin.replace(/\/+$/, '');
+  const escapeHtml = (val: string) =>
+    val
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  return `
+<div style="font-family: Arial, Helvetica, sans-serif; color: #000000; width: 100%;">
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 4px;">
+    <tr>
+      <td style="width: 88px; vertical-align: middle; text-align: left;">
+        <img src="${escapeHtml(cleanOrigin + c.logoUnjPath)}" alt="Logo UNJ" style="width: 84px; height: 88px; object-fit: contain;" />
+      </td>
+      <td style="vertical-align: middle; text-align: center; line-height: 1.18;">
+        <div style="font-size: 13.5pt; font-weight: bold; text-transform: uppercase;">${escapeHtml(c.baris1)}</div>
+        <div style="font-size: 13.5pt; font-weight: bold; text-transform: uppercase;">${escapeHtml(c.baris2)}</div>
+        <div style="font-size: 9.5pt; margin-top: 2px;">${escapeHtml(c.alamat)}</div>
+        <div style="font-size: 9.5pt;">${escapeHtml(c.kontak)}</div>
+        <div style="font-size: 9.5pt;">Laman: <a href="${escapeHtml(c.lamanUrl)}" style="color: #0000ee; text-decoration: underline;">${escapeHtml(c.lamanLabel)}</a></div>
+      </td>
+      <td style="width: 96px; vertical-align: middle; text-align: right;">
+        <img src="${escapeHtml(cleanOrigin + c.logoMenwaPath)}" alt="Logo Menwa Jayakarta" style="width: 90px; height: 88px; object-fit: contain;" />
+      </td>
+    </tr>
+  </table>
+  <div style="border-top: 0.75pt solid #000000; margin-bottom: 2pt;"></div>
+  <div style="border-top: 2.75pt solid #000000; margin-bottom: 8pt;"></div>
+</div>`.trim();
+}
+```
+
+--- FILE 3: src/services/publicVerificationsService.ts ---
+```ts
+import { getApp, getApps, initializeApp, FirebaseApp, FirebaseOptions } from 'firebase/app';
+import {
+  doc,
+  Firestore,
+  getDoc,
+  getFirestore,
+  setDoc,
+  updateDoc,
+} from 'firebase/firestore';
+import {
+  PublicVerificationRecord,
+  PublicVerificationStatus,
+} from '../types/espriVerification';
+import {
+  isValidVerificationHashId,
+  parseVerificationQueryFromUrl,
+  sanitizeVerificationHashId,
+} from '../lib/espriVerification';
+
+/**
+ * Menginisialisasi instance Firestore secara aman (anti-bentrok jika Firebase App [DEFAULT]
+ * sudah diinisialisasi oleh website utama menwaunj.or.id).
+ */
+export function getSafeFirestoreInstance(
+  options?: FirebaseOptions & { firestoreDatabaseId?: string },
+  appName?: string
+): Firestore {
+  const existingApps = getApps();
+  let app: FirebaseApp;
+
+  if (appName) {
+    const named = existingApps.find((a) => a.name === appName);
+    if (named) {
+      app = named;
+    } else if (options) {
+      app = initializeApp(options, appName);
+    } else {
+      app = getApp();
+    }
+  } else if (existingApps.length > 0) {
+    app = getApp();
+  } else if (options) {
+    app = initializeApp(options);
+  } else {
+    throw new Error(
+      'Firebase belum diinisialisasi. Sertakan FirebaseOptions atau inisialisasi app [DEFAULT] terlebih dahulu.'
+    );
+  }
+
+  return options?.firestoreDatabaseId
+    ? getFirestore(app, options.firestoreDatabaseId)
+    : getFirestore(app);
+}
+
+/**
+ * Membaca 1 dokumen verifikasi publik dari `/publicVerifications/{hash}` berdasarkan exact Document ID.
+ * Catatan: `allow list` ditutup di firestore.rules, jadi gunakan `getDoc` secara langsung (bukan query `collection`).
+ */
+export async function fetchPublicVerificationByHash(
+  db: Firestore,
+  rawHash: string
+): Promise<PublicVerificationRecord | null> {
+  const hash = sanitizeVerificationHashId(rawHash);
+  if (!isValidVerificationHashId(hash)) {
+    return null;
+  }
+
+  const ref = doc(db, 'publicVerifications', hash);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    return null;
+  }
+
+  return snap.data() as PublicVerificationRecord;
+}
+
+/**
+ * Menyelesaikan lookup dari URL (`?hash=`, `/verifikasi/{hash}`, `?no=`, `?doc=`, dll.)
+ * dengan mencoba kandidat ID secara berurutan (exact hash, lalu prefix `no-{nomor}` jika numerik).
+ */
+export async function resolveVerificationFromLocation(
+  db: Firestore,
+  search: string,
+  pathname = ''
+): Promise<{
+  record: PublicVerificationRecord | null;
+  queriedId: string;
+  matchedParam: string;
+}> {
+  const parsed = parseVerificationQueryFromUrl(search, pathname);
+  if (!parsed.hash) {
+    return { record: null, queriedId: '', matchedParam: parsed.matchedParam };
+  }
+
+  const candidates = [parsed.hash];
+  if (parsed.matchedParam === 'no' || parsed.matchedParam === 'nomor') {
+    const prefixed = sanitizeVerificationHashId(`no-${parsed.agendaOrNomor}`);
+    if (!candidates.includes(prefixed)) {
+      candidates.push(prefixed);
+    }
+  }
+
+  for (const candidate of candidates) {
+    const found = await fetchPublicVerificationByHash(db, candidate);
+    if (found) {
+      return {
+        record: found,
+        queriedId: candidate,
+        matchedParam: parsed.matchedParam,
+      };
+    }
+  }
+
+  return {
+    record: null,
+    queriedId: parsed.hash,
+    matchedParam: parsed.matchedParam,
+  };
+}
+
+/**
+ * Menyimpan atau memperbarui dokumen verifikasi di `/publicVerifications/{hash}`
+ * sambil menghormati field immutable (`hash`, `createdAt`, `source`) sesuai `firestore.rules`.
+ */
+export async function upsertPublicVerificationRecord(
+  db: Firestore,
+  record: PublicVerificationRecord
+): Promise<void> {
+  const hash = sanitizeVerificationHashId(record.hash);
+  const ref = doc(db, 'publicVerifications', hash);
+  const existing = await getDoc(ref);
+
+  if (existing.exists()) {
+    const { hash: _h, createdAt: _c, source: _s, ...updatable } = record;
+    void _h;
+    void _c;
+    void _s;
+    await updateDoc(ref, {
+      ...updatable,
+      updatedAt: new Date().toISOString().slice(0, 50),
+    });
+    return;
+  }
+
+  await setDoc(ref, {
+    ...record,
+    hash,
+  });
+}
+
+/**
+ * Memperbarui status dokumen (misal DICABUT atau KEDALUWARSA) oleh Staf Admin terautentikasi.
+ */
+export async function updatePublicVerificationStatus(
+  db: Firestore,
+  hash: string,
+  status: PublicVerificationStatus,
+  statusReason?: string
+): Promise<void> {
+  const cleanHash = sanitizeVerificationHashId(hash);
+  const ref = doc(db, 'publicVerifications', cleanHash);
+  await updateDoc(ref, {
+    status,
+    ...(statusReason ? { statusReason: statusReason.slice(0, 300) } : {}),
+    updatedAt: new Date().toISOString().slice(0, 50),
+  });
+}
+```
+
+--- FILE 4: src/components/KopSuratMenwaUnj.tsx ---
+```tsx
+import React, { useEffect, useState } from 'react';
+import QRCode from 'qrcode';
+import { KOP_SURAT_STANDARD_MENWA_UNJ } from '../lib/espriVerification';
+import { KopSuratStandardConfig } from '../types/espriVerification';
+
+export interface KopSuratMenwaUnjProps {
+  config?: Partial<KopSuratStandardConfig>;
+  showMotto?: boolean;
+  /** Opsional: URL verifikasi QR (`https://menwaunj.or.id/verifikasi?hash=...`) jika ingin dipakai bersama header/footer surat web */
+  verificationUrl?: string;
+}
+
+/**
+ * Komponen Kop Surat Standar Resmi E-Spri Menwa UNJ (2026).
+ * Gunakan komponen ini pada seluruh fitur penerbitan surat di website utama `menwaunj.or.id`
+ * (E-Dispensasi, AdminU, Surat Tugas, Surat Keterangan) agar format kop, font Arial,
+ * proporsi logo, dan garis ganda resmi 100% seragam dengan E-Spri.
+ */
+export const KopSuratMenwaUnj: React.FC<KopSuratMenwaUnjProps> = ({
+  config,
+  showMotto = false,
+}) => {
+  const c = { ...KOP_SURAT_STANDARD_MENWA_UNJ, ...config };
+
+  return (
+    <header
+      className="w-full text-black select-none"
+      style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}
+      data-testid="kop-surat-menwa-unj-standard"
+    >
+      <div className="flex items-center justify-between min-h-[96px]">
+        {/* Logo Kiri: Universitas Negeri Jakarta */}
+        <div
+          className="shrink-0 flex items-center justify-start"
+          style={{ width: '88px', height: '94px' }}
+        >
+          <img
+            src={c.logoUnjPath}
+            alt="Logo Universitas Negeri Jakarta"
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-contain"
+          />
+        </div>
+
+        {/* 5 Baris Teks Kop Surat Resmi (Arial 13.5pt & 9.5pt) */}
+        <div className="flex-1 text-center px-1 leading-[1.18]">
+          <div
+            style={{ fontSize: '13.5pt' }}
+            className="font-bold uppercase tracking-normal whitespace-nowrap text-black"
+          >
+            {c.baris1}
+          </div>
+          <div
+            style={{ fontSize: '13.5pt' }}
+            className="font-bold uppercase tracking-normal whitespace-nowrap text-black"
+          >
+            {c.baris2}
+          </div>
+          <div
+            style={{ fontSize: '9.5pt' }}
+            className="font-normal text-black mt-0.5 whitespace-nowrap"
+          >
+            {c.alamat}
+          </div>
+          <div
+            style={{ fontSize: '9.5pt' }}
+            className="font-normal text-black whitespace-nowrap"
+          >
+            {c.kontak}
+          </div>
+          <div
+            style={{ fontSize: '9.5pt' }}
+            className="font-normal text-black whitespace-nowrap"
+          >
+            Laman:{' '}
+            <a
+              href={c.lamanUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[#0000ee] underline"
+            >
+              {c.lamanLabel}
+            </a>
+          </div>
+        </div>
+
+        {/* Logo Kanan: Komando Resimen Mahasiswa Jayakarta */}
+        <div
+          className="shrink-0 flex items-center justify-end"
+          style={{ width: '96px', height: '94px' }}
+        >
+          <img
+            src={c.logoMenwaPath}
+            alt="Logo Menwa Jayakarta Satuan UNJ"
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-contain"
+          />
+        </div>
+      </div>
+
+      {/* Pembatas Kop Garis Ganda Resmi: Tipis (0.75pt) di Atas + Tebal (2.75pt) di Bawah */}
+      <div className="w-full mt-1 mb-1.5" aria-hidden="true">
+        <div style={{ borderTop: '0.75pt solid #000000', marginBottom: '2pt' }} />
+        <div style={{ borderTop: '2.75pt solid #000000' }} />
+      </div>
+
+      {/* Opsional Motto Korps di bawah garis pembatas */}
+      {showMotto && (
+        <div className="my-1 text-left leading-[1.12]">
+          <div
+            style={{ fontSize: '11.5pt' }}
+            className="font-bold italic uppercase tracking-wide"
+          >
+            {c.mottoJudul}
+          </div>
+          <div style={{ fontSize: '10pt' }} className="italic">
+            {c.mottoSubJudul}
+          </div>
+        </div>
+      )}
+    </header>
+  );
+};
+
+/**
+ * Komponen QR Code Verifikasi standar E-Spri untuk diletakkan di samping tanda tangan
+ * Komandan / pejabat penandatangan pada surat terbitan website utama menwaunj.or.id.
+ */
+export const LetterVerificationQrBadge: React.FC<{
+  verificationUrl: string;
+  sizePx?: number;
+}> = ({ verificationUrl, sizePx = 68 }) => {
+  const [dataUrl, setDataUrl] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    QRCode.toDataURL(verificationUrl, {
+      width: 240,
+      margin: 0,
+      color: { dark: '#000000', light: '#00000000' },
+      errorCorrectionLevel: 'L',
+    })
+      .then((url) => {
+        if (active) setDataUrl(url);
+      })
+      .catch((err) => {
+        console.error('Gagal membuat QR verifikasi surat:', err);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [verificationUrl]);
+
+  if (!dataUrl) return null;
+
+  return (
+    <img
+      src={dataUrl}
+      alt="Kode QR Verifikasi Menwa UNJ"
+      title={`Verifikasi resmi: ${verificationUrl}`}
+      style={{ width: `${sizePx}px`, height: `${sizePx}px` }}
+      className="object-contain inline-block"
+    />
+  );
+};
+```
+
+--- FILE 5: firestore.rules (blok /publicVerifications/{hash}) ---
+```javascript
+// Potongan Firestore Security Rules untuk digabungkan ke `firestore.rules`
+// pada Firebase Project website utama `menwaunj.or.id` (project: admin-raffli,
+// database: ai-studio-menwaunj-f9c5c6d2-e98a-43ef-96bd-8c9b8400f335).
+// Pastikan helper isSignedIn() / isStaffAdmin() disesuaikan dengan aturan proyek Anda.
+
+function isValidVerificationHash(hash) {
+  return hash is string && hash.size() >= 3 && hash.size() <= 128 && hash.matches('^[a-zA-Z0-9_\\-]+$');
+}
+
+function isValidPublicVerification(data) {
+  return data.keys().hasAll([
+      'hash',
+      'letterNumber',
+      'letterType',
+      'subject',
+      'recipient',
+      'issuedDate',
+      'signerName',
+      'signerTitle',
+      'status',
+      'source',
+      'createdAt',
+      'updatedAt'
+    ]) &&
+    data.keys().hasOnly([
+      'hash',
+      'letterNumber',
+      'letterType',
+      'subject',
+      'recipient',
+      'issuedDate',
+      'signerName',
+      'signerTitle',
+      'status',
+      'source',
+      'createdAt',
+      'updatedAt',
+      'agendaNumber',
+      'issuingUnit',
+      'validUntil',
+      'signerNia',
+      'statusReason',
+      'documentSha256',
+      'verificationUrl'
+    ]) &&
+    isValidVerificationHash(data.hash) &&
+    data.letterNumber is string && data.letterNumber.size() >= 1 && data.letterNumber.size() <= 100 &&
+    data.letterType is string && data.letterType.size() >= 2 && data.letterType.size() <= 80 &&
+    data.subject is string && data.subject.size() >= 2 && data.subject.size() <= 240 &&
+    data.recipient is string && data.recipient.size() >= 1 && data.recipient.size() <= 200 &&
+    data.issuedDate is string && data.issuedDate.size() >= 4 && data.issuedDate.size() <= 40 &&
+    data.signerName is string && data.signerName.size() >= 2 && data.signerName.size() <= 120 &&
+    data.signerTitle is string && data.signerTitle.size() >= 2 && data.signerTitle.size() <= 140 &&
+    data.status is string && (
+      data.status == 'SAH' ||
+      data.status == 'TERVERIFIKASI' ||
+      data.status == 'MENUNGGU_TTD' ||
+      data.status == 'DICABUT' ||
+      data.status == 'KEDALUWARSA'
+    ) &&
+    data.source is string && (
+      data.source == 'E-SPRI' ||
+      data.source == 'ADMINU' ||
+      data.source == 'EDISPENSASI'
+    ) &&
+    data.createdAt is string && data.createdAt.size() >= 4 && data.createdAt.size() <= 50 &&
+    data.updatedAt is string && data.updatedAt.size() >= 4 && data.updatedAt.size() <= 50 &&
+    (!('agendaNumber' in data) || (data.agendaNumber is string && data.agendaNumber.size() <= 40)) &&
+    (!('issuingUnit' in data) || (data.issuingUnit is string && data.issuingUnit.size() <= 180)) &&
+    (!('validUntil' in data) || (data.validUntil is string && data.validUntil.size() <= 40)) &&
+    (!('signerNia' in data) || (data.signerNia is string && data.signerNia.size() <= 50)) &&
+    (!('statusReason' in data) || (data.statusReason is string && data.statusReason.size() <= 300)) &&
+    (!('documentSha256' in data) || (data.documentSha256 is string && data.documentSha256.size() <= 128)) &&
+    (!('verificationUrl' in data) || (data.verificationUrl is string && data.verificationUrl.size() <= 300));
+}
+
+match /publicVerifications/{hash} {
+  allow get: if isValidVerificationHash(hash);
+  allow list: if false;
+
+  allow create: if (isStaffAdmin() || isSignedIn()) &&
+    isValidVerificationHash(hash) &&
+    isValidPublicVerification(request.resource.data) &&
+    request.resource.data.hash == hash;
+
+  allow update: if (isStaffAdmin() || isSignedIn()) &&
+    isValidVerificationHash(hash) &&
+    isValidPublicVerification(request.resource.data) &&
+    request.resource.data.hash == resource.data.hash &&
+    request.resource.data.createdAt == resource.data.createdAt &&
+    request.resource.data.source == resource.data.source &&
+    request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+      'letterNumber',
+      'letterType',
+      'subject',
+      'recipient',
+      'issuedDate',
+      'signerName',
+      'signerTitle',
+      'status',
+      'updatedAt',
+      'agendaNumber',
+      'issuingUnit',
+      'validUntil',
+      'signerNia',
+      'statusReason',
+      'documentSha256',
+      'verificationUrl'
+    ]);
+
+  allow delete: if false;
+}
+```
+
+--- FILE 6: src/lib/espriVerification.test.ts ---
+```ts
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  buildMainVerificationUrl,
+  createPublicVerificationRecord,
+  getVerificationStatusMeta,
+  KOP_SURAT_STANDARD_MENWA_UNJ,
+  parseVerificationQueryFromUrl,
+  renderKopSuratHtmlString,
+  sha256Hex,
+} from './espriVerification';
+
+test('parseVerificationQueryFromUrl extracts ?hash=, path segments, ?no=, and legacy params accurately', () => {
+  const fromHash = parseVerificationQueryFromUrl('?hash=espri-7a91c4e2b8f09c12', '/verifikasi');
+  assert.equal(fromHash.hash, 'espri-7a91c4e2b8f09c12');
+  assert.equal(fromHash.matchedParam, 'hash');
+
+  const fromPath = parseVerificationQueryFromUrl('', '/verifikasi/espri-7a91c4e2b8f09c12');
+  assert.equal(fromPath.hash, 'espri-7a91c4e2b8f09c12');
+  assert.equal(fromPath.matchedParam, 'path');
+
+  const fromLegacyPath = parseVerificationQueryFromUrl('', '/verifikasi-surat/disp-001');
+  assert.equal(fromLegacyPath.hash, 'disp-001');
+  assert.equal(fromLegacyPath.matchedParam, 'path');
+
+  const fromNo = parseVerificationQueryFromUrl('?no=045', '/verifikasi');
+  assert.equal(fromNo.agendaOrNomor, '045');
+  assert.equal(fromNo.matchedParam, 'no');
+
+  const fromDoc = parseVerificationQueryFromUrl('?doc=B-045_Sat-UNJ_XI_2026', '/verifikasi');
+  assert.equal(fromDoc.docId, 'B-045_Sat-UNJ_XI_2026');
+  assert.equal(fromDoc.matchedParam, 'doc');
+});
+
+test('createPublicVerificationRecord enforces /publicVerifications/{hash} schema boundaries and verificationUrl', () => {
+  const record = createPublicVerificationRecord({
+    letterNumber: 'B-045/Sat-UNJ/XI/2026',
+    letterType: 'Surat Tugas',
+    subject: 'Penugasan Personel Pengamanan Wisuda UNJ',
+    recipient: 'Wakil Rektor Bidang Kemahasiswaan UNJ',
+    issuedDate: '2026-11-13',
+    signerName: 'Moch. Naufal Aziz',
+    signerTitle: 'Komandan Satuan Resimen Mahasiswa UNJ',
+    signerNia: '210412001',
+    agendaNumber: '045',
+    status: 'SAH',
+    source: 'EDISPENSASI',
+    nowIso: '2026-11-13T09:30:00.000Z',
+  });
+
+  assert.match(record.hash, /^edisp-[0-9a-f]{16}$/);
+  assert.equal(
+    record.verificationUrl,
+    `https://menwaunj.or.id/verifikasi?hash=${record.hash}`
+  );
+  assert.equal(record.source, 'EDISPENSASI');
+  assert.equal(buildMainVerificationUrl(record.hash), record.verificationUrl);
+  assert.equal(sha256Hex('').length, 64);
+  assert.equal(getVerificationStatusMeta(record.status).tone, 'emerald');
+});
+
+test('KOP_SURAT_STANDARD_MENWA_UNJ and renderKopSuratHtmlString include official branding & double separator', () => {
+  assert.equal(KOP_SURAT_STANDARD_MENWA_UNJ.baris1, 'KOMANDO RESIMEN MAHASISWA JAYAKARTA');
+  assert.equal(KOP_SURAT_STANDARD_MENWA_UNJ.baris2, 'SATUAN UNIVERSITAS NEGERI JAKARTA');
+
+  const html = renderKopSuratHtmlString();
+  assert.ok(html.includes('KOMANDO RESIMEN MAHASISWA JAYAKARTA'));
+  assert.ok(html.includes('SATUAN UNIVERSITAS NEGERI JAKARTA'));
+  assert.ok(html.includes('logo_unj_kop_2026.png'));
+  assert.ok(html.includes('logo_menwa_kop_2026.png'));
+  assert.ok(html.includes('0.75pt solid #000000'));
+  assert.ok(html.includes('2.75pt solid #000000'));
+});
+```
+
+--- FILE 7: vercel.json (referensi rewrite opsional jika pakai sub-path /espri) ---
+```json
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/espri",
+      "destination": "https://espri.menwaunj.or.id/"
+    },
+    {
+      "source": "/espri/:path*",
+      "destination": "https://espri.menwaunj.or.id/:path*"
+    },
+    {
+      "source": "/((?!espri(?:/|$)).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```

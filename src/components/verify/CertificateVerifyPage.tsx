@@ -15,8 +15,8 @@ import {
   QrCode,
 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
-import { firestore } from '../../firebase.js';
-import { Link } from '../../lib/router.jsx';
+import { firestore, getPublicVerificationByLookup } from '../../firebase.js';
+import { Link, navigate } from '../../lib/router.jsx';
 import {
   VERIFIED_CERTIFICATES,
   verifyCertificateById,
@@ -24,6 +24,10 @@ import {
   type VerifiedCertificateRecord,
 } from '../../data/siteConfig';
 import { sanitizeInput } from '../../utils/security';
+import {
+  extractVerificationLookupInput,
+  type EspriVerificationRecord,
+} from '../../utils/espriVerification';
 
 interface CertificateVerifyPageProps {
   path?: string;
@@ -32,15 +36,12 @@ interface CertificateVerifyPageProps {
 export const CertificateVerifyPage: React.FC<CertificateVerifyPageProps> = ({ path = '/verify' }) => {
   const extractInitialCode = (): string => {
     try {
-      const parts = path.split('/').filter(Boolean);
-      if (parts.length >= 2 && parts[0] === 'verify') {
-        return normalizeCertificateId(decodeURIComponent(parts.slice(1).join('/')));
-      }
-      if (typeof window !== 'undefined') {
-        const q = new URLSearchParams(window.location.search);
-        const param = q.get('id') || q.get('cert') || q.get('kode');
-        if (param) return normalizeCertificateId(param);
-      }
+      const rawPath =
+        typeof window !== 'undefined' ? window.location.pathname : path;
+      const rawSearch =
+        typeof window !== 'undefined' ? window.location.search : '';
+      const extracted = extractVerificationLookupInput(rawPath, rawSearch);
+      if (extracted) return extracted;
     } catch {
       // Abaikan kesalahan parsing URL
     }
@@ -50,14 +51,18 @@ export const CertificateVerifyPage: React.FC<CertificateVerifyPageProps> = ({ pa
   const [queryId, setQueryId] = useState<string>(extractInitialCode);
   const [searchedId, setSearchedId] = useState<string>('');
   const [record, setRecord] = useState<VerifiedCertificateRecord | null>(null);
+  const [espriRecord, setEspriRecord] = useState<EspriVerificationRecord | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
 
   const performVerification = async (rawId: string) => {
-    const cleanId = normalizeCertificateId(rawId);
-    if (!cleanId) return;
+    const trimmedRaw = sanitizeInput(String(rawId || '').trim(), 128);
+    const cleanId = normalizeCertificateId(trimmedRaw);
+    if (!cleanId && !trimmedRaw) return;
     setLoading(true);
-    setSearchedId(cleanId);
+    setSearchedId(trimmedRaw || cleanId);
+    setRecord(null);
+    setEspriRecord(null);
 
     // 1. Periksa basis data sertifikat resmi terverifikasi di siteConfig.ts
     const localHit = verifyCertificateById(cleanId);
@@ -92,10 +97,23 @@ export const CertificateVerifyPage: React.FC<CertificateVerifyPageProps> = ({ pa
         return;
       }
     } catch {
-      // Tetap gunakan hasil verifikasi lokal apabila luring
+      // Tetap lanjut ke fallback registri surat E-Spri
+    }
+
+    // 3. Fallback ke koleksi verifikasi surat E-Spri (/publicVerifications/{hash})
+    try {
+      const espriHit = (await getPublicVerificationByLookup(trimmedRaw || cleanId)) as EspriVerificationRecord | null;
+      if (espriHit) {
+        setEspriRecord(espriHit);
+        setLoading(false);
+        return;
+      }
+    } catch {
+      // Abaikan apabila luring
     }
 
     setRecord(null);
+    setEspriRecord(null);
     setLoading(false);
   };
 
@@ -347,18 +365,102 @@ export const CertificateVerifyPage: React.FC<CertificateVerifyPageProps> = ({ pa
               </div>
             </div>
           </article>
+        ) : espriRecord ? (
+          <article className="bg-white rounded-3xl border-2 border-[#006569] shadow-xl overflow-hidden print:shadow-none print:border-slate-800">
+            <div className="bg-gradient-to-r from-[#006569] to-[#04363c] px-6 sm:px-8 py-5 text-white flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-slate-950 flex items-center justify-center shrink-0 shadow">
+                  <CheckCircle2 size={28} />
+                </div>
+                <div>
+                  <span className="text-[11px] font-mono uppercase tracking-widest text-[#FFDD00] font-bold block">
+                    VERIFIKASI SURAT RESMI ({espriRecord.source})
+                  </span>
+                  <h2 className="text-lg sm:text-xl font-black text-white">
+                    {espriRecord.status === 'DICABUT' || espriRecord.status === 'KEDALUWARSA'
+                      ? `DOKUMEN ${espriRecord.status}`
+                      : 'NASKAH DINAS SAH & TERVERIFIKASI'}
+                  </h2>
+                </div>
+              </div>
+              <div className="font-mono text-xs bg-black/30 border border-white/20 px-3.5 py-2 rounded-xl text-[#FFDD00] font-bold">
+                NO: {espriRecord.letterNumber}
+              </div>
+            </div>
+
+            <div className="p-6 sm:p-8 space-y-5">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+                  Perihal Naskah Dinas ({espriRecord.letterType})
+                </span>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">
+                  {espriRecord.subject}
+                </h3>
+                <p className="text-sm font-bold text-[#006569] mt-1 flex items-center gap-1.5">
+                  <Building size={15} />
+                  <span>Tujuan: {espriRecord.recipient}</span>
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                    Pejabat Penandatangan
+                  </span>
+                  <strong className="text-slate-900 font-black block mt-1">
+                    {espriRecord.signerName}
+                  </strong>
+                  <span className="text-xs text-slate-600 block mt-0.5">{espriRecord.signerTitle}</span>
+                </div>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                    Tanggal Terbit &amp; Hash QR
+                  </span>
+                  <strong className="text-slate-900 font-bold block mt-1">
+                    {espriRecord.issuedDate}
+                  </strong>
+                  <span className="text-xs font-mono text-slate-600 block mt-0.5 break-all">
+                    Hash: {espriRecord.hash}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3 pt-1 print:hidden">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/verifikasi?hash=${encodeURIComponent(espriRecord.hash)}`)}
+                  className="px-5 py-2.5 rounded-xl bg-[#006569] hover:bg-[#004d50] text-[#FFDD00] text-xs font-black uppercase tracking-wider cursor-pointer"
+                >
+                  Buka Halaman Verifikasi Surat Lengkap
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-5 py-2.5 rounded-xl bg-[#FFDD00] hover:bg-amber-300 text-slate-950 text-xs font-black uppercase tracking-wider cursor-pointer"
+                >
+                  Cetak Bukti
+                </button>
+              </div>
+            </div>
+          </article>
         ) : (
           <div className="bg-white rounded-3xl border-2 border-rose-200 p-8 text-center max-w-2xl mx-auto space-y-4 shadow-sm">
             <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-200">
               <AlertTriangle size={28} />
             </div>
             <h2 className="text-xl font-black text-slate-900">
-              Kode Sertifikat Tidak Ditemukan
+              Kode Sertifikat atau Surat Tidak Ditemukan
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Nomor <strong className="font-mono text-rose-700">{searchedId}</strong> belum terdaftar pada buku registrasi piagam digital Menwa Satuan UNJ. Pastikan penulisan tanda hubung sudah sesuai, atau hubungi Staf Administrasi Umum di Gedung G R.107 untuk verifikasi manual.
+              Nomor <strong className="font-mono text-rose-700">{searchedId}</strong> belum terdaftar pada buku registrasi piagam digital maupun registri surat Menwa Satuan UNJ. Pastikan penulisan kode sudah sesuai, atau periksa di portal verifikasi surat resmi.
             </p>
             <div className="pt-2 flex flex-wrap justify-center gap-3">
+              <Link
+                to="/verifikasi"
+                className="px-5 py-2.5 rounded-xl border border-[#006569] text-[#006569] hover:bg-teal-50 text-xs font-black uppercase tracking-wider"
+              >
+                Buka Verifikasi Surat E-Spri
+              </Link>
               <Link
                 to="/adminu"
                 className="px-5 py-2.5 rounded-xl bg-[#006569] text-[#FFDD00] text-xs font-black uppercase tracking-wider"
